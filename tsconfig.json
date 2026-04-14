@@ -3,12 +3,20 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
+<<<<<<< refs/remotes/origin/Maintain-the-folder-Structure
       "@/assets/*": [
         "./assets/*"
       ],
       "@/*": [
         "./src/*"
       ]
+=======
+      "@/*": ["./*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/state/*": ["./src/state/*"],
+      "@/features/*": ["./src/features/*"]
+>>>>>>> local
     }
   },
   "include": [
