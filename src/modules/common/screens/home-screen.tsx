@@ -1,0 +1,93 @@
+import { Link } from 'expo-router';
+import { Image } from 'expo-image';
+import { Platform, StyleSheet } from 'react-native';
+
+import { HelloWave } from '@/modules/common/atoms/hello-wave';
+import { ThemedText } from '@/modules/common/atoms/themed-text';
+import { ThemedView } from '@/modules/common/atoms/themed-view';
+import ParallaxScrollView from '@/modules/common/organisms/parallax-scroll-view';
+
+export default function HomeScreen() {
+  return (
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerImage={
+        <Image
+          source={require('@/assets/images/partial-react-logo.png')}
+          style={styles.reactLogo}
+        />
+      }>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome!</ThemedText>
+        <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <Link href="/auth/login">
+          <ThemedText type="subtitle">Login with Google</ThemedText>
+        </Link>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+        <ThemedText>
+          Edit <ThemedText type="defaultSemiBold">src/modules/common/screens/home-screen.tsx</ThemedText>{' '}
+          to see changes. Press{' '}
+          <ThemedText type="defaultSemiBold">
+            {Platform.select({
+              ios: 'cmd + d',
+              android: 'cmd + m',
+              web: 'F12',
+            })}
+          </ThemedText>{' '}
+          to open developer tools.
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <Link href="/modal">
+          <Link.Trigger>
+            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+          </Link.Trigger>
+          <Link.Preview />
+          <Link.Menu>
+            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+            <Link.MenuAction
+              title="Share"
+              icon="square.and.arrow.up"
+              onPress={() => alert('Share pressed')}
+            />
+            <Link.Menu title="More" icon="ellipsis">
+              <Link.MenuAction
+                title="Delete"
+                icon="trash"
+                destructive
+                onPress={() => alert('Delete pressed')}
+              />
+            </Link.Menu>
+          </Link.Menu>
+        </Link>
+
+        <ThemedText>
+          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+        </ThemedText>
+      </ThemedView>
+    </ParallaxScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+});
