@@ -1,4 +1,4 @@
-import type { RootState } from '@/shared/state/store';
+import type { RootState } from '@/sharedModules/state/store';
 
 export const selectOnboardingState = (state: RootState) => state.onboarding;
 export const selectHasCompletedOnboarding = (state: RootState) =>

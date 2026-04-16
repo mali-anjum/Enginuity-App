@@ -1,7 +1,7 @@
-import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 
-import { supabase } from '@/shared/services/supabase/supabaseClient';
+import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
 
 const CALLBACK_PATH = '/auth/callback';
 

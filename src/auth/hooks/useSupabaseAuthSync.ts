@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
 import { authStateChanged } from '@/auth/state/authSlice';
-import { supabase } from '@/shared/services/supabase/supabaseClient';
-import { useAppDispatch } from '@/shared/state/hooks';
+import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
+import { useAppDispatch } from '@/sharedModules/state/hooks';
 
 export function SupabaseAuthSync() {
   const dispatch = useAppDispatch();

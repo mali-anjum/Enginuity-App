@@ -4,8 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { ROOT_STACK_SCREENS } from '@/shared/navigation/root-stack-options';
-import { AppProviders } from '@/shared/state/Providers';
+import { ROOT_STACK_SCREENS } from '@/sharedModules/navigation/root-stack-options';
+import { AppProviders } from '@/sharedModules/state/Providers';
 
 export const unstable_settings = {
   anchor: '(tabs)',

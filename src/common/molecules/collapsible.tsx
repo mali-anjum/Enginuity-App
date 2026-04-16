@@ -5,7 +5,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { IconSymbol } from '@/shared/ui/atoms/icon-symbol';
+import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);

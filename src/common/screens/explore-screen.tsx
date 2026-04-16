@@ -7,7 +7,7 @@ import { Fonts } from '@/common/constants/theme';
 import { Collapsible } from '@/common/molecules/collapsible';
 import { ExternalLink } from '@/common/molecules/external-link';
 import ParallaxScrollView from '@/common/organisms/parallax-scroll-view';
-import { IconSymbol } from '@/shared/ui/atoms/icon-symbol';
+import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 
 export default function ExploreScreen() {
   return (

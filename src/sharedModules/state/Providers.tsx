@@ -3,8 +3,8 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import { SupabaseAuthSync } from '@/auth/hooks/useSupabaseAuthSync';
-import { persistor } from '@/shared/state/persistor';
-import { store } from '@/shared/state/store';
+import { persistor } from '@/sharedModules/state/persistor';
+import { store } from '@/sharedModules/state/store';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
