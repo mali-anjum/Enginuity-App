@@ -1,1 +1,1 @@
-export { default } from '@/modules/common/screens/home-screen';
+export { default } from '@/dashboard/screens/home-screen';
