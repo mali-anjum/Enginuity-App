@@ -1,4 +1,4 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps, type TextStyle } from 'react-native';
 
 import { useThemeColor } from '@/common/hooks/use-theme-color';
 
@@ -8,32 +8,7 @@ export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
-export function ThemedText({
-  style,
-  lightColor,
-  darkColor,
-  type = 'default',
-  ...rest
-}: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-
-  return (
-    <Text
-      style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
-        style,
-      ]}
-      {...rest}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
+const textTypeStyles: Record<NonNullable<ThemedTextProps['type']>, TextStyle> = {
   default: {
     fontSize: 16,
     lineHeight: 24,
@@ -55,6 +30,28 @@ const styles = StyleSheet.create({
   link: {
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
   },
-});
+};
+
+export function ThemedText({
+  style,
+  lightColor,
+  darkColor,
+  type = 'default',
+  ...rest
+}: ThemedTextProps) {
+  const colorToken = type === 'link' ? 'primary' : 'text';
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, colorToken);
+  const variantStyle = textTypeStyles[type];
+
+  return (
+    <Text
+      style={[
+        { color },
+        variantStyle,
+        style,
+      ]}
+      {...rest}
+    />
+  );
+}

@@ -5,8 +5,10 @@ function getExpoExtra(): Record<string, unknown> {
 }
 
 function requireEnvValue(keys: string[], prettyName: string): string {
+  const processEnv = process?.env as Record<string, string | undefined> | undefined;
+
   for (const key of keys) {
-    const fromProcessEnv = process?.env?.[key as never] as unknown;
+    const fromProcessEnv = processEnv?.[key];
 
     if (typeof fromProcessEnv === 'string' && fromProcessEnv.trim().length > 0) {
       return fromProcessEnv;
