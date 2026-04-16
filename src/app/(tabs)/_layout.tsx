@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { Colors } from '@/modules/common/constants/theme';
-import { useColorScheme } from '@/modules/common/hooks/use-color-scheme';
-import { HapticTab } from '@/modules/common/molecules/haptic-tab';
-import { IconSymbol } from '@/shared/ui/atoms/icon-symbol';
+import { Colors } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { HapticTab } from '@/common/molecules/haptic-tab';
+import { TAB_ROUTES } from '@/sharedModules/navigation/tab-routes';
+import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -16,20 +17,16 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
+      {TAB_ROUTES.map((route) => (
+        <Tabs.Screen
+          key={route.name}
+          name={route.name}
+          options={{
+            title: route.title,
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name={route.icon} color={color} />,
+          }}
+        />
+      ))}
     </Tabs>
   );
 }
