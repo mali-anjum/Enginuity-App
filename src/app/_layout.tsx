@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROOT_STACK_SCREENS } from '@/shared/navigation/root-stack-options';
 import { AppProviders } from '@/shared/state/Providers';
 
 export const unstable_settings = {
@@ -17,11 +18,26 @@ export default function RootLayout() {
     <AppProviders>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding" options={{ title: 'Welcome', headerShown: true }} />
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          <Stack.Screen
+            name={ROOT_STACK_SCREENS.tabs.name}
+            options={ROOT_STACK_SCREENS.tabs.options}
+          />
+          <Stack.Screen
+            name={ROOT_STACK_SCREENS.onboarding.name}
+            options={ROOT_STACK_SCREENS.onboarding.options}
+          />
+          <Stack.Screen
+            name={ROOT_STACK_SCREENS.authLogin.name}
+            options={ROOT_STACK_SCREENS.authLogin.options}
+          />
+          <Stack.Screen
+            name={ROOT_STACK_SCREENS.authCallback.name}
+            options={ROOT_STACK_SCREENS.authCallback.options}
+          />
+          <Stack.Screen
+            name={ROOT_STACK_SCREENS.modal.name}
+            options={ROOT_STACK_SCREENS.modal.options}
+          />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
