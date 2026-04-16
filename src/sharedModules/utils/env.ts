@@ -24,12 +24,20 @@ function requireEnvValue(keys: string[], prettyName: string): string {
 }
 
 export function getSupabaseUrl(): string {
-  return requireEnvValue(['EXPO_PUBLIC_SUPABASE_URL', 'SUPABASE_URL'], 'Supabase URL');
+  return requireEnvValue(
+    ['EXPO_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_URL'],
+    'Supabase URL'
+  );
 }
 
 export function getSupabaseAnonKey(): string {
   return requireEnvValue(
-    ['EXPO_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_ANON_KEY'],
+    [
+      'EXPO_PUBLIC_SUPABASE_ANON_KEY',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+      'SUPABASE_ANON_KEY',
+    ],
     'Supabase anon key'
   );
 }
