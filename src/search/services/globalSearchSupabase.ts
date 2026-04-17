@@ -1,3 +1,4 @@
+import type { Database } from '@/sharedModules/services/supabase/database.types';
 import { withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 
 export type GlobalSearchEntityRow = {
@@ -24,16 +25,19 @@ export async function fetchGlobalSearchEntities(params: {
 
   return withSupabaseClient(
     async (client) => {
-      const { data, error } = await client.rpc('global_search_entities', {
+      const rpcArgs: Database['public']['Functions']['global_search_entities']['Args'] = {
         search_query: q,
-        filter_project_id: params.filterProjectId || null,
-        filter_status: params.filterStatus || null,
-        filter_hardware_id: params.filterHardwareId || null,
-        filter_tag: params.filterTag || null,
-        date_from: params.dateFrom || null,
-        date_to: params.dateTo || null,
-        result_limit: params.resultLimit ?? 80,
-      });
+        filter_project_id: params.filterProjectId ?? null,
+        filter_status: params.filterStatus ?? null,
+        filter_hardware_id: params.filterHardwareId ?? null,
+        filter_tag: params.filterTag ?? null,
+        date_from: params.dateFrom ?? null,
+        date_to: params.dateTo ?? null,
+        result_limit: params.resultLimit ?? null,
+      };
+      // Hand-written Database tables omit Relationships[] required for full postgrest-js rpc inference.
+      // @ts-expect-error Supabase rpc resolves Args to never until types are regenerated from the CLI
+      const { data, error } = await client.rpc('global_search_entities', rpcArgs);
       if (error) {
         return [];
       }
