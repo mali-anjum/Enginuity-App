@@ -1,4 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  fetchProfileByUserId,
+  saveProfileByUserId,
+  uploadAvatarAndPersist,
+} from '@/auth/services/profileSupabaseService';
 import type { RootState } from '@/sharedModules/state/store';
 import { oauthAuthService } from '@/auth/services/oauthAuthService';
 import type { OAuthProviderKey } from '@/auth/services/oauthProviders';
@@ -11,6 +16,7 @@ export type AuthUser = {
   name: string;
   discipline: AuthDiscipline | null;
   avatarUrl: string | null;
+  bio: string;
 };
 
 export type AuthSession = {
@@ -36,7 +42,8 @@ const initialState: AuthState = {
 type LoginPayload = { provider: OAuthProviderKey };
 type SignupPayload = { email: string; password: string; name: string; discipline?: AuthDiscipline | null };
 type SessionPayload = { token: string; expiresAt: number | null };
-type ProfilePayload = Pick<AuthUser, 'name' | 'discipline' | 'avatarUrl'>;
+type ProfilePayload = Pick<AuthUser, 'name' | 'discipline' | 'bio'>;
+type AvatarPayload = { localUri: string };
 type PasswordLoginPayload = { email: string; password: string };
 type ForgotPasswordPayload = { email: string };
 type ResetPasswordPayload = { password: string; confirmPassword: string };
@@ -130,15 +137,58 @@ export const refreshSessionThunk = createAsyncThunk<AuthSession, SessionPayload,
 
 export const updateProfileThunk = createAsyncThunk<AuthUser, ProfilePayload, { state: RootState; rejectValue: string }>(
   'auth/updateProfileThunk',
-  async ({ name, discipline, avatarUrl }, { getState, rejectWithValue }) => {
+  async ({ name, discipline, bio }, { getState, rejectWithValue }) => {
     try {
       const currentUser = getState().auth.user;
       if (!currentUser) {
         return rejectWithValue('No authenticated user');
       }
-      return { ...currentUser, name, discipline, avatarUrl };
+      await saveProfileByUserId(currentUser.id, {
+        name: name.trim(),
+        discipline,
+        bio: bio.trim(),
+      });
+      return { ...currentUser, name: name.trim(), discipline, bio: bio.trim() };
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Profile update failed');
+    }
+  },
+);
+
+export const fetchProfileThunk = createAsyncThunk<AuthUser, void, { state: RootState; rejectValue: string }>(
+  'auth/fetchProfileThunk',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const currentUser = getState().auth.user;
+      if (!currentUser) {
+        return rejectWithValue('No authenticated user');
+      }
+      const profile = await fetchProfileByUserId(currentUser.id, currentUser.name);
+      return {
+        ...currentUser,
+        name: profile.name,
+        discipline: profile.discipline,
+        avatarUrl: profile.avatarUrl,
+        bio: profile.bio,
+      };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Could not load profile');
+    }
+  },
+);
+
+export const uploadAvatarThunk = createAsyncThunk<AuthUser, AvatarPayload, { state: RootState; rejectValue: string }>(
+  'auth/uploadAvatarThunk',
+  async ({ localUri }, { getState, rejectWithValue }) => {
+    try {
+      const currentUser = getState().auth.user;
+      if (!currentUser) {
+        return rejectWithValue('No authenticated user');
+      }
+      const avatarUrl = await uploadAvatarAndPersist(currentUser.id, localUri);
+      return { ...currentUser, avatarUrl };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Avatar upload failed');
     }
   },
 );
@@ -260,6 +310,18 @@ const authSlice = createSlice({
       })
       .addCase(updateProfileThunk.rejected, (state, action) => {
         state.error = action.payload ?? 'Profile update failed';
+      })
+      .addCase(fetchProfileThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
+      })
+      .addCase(fetchProfileThunk.rejected, (state, action) => {
+        state.error = action.payload ?? 'Could not load profile';
+      })
+      .addCase(uploadAvatarThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
+      })
+      .addCase(uploadAvatarThunk.rejected, (state, action) => {
+        state.error = action.payload ?? 'Avatar upload failed';
       });
   },
 });
