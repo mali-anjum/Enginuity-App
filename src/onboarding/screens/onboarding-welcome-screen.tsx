@@ -9,7 +9,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ValuePropSlide } from '@/onboarding/molecules/value-prop-slide';
 import { OnboardingBrandBlock } from '@/onboarding/organisms/onboarding-brand-block';
-import { completeOnboarding, setSelectedDiscipline } from '@/onboarding/state/onboardingSlice';
+import { completeOnboarding, setSelectedDisciplines } from '@/onboarding/state/onboardingSlice';
 import {
   getSupabaseClientOrNull,
   withSupabaseClient,
@@ -49,9 +49,9 @@ export default function OnboardingWelcomeScreen() {
   const user = useAppSelector(selectUser);
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
-  const [selectedDiscipline, setLocalSelectedDiscipline] = useState<
-    (typeof DISCIPLINE_OPTIONS)[number]['value'] | null
-  >(null);
+  const [selectedDisciplines, setLocalSelectedDisciplines] = useState<
+    (typeof DISCIPLINE_OPTIONS)[number]['value'][]
+  >([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const colorScheme = useColorScheme() ?? 'light';
@@ -59,7 +59,7 @@ export default function OnboardingWelcomeScreen() {
   const isDisciplineStep = stepIndex === TOTAL_STEPS - 1;
   const canSkip = stepIndex > 0;
 
-  const finishOnboarding = async (discipline: (typeof DISCIPLINE_OPTIONS)[number]['value'] | null) => {
+  const finishOnboarding = async (disciplines: (typeof DISCIPLINE_OPTIONS)[number]['value'][]) => {
     if (isSaving) return;
     setSaveError(null);
 
@@ -81,7 +81,7 @@ export default function OnboardingWelcomeScreen() {
             .from('profiles')
             .update({
               onboarding_completed: true,
-              field_of_study: discipline,
+              field_of_study: disciplines.length > 0 ? disciplines.join(', ') : null,
             })
             .eq('user_id', user.id),
           client.from('users').update({ is_new_user: false }).eq('id', user.id),
@@ -96,9 +96,7 @@ export default function OnboardingWelcomeScreen() {
         throw new Error(userUpdate.error.message);
       }
 
-      if (discipline) {
-        dispatch(setSelectedDiscipline(discipline));
-      }
+      dispatch(setSelectedDisciplines(disciplines));
       dispatch(completeOnboarding());
       router.replace('/');
     } catch (error) {
@@ -146,11 +144,17 @@ export default function OnboardingWelcomeScreen() {
             </ThemedText>
             <View style={styles.disciplineOptions}>
               {DISCIPLINE_OPTIONS.map((option) => {
-                const isSelected = selectedDiscipline === option.value;
+                const isSelected = selectedDisciplines.includes(option.value);
                 return (
                   <Pressable
                     key={option.value}
-                    onPress={() => setLocalSelectedDiscipline(option.value)}
+                    onPress={() => {
+                      setLocalSelectedDisciplines((prev) =>
+                        prev.includes(option.value)
+                          ? prev.filter((item) => item !== option.value)
+                          : [...prev, option.value],
+                      );
+                    }}
                     style={[
                       styles.disciplineButton,
                       {
@@ -172,7 +176,7 @@ export default function OnboardingWelcomeScreen() {
               style={[styles.secondaryButton, { borderColor: themeColors.border }]}
               disabled={isSaving}
               onPress={() => {
-                void finishOnboarding(null);
+                void finishOnboarding([]);
               }}>
               <ThemedText style={{ color: themeColors.mutedText }}>Skip for now</ThemedText>
             </Pressable>
@@ -185,11 +189,11 @@ export default function OnboardingWelcomeScreen() {
                 setStepIndex((prev) => prev + 1);
                 return;
               }
-              if (!selectedDiscipline) {
-                setSaveError('Select a discipline to continue, or tap Skip for now.');
+              if (selectedDisciplines.length === 0) {
+                setSaveError('Select at least one discipline to continue, or tap Skip for now.');
                 return;
               }
-              await finishOnboarding(selectedDiscipline);
+              await finishOnboarding(selectedDisciplines);
             }}>
             <ThemedText
               type="defaultSemiBold"
