@@ -47,6 +47,18 @@ export const ROOT_STACK_SCREENS = {
   },
   searchGlobal: { name: 'search/index', options: { title: 'Search', headerShown: true } },
   searchResults: { name: 'search/results', options: { title: 'Search results', headerShown: true } },
+  settingsHome: { name: 'settings/index', options: { title: 'Settings', headerShown: true } },
+  settingsAppearance: { name: 'settings/appearance', options: { title: 'Appearance', headerShown: true } },
+  settingsNotifications: {
+    name: 'settings/notifications',
+    options: { title: 'Notifications', headerShown: true },
+  },
+  settingsStorageSync: {
+    name: 'settings/storage-sync',
+    options: { title: 'Storage & sync', headerShown: true },
+  },
+  settingsAccount: { name: 'settings/account', options: { title: 'Account', headerShown: true } },
+  settingsAbout: { name: 'settings/about', options: { title: 'About', headerShown: true } },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },
   authLogin: { name: 'auth/login', options: { headerShown: false } },
   authSignup: { name: 'auth/signup', options: { title: 'Create account', headerShown: true } },
