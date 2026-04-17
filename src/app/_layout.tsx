@@ -123,6 +123,30 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.projectEdit.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.experimentList.name}
+          options={ROOT_STACK_SCREENS.experimentList.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.experimentCreate.name}
+          options={ROOT_STACK_SCREENS.experimentCreate.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.experimentDetail.name}
+          options={ROOT_STACK_SCREENS.experimentDetail.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.experimentEdit.name}
+          options={ROOT_STACK_SCREENS.experimentEdit.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.experimentAttachmentViewer.name}
+          options={ROOT_STACK_SCREENS.experimentAttachmentViewer.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.experimentCsvPreview.name}
+          options={ROOT_STACK_SCREENS.experimentCsvPreview.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authLogin.name}
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
