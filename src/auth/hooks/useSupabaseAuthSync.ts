@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 
-import { authStateChanged, authSyncStarted, setAuthError } from '@/auth/state/authSlice';
+import {
+  authStateChanged,
+  authSyncStarted,
+  fetchProfileThunk,
+  setAuthError,
+} from '@/auth/state/authSlice';
 import { resetOnboarding, setOnboardingCompleted } from '@/onboarding/state/onboardingSlice';
 import {
   SupabaseNotInitializedError,
@@ -9,7 +14,11 @@ import {
 } from '@/sharedModules/services/supabase/supabaseClient';
 import { useAppDispatch } from '@/sharedModules/state/hooks';
 
-const mapSessionToAuthState = (session: { access_token?: string; expires_at?: number; user?: { id?: string; email?: string; user_metadata?: { full_name?: string; avatar_url?: string } } } | null) => {
+const mapSessionToAuthState = (session: {
+  access_token?: string;
+  expires_at?: number;
+  user?: { id?: string; email?: string; user_metadata?: { full_name?: string; avatar_url?: string } };
+} | null) => {
   if (!session?.user?.id || !session.access_token) {
     return { user: null, session: null };
   }
@@ -21,6 +30,7 @@ const mapSessionToAuthState = (session: { access_token?: string; expires_at?: nu
       name: session.user.user_metadata?.full_name ?? session.user.email ?? 'User',
       discipline: null,
       avatarUrl: session.user.user_metadata?.avatar_url ?? null,
+      bio: '',
     },
     session: {
       token: session.access_token,
@@ -72,6 +82,7 @@ export function SupabaseAuthSync() {
         }
         dispatch(authStateChanged(mapSessionToAuthState(data.session)));
         if (data.session?.user?.id) {
+          void dispatch(fetchProfileThunk());
           void syncOnboardingStatus(data.session.user.id);
           return;
         }
@@ -102,6 +113,7 @@ export function SupabaseAuthSync() {
       void event;
       dispatch(authStateChanged(mapSessionToAuthState(session)));
       if (session?.user?.id) {
+        void dispatch(fetchProfileThunk());
         void syncOnboardingStatus(session.user.id);
         return;
       }
