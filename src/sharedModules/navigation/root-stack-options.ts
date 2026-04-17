@@ -5,6 +5,24 @@ export const ROOT_STACK_SCREENS = {
   projectCreate: { name: 'project/create', options: { title: 'Create project', headerShown: true } },
   projectDetail: { name: 'project/[projectId]', options: { title: 'Project detail', headerShown: true } },
   projectEdit: { name: 'project/[projectId]/edit', options: { title: 'Edit project', headerShown: true } },
+  experimentList: { name: 'experiment/index', options: { title: 'Experiments', headerShown: true } },
+  experimentCreate: { name: 'experiment/create', options: { title: 'Create experiment', headerShown: true } },
+  experimentDetail: {
+    name: 'experiment/[experimentId]',
+    options: { title: 'Experiment detail', headerShown: true },
+  },
+  experimentEdit: {
+    name: 'experiment/[experimentId]/edit',
+    options: { title: 'Edit experiment', headerShown: true },
+  },
+  experimentAttachmentViewer: {
+    name: 'experiment/attachment-viewer',
+    options: { title: 'Attachment viewer', headerShown: true },
+  },
+  experimentCsvPreview: {
+    name: 'experiment/csv-preview',
+    options: { title: 'CSV preview', headerShown: true },
+  },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },
   authLogin: { name: 'auth/login', options: { headerShown: false } },
   authSignup: { name: 'auth/signup', options: { title: 'Create account', headerShown: true } },
