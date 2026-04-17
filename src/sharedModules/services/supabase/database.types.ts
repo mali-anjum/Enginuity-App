@@ -239,6 +239,24 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      global_search_entities: {
+        Args: {
+          search_query: string;
+          filter_project_id?: string | null;
+          filter_status?: string | null;
+          filter_hardware_id?: string | null;
+          filter_tag?: string | null;
+          date_from?: string | null;
+          date_to?: string | null;
+          result_limit?: number | null;
+        };
+        Returns: {
+          entity_type: string;
+          entity_id: string;
+          title: string;
+          rank: number;
+        }[];
+      };
       is_workspace_member: {
         Args: { target_workspace: string };
         Returns: boolean;
