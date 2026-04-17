@@ -10,7 +10,10 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ValuePropSlide } from '@/onboarding/molecules/value-prop-slide';
 import { OnboardingBrandBlock } from '@/onboarding/organisms/onboarding-brand-block';
 import { completeOnboarding } from '@/onboarding/state/onboardingSlice';
-import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
+import {
+  getSupabaseClientOrNull,
+  withSupabaseClient,
+} from '@/sharedModules/services/supabase/supabaseClient';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const VALUE_PROPS = [
@@ -70,13 +73,17 @@ export default function OnboardingWelcomeScreen() {
 
               setIsSaving(true);
               try {
-                const [profileUpdate, userUpdate] = await Promise.all([
-                  supabase
-                    .from('profiles')
-                    .update({ onboarding_completed: true })
-                    .eq('user_id', user.id),
-                  supabase.from('users').update({ is_new_user: false }).eq('id', user.id),
-                ]);
+                if (!getSupabaseClientOrNull()) {
+                  setSaveError('Service is starting up. Please try again.');
+                  return;
+                }
+
+                const [profileUpdate, userUpdate] = await withSupabaseClient((client) =>
+                  Promise.all([
+                    client.from('profiles').update({ onboarding_completed: true }).eq('user_id', user.id),
+                    client.from('users').update({ is_new_user: false }).eq('id', user.id),
+                  ]),
+                );
 
                 if (profileUpdate.error) {
                   throw new Error(profileUpdate.error.message);
