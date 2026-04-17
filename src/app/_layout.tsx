@@ -41,6 +41,10 @@ function RootNavigator() {
   const isAuthRoute = primarySegment === 'auth';
   const isCallbackRoute = isAuthRoute && secondarySegment === 'callback';
   const isLoginRoute = isAuthRoute && secondarySegment === 'login';
+  const isSignupRoute = isAuthRoute && secondarySegment === 'signup';
+  const isForgotPasswordRoute = isAuthRoute && secondarySegment === 'forgot-password';
+  const isResetPasswordRoute = isAuthRoute && secondarySegment === 'reset-password';
+  const isAuthSplashRoute = isAuthRoute && secondarySegment === 'splash';
   const isOnboardingRoute = primarySegment === 'onboarding';
 
   useEffect(() => {
@@ -49,7 +53,14 @@ function RootNavigator() {
     }
 
     if (!isAuthenticated) {
-      if (!isLoginRoute && !isCallbackRoute) {
+      if (
+        !isLoginRoute &&
+        !isCallbackRoute &&
+        !isSignupRoute &&
+        !isForgotPasswordRoute &&
+        !isResetPasswordRoute &&
+        !isAuthSplashRoute
+      ) {
         router.replace('/auth/login');
       }
       return;
@@ -72,16 +83,16 @@ function RootNavigator() {
     isOnboardingRoute,
     isAuthRoute,
     isLoginRoute,
+    isSignupRoute,
+    isForgotPasswordRoute,
+    isResetPasswordRoute,
+    isAuthSplashRoute,
     isCallbackRoute,
     router,
   ]);
 
   if (!hasInitializedAuth) {
-    return (
-      <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator />
-      </ThemedView>
-    );
+    return <AuthLoadingState />;
   }
 
   return (
@@ -100,6 +111,22 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.authSplash.name}
+          options={ROOT_STACK_SCREENS.authSplash.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.authSignup.name}
+          options={ROOT_STACK_SCREENS.authSignup.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.authForgotPassword.name}
+          options={ROOT_STACK_SCREENS.authForgotPassword.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.authResetPassword.name}
+          options={ROOT_STACK_SCREENS.authResetPassword.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authCallback.name}
           options={ROOT_STACK_SCREENS.authCallback.options}
         />
@@ -110,6 +137,14 @@ function RootNavigator() {
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
+  );
+}
+
+function AuthLoadingState() {
+  return (
+    <ThemedView style={styles.loadingContainer}>
+      <ActivityIndicator />
+    </ThemedView>
   );
 }
 
