@@ -1,11 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type Discipline =
-  | 'mechanical'
-  | 'electrical'
-  | 'civil'
-  | 'software'
-  | 'chemical'
+  | 'electronics'
+  | 'robotics'
+  | 'cs'
+  | 'physics'
   | 'other';
 
 export type OnboardingState = {
