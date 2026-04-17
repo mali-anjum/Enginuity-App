@@ -7,6 +7,7 @@ import { OAUTH_PROVIDER_CONFIG } from '@/auth/services/oauthProviders';
 import { withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 
 const CALLBACK_PATH = '/auth/callback';
+const RESET_PASSWORD_PATH = '/auth/reset-password';
 
 type OAuthStartResult = {
   authUrl: string;
@@ -29,6 +30,13 @@ class OAuthAuthService {
       throw new Error(`Unsupported OAuth provider: ${providerKey}`);
     }
     return config;
+  }
+
+  private getResetPasswordRedirectUrl(): string {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return `${window.location.origin}${RESET_PASSWORD_PATH}`;
+    }
+    return Linking.createURL(RESET_PASSWORD_PATH);
   }
 
   private async startOAuth(providerKey: OAuthProviderKey): Promise<OAuthStartResult> {
@@ -108,6 +116,75 @@ class OAuthAuthService {
 
     if (!data?.session) {
       throw new Error('OAuth exchange did not return a session.');
+    }
+  }
+
+  async signInWithPassword(email: string, password: string): Promise<void> {
+    const { error } = await withSupabaseClient((client) =>
+      client.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      }),
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async signUpWithPassword(params: {
+    email: string;
+    password: string;
+    name: string;
+    discipline?: string | null;
+  }): Promise<void> {
+    const email = params.email.trim().toLowerCase();
+    const name = params.name.trim();
+
+    const { data, error } = await withSupabaseClient((client) =>
+      client.auth.signUp({
+        email,
+        password: params.password,
+        options: {
+          emailRedirectTo: this.getRedirectUrl(),
+          data: {
+            full_name: name,
+            discipline: params.discipline ?? null,
+          },
+        },
+      }),
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data.user) {
+      throw new Error('Signup did not return a user object.');
+    }
+  }
+
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    const { error } = await withSupabaseClient((client) =>
+      client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: this.getResetPasswordRedirectUrl(),
+      }),
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    const { error } = await withSupabaseClient((client) =>
+      client.auth.updateUser({
+        password: newPassword,
+      }),
+    );
+
+    if (error) {
+      throw new Error(error.message);
     }
   }
 
