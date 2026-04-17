@@ -37,6 +37,9 @@ type LoginPayload = { provider: OAuthProviderKey };
 type SignupPayload = { email: string; password: string; name: string; discipline?: AuthDiscipline | null };
 type SessionPayload = { token: string; expiresAt: number | null };
 type ProfilePayload = Pick<AuthUser, 'name' | 'discipline' | 'avatarUrl'>;
+type PasswordLoginPayload = { email: string; password: string };
+type ForgotPasswordPayload = { email: string };
+type ResetPasswordPayload = { password: string; confirmPassword: string };
 
 export const loginThunk = createAsyncThunk<AuthSession | null, LoginPayload, { rejectValue: string }>(
   'auth/loginThunk',
@@ -50,19 +53,55 @@ export const loginThunk = createAsyncThunk<AuthSession | null, LoginPayload, { r
   },
 );
 
-export const signupThunk = createAsyncThunk<AuthUser, SignupPayload, { rejectValue: string }>(
+export const signupThunk = createAsyncThunk<void, SignupPayload, { rejectValue: string }>(
   'auth/signupThunk',
-  async ({ email, name, discipline = null }, { rejectWithValue }) => {
+  async ({ email, password, name, discipline = null }, { rejectWithValue }) => {
     try {
-      return {
-        id: `local-${Date.now()}`,
-        email,
-        name,
-        discipline,
-        avatarUrl: null,
-      };
+      await oauthAuthService.signUpWithPassword({ email, password, name, discipline });
+      return;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Signup failed');
+    }
+  },
+);
+
+export const loginWithPasswordThunk = createAsyncThunk<void, PasswordLoginPayload, { rejectValue: string }>(
+  'auth/loginWithPasswordThunk',
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      await oauthAuthService.signInWithPassword(email, password);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Email login failed');
+    }
+  },
+);
+
+export const forgotPasswordThunk = createAsyncThunk<void, ForgotPasswordPayload, { rejectValue: string }>(
+  'auth/forgotPasswordThunk',
+  async ({ email }, { rejectWithValue }) => {
+    try {
+      await oauthAuthService.sendPasswordResetEmail(email);
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Could not send password reset email',
+      );
+    }
+  },
+);
+
+export const resetPasswordThunk = createAsyncThunk<void, ResetPasswordPayload, { rejectValue: string }>(
+  'auth/resetPasswordThunk',
+  async ({ password, confirmPassword }, { rejectWithValue }) => {
+    if (password !== confirmPassword) {
+      return rejectWithValue('Passwords do not match.');
+    }
+    if (password.length < 8) {
+      return rejectWithValue('Password must be at least 8 characters.');
+    }
+    try {
+      await oauthAuthService.updatePassword(password);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Could not reset password');
     }
   },
 );
@@ -154,14 +193,46 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(signupThunk.fulfilled, (state, action) => {
+      .addCase(signupThunk.fulfilled, (state) => {
         state.isLoading = false;
-        state.user = action.payload;
         state.hasInitialized = true;
       })
       .addCase(signupThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload ?? 'Signup failed';
+      })
+      .addCase(loginWithPasswordThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginWithPasswordThunk.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(loginWithPasswordThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Email login failed';
+      })
+      .addCase(forgotPasswordThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(forgotPasswordThunk.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(forgotPasswordThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Could not send password reset email';
+      })
+      .addCase(resetPasswordThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(resetPasswordThunk.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(resetPasswordThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Could not reset password';
       })
       .addCase(logoutThunk.pending, (state) => {
         state.isLoading = true;
