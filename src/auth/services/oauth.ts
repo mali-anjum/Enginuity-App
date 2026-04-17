@@ -34,6 +34,15 @@ async function signInWithProvider(provider: Provider): Promise<void> {
     throw new Error('Missing OAuth URL from Supabase.');
   }
 
+  if (__DEV__) {
+    const parsedAuthUrl = new URL(authUrl);
+    const supabaseRedirectTarget = parsedAuthUrl.searchParams.get('redirect_to');
+    console.log('[OAuth Debug] provider:', provider);
+    console.log('[OAuth Debug] platform:', Platform.OS);
+    console.log('[OAuth Debug] app redirectTo:', redirectTo);
+    console.log('[OAuth Debug] supabase redirect_to param:', supabaseRedirectTarget);
+  }
+
   if (isWeb) {
     // Web uses browser redirect flow; Supabase handles the navigation.
     return;
