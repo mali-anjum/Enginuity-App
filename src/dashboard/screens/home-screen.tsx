@@ -174,6 +174,9 @@ export default function HomeScreen() {
           <Link href={'/profile' as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Open Profile Module</ThemedText>
           </Link>
+          <Link href={'/settings' as Href}>
+            <ThemedText style={{ color: themeColors.primary }}>Open Settings Module</ThemedText>
+          </Link>
           <Link href={'/experiment' as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Open Experiment Module</ThemedText>
           </Link>
