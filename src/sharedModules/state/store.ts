@@ -9,6 +9,7 @@ import hardwareReducer from '@/hardware/state/hardwareSlice';
 import notesReducer from '@/notes/state/notesSlice';
 import onboardingReducer from '@/onboarding/state/onboardingSlice';
 import projectReducer from '@/project/state/projectSlice';
+import settingsReducer from '@/settings/state/settingsSlice';
 import uiReducer from '@/ui/state/uiSlice';
 
 const createNoopStorage = () => ({
@@ -58,6 +59,7 @@ export const store = configureStore({
     notes: notesReducer,
     hardware: hardwareReducer,
     ui: persistedUiReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
