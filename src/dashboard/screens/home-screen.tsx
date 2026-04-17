@@ -118,6 +118,9 @@ export default function HomeScreen() {
             {searchQuery.trim() ? searchQuery : 'Quick search projects and activity'}
           </ThemedText>
         </Pressable>
+        <Link href={'/search' as Href}>
+          <ThemedText style={{ color: themeColors.primary }}>Open Global Search</ThemedText>
+        </Link>
 
         <View style={styles.sectionHeader}>
           <ThemedText type="subtitle">Projects</ThemedText>
