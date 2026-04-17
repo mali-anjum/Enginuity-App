@@ -1,3 +1,4 @@
+import { Link, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -120,6 +121,9 @@ export default function HomeScreen() {
 
         <View style={styles.sectionHeader}>
           <ThemedText type="subtitle">Projects</ThemedText>
+          <Link href={'/project' as Href}>
+            <ThemedText style={{ color: themeColors.primary }}>Open Project Module</ThemedText>
+          </Link>
           <Pressable
             style={[styles.filterButton, { borderColor: themeColors.border }]}
             onPress={() => setIsFilterOpen(true)}>
@@ -136,20 +140,21 @@ export default function HomeScreen() {
             </ThemedText>
           ) : (
             filteredProjects.map((project) => (
-              <View
-                key={project.id}
-                style={[
-                  styles.card,
-                  {
-                    borderColor: themeColors.border,
-                    backgroundColor: themeColors.surfaceElevated,
-                  },
-                ]}>
-                <ThemedText type="defaultSemiBold">{project.title}</ThemedText>
-                <ThemedText style={{ color: themeColors.mutedText }}>
-                  Updated {new Date(project.updatedAt).toLocaleString()}
-                </ThemedText>
-              </View>
+              <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
+                <Pressable
+                  style={[
+                    styles.card,
+                    {
+                      borderColor: themeColors.border,
+                      backgroundColor: themeColors.surfaceElevated,
+                    },
+                  ]}>
+                  <ThemedText type="defaultSemiBold">{project.title}</ThemedText>
+                  <ThemedText style={{ color: themeColors.mutedText }}>
+                    Updated {new Date(project.updatedAt).toLocaleString()}
+                  </ThemedText>
+                </Pressable>
+              </Link>
             ))
           )}
         </View>
