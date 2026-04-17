@@ -1,5 +1,5 @@
 import { Link, type Href } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -13,6 +13,11 @@ import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
 import { AdvancedFilterSheet, type AdvancedFilters } from '../components/advanced-filter-sheet';
+import {
+  aggregateGlobalSearchCounts,
+  fetchGlobalSearchEntities,
+  type GlobalSearchEntityRow,
+} from '../services/globalSearchSupabase';
 
 const INITIAL_FILTERS: AdvancedFilters = {
   dateFrom: '',
@@ -29,6 +34,8 @@ export default function GlobalSearchScreen() {
   const [query, setQuery] = useState('');
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [filters, setFilters] = useState<AdvancedFilters>(INITIAL_FILTERS);
+  const [cloudHits, setCloudHits] = useState<GlobalSearchEntityRow[]>([]);
+  const [cloudLoading, setCloudLoading] = useState(false);
 
   const projects = useAppSelector(selectAllProjects);
   const experiments = useAppSelector(selectAllExperiments);
@@ -45,6 +52,50 @@ export default function GlobalSearchScreen() {
         .length,
     };
   }, [query, projects, experiments, notes]);
+
+  const cloudCounts = useMemo(() => aggregateGlobalSearchCounts(cloudHits), [cloudHits]);
+  const cloudTotal = cloudCounts.projects + cloudCounts.experiments + cloudCounts.notes;
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setCloudHits([]);
+      setCloudLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setCloudLoading(true);
+    const timer = setTimeout(() => {
+      void (async () => {
+        const rows = await fetchGlobalSearchEntities({
+          searchQuery: trimmed,
+          filterProjectId: filters.projectId || undefined,
+          filterStatus: filters.status || undefined,
+          filterHardwareId: filters.hardwareId || undefined,
+          filterTag: filters.tag || undefined,
+          dateFrom: filters.dateFrom || undefined,
+          dateTo: filters.dateTo || undefined,
+        });
+        if (cancelled) return;
+        setCloudHits(rows);
+        setCloudLoading(false);
+      })();
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    query,
+    filters.dateFrom,
+    filters.dateTo,
+    filters.hardwareId,
+    filters.tag,
+    filters.status,
+    filters.projectId,
+  ]);
 
   const resultsHref =
     `/search/results?query=${encodeURIComponent(query)}` +
@@ -91,6 +142,17 @@ export default function GlobalSearchScreen() {
             <ThemedText>{quickCount.notes}</ThemedText>
           </View>
         </View>
+
+        {query.trim() ? (
+          cloudLoading ? (
+            <ThemedText style={{ color: themeColors.mutedText }}>Searching cloud index (Supabase FTS)…</ThemedText>
+          ) : cloudTotal > 0 ? (
+            <ThemedText style={{ color: themeColors.mutedText }}>
+              Cloud (Supabase FTS): {cloudCounts.projects} projects · {cloudCounts.experiments} experiments ·{' '}
+              {cloudCounts.notes} notes
+            </ThemedText>
+          ) : null
+        ) : null}
 
         <Link href={resultsHref as Href} asChild>
           <Pressable style={[styles.resultsButton, { backgroundColor: themeColors.primary }]}>
