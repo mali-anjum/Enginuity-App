@@ -242,6 +242,23 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['usage_metrics']['Insert']>;
       };
+      user_settings: {
+        Row: {
+          user_id: string;
+          push_notifications_enabled: boolean;
+          email_notifications_enabled: boolean;
+          experiment_reminders_enabled: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          push_notifications_enabled?: boolean;
+          email_notifications_enabled?: boolean;
+          experiment_reminders_enabled?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['user_settings']['Insert']>;
+      };
     };
     Views: Record<string, never>;
     Functions: {
