@@ -167,6 +167,22 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.notesTags.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.hardwareList.name}
+          options={ROOT_STACK_SCREENS.hardwareList.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.hardwareAdd.name}
+          options={ROOT_STACK_SCREENS.hardwareAdd.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.hardwareDetail.name}
+          options={ROOT_STACK_SCREENS.hardwareDetail.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.hardwareEdit.name}
+          options={ROOT_STACK_SCREENS.hardwareEdit.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authLogin.name}
           options={ROOT_STACK_SCREENS.authLogin.options}
         />

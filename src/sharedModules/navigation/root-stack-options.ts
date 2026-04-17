@@ -28,6 +28,16 @@ export const ROOT_STACK_SCREENS = {
   notesDetail: { name: 'notes/[noteId]', options: { title: 'Note detail', headerShown: true } },
   notesEdit: { name: 'notes/[noteId]/edit', options: { title: 'Edit note', headerShown: true } },
   notesTags: { name: 'notes/tags', options: { title: 'Tag browser', headerShown: true } },
+  hardwareList: { name: 'hardware/index', options: { title: 'Hardware', headerShown: true } },
+  hardwareAdd: { name: 'hardware/add', options: { title: 'Add hardware', headerShown: true } },
+  hardwareDetail: {
+    name: 'hardware/[hardwareId]',
+    options: { title: 'Hardware detail', headerShown: true },
+  },
+  hardwareEdit: {
+    name: 'hardware/[hardwareId]/edit',
+    options: { title: 'Edit hardware', headerShown: true },
+  },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },
   authLogin: { name: 'auth/login', options: { headerShown: false } },
   authSignup: { name: 'auth/signup', options: { title: 'Create account', headerShown: true } },

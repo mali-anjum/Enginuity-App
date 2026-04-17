@@ -167,6 +167,9 @@ export default function HomeScreen() {
           <Link href={'/notes' as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Open Notes Module</ThemedText>
           </Link>
+          <Link href={'/hardware' as Href}>
+            <ThemedText style={{ color: themeColors.primary }}>Open Hardware Library</ThemedText>
+          </Link>
         </View>
         <View style={styles.sectionBody}>
           {activityFeed.length === 0 ? (
