@@ -164,6 +164,9 @@ export default function HomeScreen() {
           <Link href={'/experiment' as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Open Experiment Module</ThemedText>
           </Link>
+          <Link href={'/notes' as Href}>
+            <ThemedText style={{ color: themeColors.primary }}>Open Notes Module</ThemedText>
+          </Link>
         </View>
         <View style={styles.sectionBody}>
           {activityFeed.length === 0 ? (
