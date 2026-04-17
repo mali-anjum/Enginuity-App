@@ -41,6 +41,9 @@ export type Database = {
           id: string;
           user_id: string;
           bio: string | null;
+          full_name: string | null;
+          discipline: 'mechanical' | 'electrical' | 'civil' | 'software' | 'chemical' | 'other' | null;
+          avatar_url: string | null;
           institution: string | null;
           field_of_study: string | null;
           timezone: string | null;
@@ -56,6 +59,9 @@ export type Database = {
           id?: string;
           user_id: string;
           bio?: string | null;
+          full_name?: string | null;
+          discipline?: 'mechanical' | 'electrical' | 'civil' | 'software' | 'chemical' | 'other' | null;
+          avatar_url?: string | null;
           institution?: string | null;
           field_of_study?: string | null;
           timezone?: string | null;
