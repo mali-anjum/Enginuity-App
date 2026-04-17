@@ -6,6 +6,7 @@ export type Note = {
   title: string;
   body: string;
   projectId: string | null;
+  experimentId: string | null;
   tags: string[];
   linkedNoteIds: string[];
   updatedAt: string;
@@ -30,14 +31,22 @@ const initialState: NotesState = {
 };
 
 export const fetchNotesThunk = createAsyncThunk<Note[]>('notes/fetchNotesThunk', async () => []);
-export const createNoteThunk = createAsyncThunk<Note, Pick<Note, 'title' | 'body'> & { projectId?: string | null }>(
+export const createNoteThunk = createAsyncThunk<
+  Note,
+  Pick<Note, 'title' | 'body'> & {
+    projectId?: string | null;
+    experimentId?: string | null;
+    tags?: string[];
+  }
+>(
   'notes/createNoteThunk',
-  async ({ title, body, projectId = null }) => ({
+  async ({ title, body, projectId = null, experimentId = null, tags = [] }) => ({
     id: `note-${Date.now()}`,
     title,
     body,
     projectId,
-    tags: [],
+    experimentId,
+    tags,
     linkedNoteIds: [],
     updatedAt: new Date().toISOString(),
   }),
@@ -107,6 +116,7 @@ export const selectNoteById = (noteId: string) => (state: RootState) =>
   state.notes.notes.find((note) => note.id === noteId) ?? null;
 export const selectNotesByProject = (projectId: string) => (state: RootState) =>
   state.notes.notes.filter((note) => note.projectId === projectId);
+export const selectAllNotes = (state: RootState) => state.notes.notes;
 export const selectAllTags = (state: RootState) =>
   Array.from(new Set(state.notes.notes.flatMap((note) => note.tags))).sort((a, b) =>
     a.localeCompare(b),
