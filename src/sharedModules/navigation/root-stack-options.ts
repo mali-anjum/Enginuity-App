@@ -38,6 +38,8 @@ export const ROOT_STACK_SCREENS = {
     name: 'hardware/[hardwareId]/edit',
     options: { title: 'Edit hardware', headerShown: true },
   },
+  searchGlobal: { name: 'search/index', options: { title: 'Search', headerShown: true } },
+  searchResults: { name: 'search/results', options: { title: 'Search results', headerShown: true } },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },
   authLogin: { name: 'auth/login', options: { headerShown: false } },
   authSignup: { name: 'auth/signup', options: { title: 'Create account', headerShown: true } },
