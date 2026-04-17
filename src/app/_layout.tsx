@@ -183,6 +183,14 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.hardwareEdit.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.searchGlobal.name}
+          options={ROOT_STACK_SCREENS.searchGlobal.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.searchResults.name}
+          options={ROOT_STACK_SCREENS.searchResults.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authLogin.name}
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
