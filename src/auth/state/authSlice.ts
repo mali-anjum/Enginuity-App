@@ -1,13 +1,27 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/sharedModules/state/store';
+import { oauthAuthService } from '@/auth/services/oauthAuthService';
+import type { OAuthProviderKey } from '@/auth/services/oauthProviders';
 
-export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+export type AuthDiscipline = 'mechanical' | 'electrical' | 'civil' | 'software' | 'chemical' | 'other';
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  discipline: AuthDiscipline | null;
+  avatarUrl: string | null;
+};
+
+export type AuthSession = {
+  token: string;
+  expiresAt: number | null;
+};
 
 export type AuthState = {
-  session: Session | null;
-  user: User | null;
-  status: AuthStatus;
+  user: AuthUser | null;
+  session: AuthSession | null;
+  isLoading: boolean;
   error: string | null;
   hasInitialized: boolean;
 };
@@ -15,79 +29,178 @@ export type AuthState = {
 const initialState: AuthState = {
   session: null,
   user: null,
-  status: 'idle',
+  isLoading: false,
   error: null,
   hasInitialized: false,
 };
+type LoginPayload = { provider: OAuthProviderKey };
+type SignupPayload = { email: string; password: string; name: string; discipline?: AuthDiscipline | null };
+type SessionPayload = { token: string; expiresAt: number | null };
+type ProfilePayload = Pick<AuthUser, 'name' | 'discipline' | 'avatarUrl'>;
 
-type AuthStateChangedPayload = {
-  event: AuthChangeEvent | 'INITIAL_SESSION';
-  session: Session | null;
-};
+export const loginThunk = createAsyncThunk<AuthSession | null, LoginPayload, { rejectValue: string }>(
+  'auth/loginThunk',
+  async ({ provider }, { rejectWithValue }) => {
+    try {
+      await oauthAuthService.signInWithProvider(provider);
+      return null;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+    }
+  },
+);
+
+export const signupThunk = createAsyncThunk<AuthUser, SignupPayload, { rejectValue: string }>(
+  'auth/signupThunk',
+  async ({ email, name, discipline = null }, { rejectWithValue }) => {
+    try {
+      return {
+        id: `local-${Date.now()}`,
+        email,
+        name,
+        discipline,
+        avatarUrl: null,
+      };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Signup failed');
+    }
+  },
+);
+
+export const logoutThunk = createAsyncThunk<void, void, { rejectValue: string }>(
+  'auth/logoutThunk',
+  async (_, { rejectWithValue }) => {
+    try {
+      await oauthAuthService.signOut();
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Logout failed');
+    }
+  },
+);
+
+export const refreshSessionThunk = createAsyncThunk<AuthSession, SessionPayload, { rejectValue: string }>(
+  'auth/refreshSessionThunk',
+  async ({ token, expiresAt }, { rejectWithValue }) => {
+    try {
+      return { token, expiresAt };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Session refresh failed');
+    }
+  },
+);
+
+export const updateProfileThunk = createAsyncThunk<AuthUser, ProfilePayload, { state: RootState; rejectValue: string }>(
+  'auth/updateProfileThunk',
+  async ({ name, discipline, avatarUrl }, { getState, rejectWithValue }) => {
+    try {
+      const currentUser = getState().auth.user;
+      if (!currentUser) {
+        return rejectWithValue('No authenticated user');
+      }
+      return { ...currentUser, name, discipline, avatarUrl };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Profile update failed');
+    }
+  },
+);
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
     authSyncStarted(state) {
-      if (!state.hasInitialized) {
-        state.status = 'loading';
-      }
+      state.isLoading = true;
     },
-    authStateChanged(state, action: PayloadAction<AuthStateChangedPayload>) {
-      const { event, session } = action.payload;
+    authStateChanged(state, action: PayloadAction<{ user: AuthUser | null; session: AuthSession | null }>) {
+      const { user, session } = action.payload;
       state.hasInitialized = true;
-
-      if (event === 'SIGNED_OUT') {
-        state.session = null;
-        state.user = null;
-        state.status = 'unauthenticated';
-        state.error = null;
-        return;
-      }
-
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        state.session = session;
-        state.user = (session?.user ?? null) as User | null;
-        state.status = session ? 'authenticated' : 'unauthenticated';
-        state.error = null;
-        return;
-      }
-
-      if (session) {
-        state.session = session;
-        state.user = (session.user ?? null) as User | null;
-      } else {
-        state.session = null;
-        state.user = null;
-      }
-    },
-
-    setSession(state, action: PayloadAction<Session | null>) {
-      state.session = action.payload;
-      state.user = (action.payload?.user ?? null) as User | null;
-      state.status = action.payload ? 'authenticated' : 'unauthenticated';
+      state.user = user;
+      state.session = session;
+      state.isLoading = false;
       state.error = null;
+    },
+    setSession(state, action: PayloadAction<AuthSession | null>) {
+      state.session = action.payload;
+      state.isLoading = false;
       state.hasInitialized = true;
     },
-
+    setUser(state, action: PayloadAction<AuthUser | null>) {
+      state.user = action.payload;
+      state.hasInitialized = true;
+    },
     setAuthError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
-      state.status = action.payload ? 'error' : state.status;
+      state.isLoading = false;
       if (action.payload) {
         state.hasInitialized = true;
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.session = action.payload;
+      })
+      .addCase(loginThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Login failed';
+      })
+      .addCase(signupThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(signupThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.hasInitialized = true;
+      })
+      .addCase(signupThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Signup failed';
+      })
+      .addCase(logoutThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(logoutThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.session = null;
+        state.hasInitialized = true;
+      })
+      .addCase(logoutThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Logout failed';
+      })
+      .addCase(refreshSessionThunk.fulfilled, (state, action) => {
+        state.session = action.payload;
+        state.hasInitialized = true;
+      })
+      .addCase(refreshSessionThunk.rejected, (state, action) => {
+        state.error = action.payload ?? 'Session refresh failed';
+      })
+      .addCase(updateProfileThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
+      })
+      .addCase(updateProfileThunk.rejected, (state, action) => {
+        state.error = action.payload ?? 'Profile update failed';
+      });
+  },
 });
 
-export const { authSyncStarted, authStateChanged, setSession, setAuthError } = authSlice.actions;
+export const { authSyncStarted, authStateChanged, setSession, setUser, setAuthError } = authSlice.actions;
 export default authSlice.reducer;
 
-export const selectAuthStatus = (state: RootState) => state.auth.status;
-export const selectSession = (state: RootState) => state.auth.session;
 export const selectUser = (state: RootState) => state.auth.user;
+export const selectIsLoggedIn = (state: RootState) => Boolean(state.auth.user && state.auth.session);
+export const selectUserDiscipline = (state: RootState) => state.auth.user?.discipline ?? null;
+export const selectSession = (state: RootState) => state.auth.session;
 export const selectAuthError = (state: RootState) => state.auth.error;
+export const selectAuthStatus = (state: RootState) => (state.auth.isLoading ? 'loading' : 'idle');
 export const selectHasInitializedAuth = (state: RootState) => state.auth.hasInitialized;
-export const selectIsAuthenticated = (state: RootState) =>
-  state.auth.status === 'authenticated' && Boolean(state.auth.session);
+export const selectIsAuthenticated = selectIsLoggedIn;
