@@ -3,20 +3,27 @@ import { Platform, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { Fonts } from '@/common/constants/theme';
+import { Colors, Fonts } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { Collapsible } from '@/common/molecules/collapsible';
 import { ExternalLink } from '@/common/molecules/external-link';
 import ParallaxScrollView from '@/common/organisms/parallax-scroll-view';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 
 export default function ExploreScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerBackgroundColor={{
+        light: Colors.light.headerBackground,
+        dark: Colors.dark.headerBackground,
+      }}
       headerImage={
         <IconSymbol
           size={310}
-          color="#808080"
+          color={themeColors.iconMuted}
           name="chevron.left.forwardslash.chevron.right"
           style={styles.headerImage}
         />
@@ -99,7 +106,6 @@ export default function ExploreScreen() {
 
 const styles = StyleSheet.create({
   headerImage: {
-    color: '#808080',
     bottom: -90,
     left: -35,
     position: 'absolute',

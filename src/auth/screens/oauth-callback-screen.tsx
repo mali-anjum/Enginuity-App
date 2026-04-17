@@ -1,17 +1,22 @@
 import * as WebBrowser from 'expo-web-browser';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { exchangeOAuthCodeForSession } from '@/auth/services/authCallback';
 import { ThemedText } from '@/common/atoms/themed-text';
+import { Colors } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
 export default function OAuthCallbackScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
   const hasExchangedRef = useRef(false);
+  const [isExchanging, setIsExchanging] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
 
   useEffect(() => {
     WebBrowser.maybeCompleteAuthSession();
@@ -28,6 +33,7 @@ export default function OAuthCallbackScreen() {
         ? errorDescriptionParam[0]
         : errorDescriptionParam;
       if (errText) setError(errText);
+      setIsExchanging(false);
       return;
     }
 
@@ -41,13 +47,28 @@ export default function OAuthCallbackScreen() {
       .catch((e: unknown) => {
         const message = e instanceof Error ? e.message : 'OAuth exchange failed';
         setError(message);
+      })
+      .finally(() => {
+        setIsExchanging(false);
       });
   }, [params, router]);
 
   return (
     <View style={styles.container}>
-      <ThemedText type="title">Signing you in…</ThemedText>
-      {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
+      <ThemedText type="title">{isExchanging ? 'Signing you in…' : 'Sign-in issue'}</ThemedText>
+      {error ? <ThemedText style={[styles.errorText, { color: themeColors.danger }]}>{error}</ThemedText> : null}
+      {!isExchanging ? (
+        <Pressable
+          style={[
+            styles.button,
+            { backgroundColor: themeColors.primary },
+          ]}
+          onPress={() => router.replace('/auth/login')}>
+          <ThemedText style={styles.buttonText} lightColor={Colors.light.background} darkColor={Colors.light.background}>
+            Return to login
+          </ThemedText>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -60,6 +81,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   errorText: {
-    color: '#b00020',
+    lineHeight: 22,
+  },
+  button: {
+    marginTop: 8,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignSelf: 'flex-start',
+  },
+  buttonText: {
+    color: Colors.light.background,
   },
 });

@@ -9,11 +9,17 @@ import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const themeColors = Colors[colorScheme ?? 'light'];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: themeColors.tabIconSelected,
+        tabBarInactiveTintColor: themeColors.tabIconDefault,
+        tabBarStyle: {
+          backgroundColor: themeColors.surface,
+          borderTopColor: themeColors.border,
+        },
         headerShown: false,
         tabBarButton: HapticTab,
       }}>

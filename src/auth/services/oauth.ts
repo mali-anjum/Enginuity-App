@@ -29,5 +29,19 @@ export async function signInWithGoogle(): Promise<void> {
     throw new Error('Missing OAuth URL from Supabase.');
   }
 
-  await WebBrowser.openAuthSessionAsync(authUrl, redirectTo);
+  const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectTo);
+  if (result.type === 'cancel') {
+    throw new Error('Google sign-in was cancelled. Please try again.');
+  }
+
+  if (result.type === 'dismiss') {
+    throw new Error('Google sign-in was dismissed. Please try again.');
+  }
+}
+
+export async function signOut(): Promise<void> {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    throw new Error(error.message);
+  }
 }

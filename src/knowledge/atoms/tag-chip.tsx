@@ -1,14 +1,19 @@
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
+import { Colors } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
 type TagChipProps = {
   label: string;
 };
 
 export function TagChip({ label }: TagChipProps) {
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+
   return (
-    <View style={styles.chip}>
+    <View style={[styles.chip, { backgroundColor: themeColors.border }]}>
       <ThemedText type="defaultSemiBold" style={styles.label}>
         {label}
       </ThemedText>
@@ -21,7 +26,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#E2E8F0',
   },
   label: {
     fontSize: 12,

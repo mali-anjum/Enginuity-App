@@ -1,11 +1,28 @@
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Colors } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
+
 export function BrandLogo() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Enginuity</Text>
-      <Text style={styles.subtitle}>Engineer your career with clarity</Text>
+      <View
+        style={[
+          styles.badge,
+          {
+            backgroundColor: themeColors.heroTint,
+            borderColor: themeColors.accentBorder,
+          },
+        ]}>
+        <Text style={[styles.badgeText, { color: themeColors.heroPrimary }]}>E</Text>
+      </View>
+      <Text style={[styles.title, { color: themeColors.text }]}>Enginuity</Text>
+      <Text style={[styles.subtitle, { color: themeColors.mutedText }]}>
+        Build engineering momentum with clarity.
+      </Text>
     </View>
   );
 }
@@ -13,16 +30,27 @@ export function BrandLogo() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+  },
+  badge: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 30,
+    fontWeight: '800',
   },
   title: {
-    fontSize: 40,
+    fontSize: 36,
     fontWeight: '800',
-    color: '#1D4ED8',
-    letterSpacing: 1,
+    letterSpacing: 0.6,
   },
   subtitle: {
     fontSize: 14,
-    color: '#475569',
+    textAlign: 'center',
   },
 });

@@ -20,7 +20,7 @@ export function OnboardingBrandBlock({ stepIndex, totalSteps }: OnboardingBrandB
 const styles = StyleSheet.create({
   block: {
     alignItems: 'center',
-    gap: 24,
+    gap: 18,
     width: '100%',
   },
 });

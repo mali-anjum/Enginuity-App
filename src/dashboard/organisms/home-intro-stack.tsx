@@ -1,13 +1,22 @@
 import { Link, type Href } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, Pressable, StyleSheet } from 'react-native';
 
+import { selectIsAuthenticated } from '@/auth/state/authSlice';
+import { signOut } from '@/auth/services/oauth';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { Colors } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { useAppSelector } from '@/sharedModules/state/hooks';
 
 import { SectionSpacer } from '../atoms/section-spacer';
 import { WelcomeTitleRow } from '../molecules/welcome-title-row';
 
 export function HomeIntroStack() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+
   return (
     <>
       <WelcomeTitleRow />
@@ -18,6 +27,17 @@ export function HomeIntroStack() {
         <Link href={'/auth/login' as Href}>
           <ThemedText type="subtitle">Login with Google</ThemedText>
         </Link>
+        {isAuthenticated ? (
+          <Pressable
+            style={[styles.signOutButton, { borderColor: themeColors.border }]}
+            onPress={() => {
+              void signOut();
+            }}>
+            <ThemedText type="defaultSemiBold" style={{ color: themeColors.mutedText }}>
+              Sign out
+            </ThemedText>
+          </Pressable>
+        ) : null}
       </ThemedView>
       <SectionSpacer />
       <ThemedView style={styles.stepContainer}>
@@ -43,5 +63,12 @@ const styles = StyleSheet.create({
   stepContainer: {
     gap: 8,
     marginBottom: 8,
+  },
+  signOutButton: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
 });

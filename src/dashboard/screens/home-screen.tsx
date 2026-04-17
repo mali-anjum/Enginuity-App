@@ -4,18 +4,25 @@ import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { Colors } from '@/common/constants/theme';
 import ParallaxScrollView from '@/common/organisms/parallax-scroll-view';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
 import { HomeIntroStack } from '../organisms/home-intro-stack';
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerBackgroundColor={{
+        light: Colors.light.accentSoft,
+        dark: Colors.dark.headerBackground,
+      }}
       headerImage={
         <Image
           source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          style={[styles.reactLogo, { opacity: colorScheme === 'dark' ? 0.85 : 1 }]}
         />
       }>
       <HomeIntroStack />
