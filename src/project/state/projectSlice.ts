@@ -2,10 +2,16 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/sharedModules/state/store';
 
 type ProjectFilter = 'active' | 'completed' | 'favourites';
+export type ProjectStatus = 'active' | 'completed' | 'archived';
 
 export type Project = {
   id: string;
   title: string;
+  description: string;
+  startDate: string | null;
+  dueDate: string | null;
+  status: ProjectStatus;
+  fileUrls: string[];
   isCompleted: boolean;
   isFavourite: boolean;
   updatedAt: string;
@@ -29,11 +35,19 @@ const initialState: ProjectState = {
 
 export const fetchProjectsThunk = createAsyncThunk<Project[]>('project/fetchProjectsThunk', async () => []);
 
-export const createProjectThunk = createAsyncThunk<Project, Pick<Project, 'title'>>(
+export const createProjectThunk = createAsyncThunk<
+  Project,
+  Pick<Project, 'title'> & Partial<Pick<Project, 'description' | 'startDate' | 'dueDate' | 'status'>>
+>(
   'project/createProjectThunk',
-  async ({ title }) => ({
+  async ({ title, description = '', startDate = null, dueDate = null, status = 'active' }) => ({
     id: `project-${Date.now()}`,
     title,
+    description,
+    startDate,
+    dueDate,
+    status,
+    fileUrls: [],
     isCompleted: false,
     isFavourite: false,
     updatedAt: new Date().toISOString(),
@@ -54,6 +68,14 @@ export const toggleFavouriteThunk = createAsyncThunk<string, string>(
   'project/toggleFavouriteThunk',
   async (projectId) => projectId,
 );
+export const toggleProjectStatusThunk = createAsyncThunk<string, string>(
+  'project/toggleProjectStatusThunk',
+  async (projectId) => projectId,
+);
+export const attachProjectFileThunk = createAsyncThunk<
+  { projectId: string; fileUrl: string },
+  { projectId: string; fileUrl: string }
+>('project/attachProjectFileThunk', async (payload) => payload);
 
 const projectSlice = createSlice({
   name: 'project',
@@ -98,6 +120,19 @@ const projectSlice = createSlice({
           project.isFavourite = !project.isFavourite;
           project.updatedAt = new Date().toISOString();
         }
+      })
+      .addCase(toggleProjectStatusThunk.fulfilled, (state, action) => {
+        const project = state.projects.find((item) => item.id === action.payload);
+        if (!project) return;
+        project.isCompleted = !project.isCompleted;
+        project.status = project.isCompleted ? 'completed' : 'active';
+        project.updatedAt = new Date().toISOString();
+      })
+      .addCase(attachProjectFileThunk.fulfilled, (state, action) => {
+        const project = state.projects.find((item) => item.id === action.payload.projectId);
+        if (!project) return;
+        project.fileUrls.unshift(action.payload.fileUrl);
+        project.updatedAt = new Date().toISOString();
       });
   },
 });
@@ -120,3 +155,4 @@ export const selectProjectStats = (state: RootState) => {
   const favourites = state.project.projects.filter((item) => item.isFavourite).length;
   return { total, completed, favourites, active: total - completed };
 };
+export const selectProjectFilter = (state: RootState) => state.project.filter;
