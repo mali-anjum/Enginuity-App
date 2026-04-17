@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { signInWithGitHub } from '@/auth/services/oauth';
+import { signInWithFacebook } from '@/auth/services/oauth';
 import { OAUTH_PROVIDER_CONFIG } from '@/auth/services/oauthProviders';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
-export function GitHubSignInButton() {
+export function FacebookSignInButton() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
-  const config = OAUTH_PROVIDER_CONFIG.github;
+  const config = OAUTH_PROVIDER_CONFIG.facebook;
 
   return (
     <View style={styles.stack}>
@@ -29,7 +29,7 @@ export function GitHubSignInButton() {
           setErrorMessage(null);
           setLoading(true);
           try {
-            await signInWithGitHub();
+            await signInWithFacebook();
           } catch (error: unknown) {
             const message =
               error instanceof Error ? error.message : config.errorFallbackMessage;

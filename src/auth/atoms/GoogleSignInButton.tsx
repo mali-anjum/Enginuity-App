@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { signInWithGoogle } from '@/auth/services/oauth';
+import { OAUTH_PROVIDER_CONFIG } from '@/auth/services/oauthProviders';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
@@ -11,6 +12,7 @@ export function GoogleSignInButton() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const config = OAUTH_PROVIDER_CONFIG.google;
 
   return (
     <View style={styles.stack}>
@@ -30,7 +32,7 @@ export function GoogleSignInButton() {
             await signInWithGoogle();
           } catch (error: unknown) {
             const message =
-              error instanceof Error ? error.message : 'Google sign-in failed. Please try again.';
+              error instanceof Error ? error.message : config.errorFallbackMessage;
             setErrorMessage(message);
           } finally {
             setLoading(false);
@@ -41,7 +43,7 @@ export function GoogleSignInButton() {
           style={styles.label}
           lightColor={Colors.light.background}
           darkColor={Colors.light.background}>
-          {loading ? 'Opening Google…' : 'Continue with Google'}
+          {loading ? config.loadingLabel : config.label}
         </ThemedText>
       </Pressable>
       {errorMessage ? (
