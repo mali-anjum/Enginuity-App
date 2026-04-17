@@ -183,6 +183,22 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.hardwareEdit.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.profileHome.name}
+          options={ROOT_STACK_SCREENS.profileHome.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.profileEdit.name}
+          options={ROOT_STACK_SCREENS.profileEdit.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.profileAvatar.name}
+          options={ROOT_STACK_SCREENS.profileAvatar.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.profileStatistics.name}
+          options={ROOT_STACK_SCREENS.profileStatistics.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.searchGlobal.name}
           options={ROOT_STACK_SCREENS.searchGlobal.options}
         />
