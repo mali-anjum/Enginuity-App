@@ -3,7 +3,9 @@ import * as WebBrowser from 'expo-web-browser';
 import type { Provider } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
-import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
+import {
+  withSupabaseClient,
+} from '@/sharedModules/services/supabase/supabaseClient';
 
 const CALLBACK_PATH = '/auth/callback';
 
@@ -17,13 +19,14 @@ export function getOAuthRedirectUrl(): string {
 async function signInWithProvider(provider: Provider): Promise<void> {
   const redirectTo = getOAuthRedirectUrl();
   const isWeb = Platform.OS === 'web';
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await withSupabaseClient((client) =>
+    client.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo,
       skipBrowserRedirect: !isWeb,
     },
-  });
+  }));
 
   if (error) {
     throw new Error(error.message);
@@ -52,7 +55,7 @@ async function signInWithProvider(provider: Provider): Promise<void> {
   if (result.type === 'cancel' || result.type === 'dismiss') {
     // Some Android browser flows can report dismiss even after successful callback.
     // Check whether Supabase session was established before surfacing an error.
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await withSupabaseClient((client) => client.auth.getSession());
     if (error) {
       throw new Error(error.message);
     }
@@ -75,7 +78,7 @@ export async function signInWithGitHub(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await withSupabaseClient((client) => client.auth.signOut());
   if (error) {
     throw new Error(error.message);
   }

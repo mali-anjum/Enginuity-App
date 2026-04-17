@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 
 import { authStateChanged, authSyncStarted, setAuthError } from '@/auth/state/authSlice';
 import { resetOnboarding, setOnboardingCompleted } from '@/onboarding/state/onboardingSlice';
-import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
+import {
+  SupabaseNotInitializedError,
+  getSupabaseClientOrNull,
+  withSupabaseClient,
+} from '@/sharedModules/services/supabase/supabaseClient';
 import { useAppDispatch } from '@/sharedModules/state/hooks';
 
 export function SupabaseAuthSync() {
@@ -12,11 +16,13 @@ export function SupabaseAuthSync() {
     let isMounted = true;
     dispatch(authSyncStarted());
     const syncOnboardingStatus = async (userId: string) => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const { data, error } = await withSupabaseClient(async (client) => {
+        return await client
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', userId)
+          .maybeSingle();
+      });
 
       if (!isMounted) return;
       if (error) {
@@ -28,8 +34,16 @@ export function SupabaseAuthSync() {
       dispatch(setOnboardingCompleted(Boolean(profile?.onboarding_completed)));
     };
 
-    supabase.auth
-      .getSession()
+    if (!getSupabaseClientOrNull()) {
+      dispatch(authStateChanged({ event: 'INITIAL_SESSION', session: null }));
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    withSupabaseClient((client) => client.auth.getSession(), {
+      returnOnUnavailable: { data: { session: null }, error: null },
+    })
       .then(({ data, error }) => {
         if (!isMounted) return;
         if (error) {
@@ -50,18 +64,40 @@ export function SupabaseAuthSync() {
         dispatch(setAuthError(message));
       });
 
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    let data:
+      | {
+          subscription: {
+            unsubscribe: () => void;
+          };
+        }
+      | undefined;
+    try {
+      const client = getSupabaseClientOrNull();
+      if (!client) {
+        return () => {
+          isMounted = false;
+        };
+      }
+      ({ data } = client.auth.onAuthStateChange((event, session) => {
       dispatch(authStateChanged({ event: event ?? 'INITIAL_SESSION', session }));
       if (session?.user?.id) {
         void syncOnboardingStatus(session.user.id);
         return;
       }
       dispatch(resetOnboarding());
-    });
+      }));
+    } catch (error) {
+      if (error instanceof SupabaseNotInitializedError) {
+        return () => {
+          isMounted = false;
+        };
+      }
+      throw error;
+    }
 
     return () => {
       isMounted = false;
-      data.subscription.unsubscribe();
+      data?.subscription.unsubscribe();
     };
   }, [dispatch]);
 

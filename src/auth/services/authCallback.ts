@@ -1,7 +1,9 @@
-import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
+import { withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 
 export async function exchangeOAuthCodeForSession(authCode: string): Promise<void> {
-  const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+  const { data, error } = await withSupabaseClient((client) =>
+    client.auth.exchangeCodeForSession(authCode),
+  );
 
   if (error) {
     throw new Error(error.message);
