@@ -44,13 +44,6 @@ function RootNavigator() {
   const isOnboardingRoute = primarySegment === 'onboarding';
 
   useEffect(() => {
-    if (!hasCompletedOnboarding) {
-      if (!isOnboardingRoute) {
-        router.replace('/onboarding');
-      }
-      return;
-    }
-
     if (!hasInitializedAuth) {
       return;
     }
@@ -58,6 +51,13 @@ function RootNavigator() {
     if (!isAuthenticated) {
       if (!isLoginRoute && !isCallbackRoute) {
         router.replace('/auth/login');
+      }
+      return;
+    }
+
+    if (!hasCompletedOnboarding) {
+      if (!isOnboardingRoute) {
+        router.replace('/onboarding');
       }
       return;
     }
@@ -76,7 +76,7 @@ function RootNavigator() {
     router,
   ]);
 
-  if (hasCompletedOnboarding && !hasInitializedAuth) {
+  if (!hasInitializedAuth) {
     return (
       <ThemedView style={styles.loadingContainer}>
         <ActivityIndicator />

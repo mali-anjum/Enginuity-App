@@ -22,6 +22,9 @@ const onboardingSlice = createSlice({
   name: 'onboarding',
   initialState,
   reducers: {
+    setOnboardingCompleted(state, action: PayloadAction<boolean>) {
+      state.hasCompletedOnboarding = action.payload;
+    },
     setSelectedDiscipline(state, action: PayloadAction<Discipline>) {
       state.selectedDiscipline = action.payload;
     },
@@ -35,6 +38,7 @@ const onboardingSlice = createSlice({
   },
 });
 
-export const { setSelectedDiscipline, completeOnboarding, resetOnboarding } = onboardingSlice.actions;
+export const { setOnboardingCompleted, setSelectedDiscipline, completeOnboarding, resetOnboarding } =
+  onboardingSlice.actions;
 
 export default onboardingSlice.reducer;

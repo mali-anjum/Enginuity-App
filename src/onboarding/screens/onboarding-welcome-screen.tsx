@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { selectUser } from '@/auth/state/authSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
@@ -8,7 +10,8 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ValuePropSlide } from '@/onboarding/molecules/value-prop-slide';
 import { OnboardingBrandBlock } from '@/onboarding/organisms/onboarding-brand-block';
 import { completeOnboarding } from '@/onboarding/state/onboardingSlice';
-import { useAppDispatch } from '@/sharedModules/state/hooks';
+import { supabase } from '@/sharedModules/services/supabase/supabaseClient';
+import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const VALUE_PROPS = [
   {
@@ -30,7 +33,10 @@ const VALUE_PROPS = [
 
 export default function OnboardingWelcomeScreen() {
   const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
   const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
 
@@ -52,18 +58,62 @@ export default function OnboardingWelcomeScreen() {
         <View style={styles.actions}>
           <Pressable
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
-            onPress={() => {
-              dispatch(completeOnboarding());
-              router.replace('/auth/login');
+            disabled={isSaving}
+            onPress={async () => {
+              if (isSaving) return;
+              setSaveError(null);
+
+              if (!user?.id) {
+                router.replace('/auth/login');
+                return;
+              }
+
+              setIsSaving(true);
+              try {
+                const [profileUpdate, userUpdate] = await Promise.all([
+                  supabase
+                    .from('profiles')
+                    .update({ onboarding_completed: true })
+                    .eq('user_id', user.id),
+                  supabase.from('users').update({ is_new_user: false }).eq('id', user.id),
+                ]);
+
+                if (profileUpdate.error) {
+                  throw new Error(profileUpdate.error.message);
+                }
+
+                if (userUpdate.error) {
+                  throw new Error(userUpdate.error.message);
+                }
+
+                dispatch(completeOnboarding());
+                router.replace('/');
+              } catch (error) {
+                const message =
+                  error instanceof Error
+                    ? error.message
+                    : 'Could not finish setup. Please try again.';
+                setSaveError(message);
+              } finally {
+                setIsSaving(false);
+              }
             }}>
             <ThemedText
               type="defaultSemiBold"
               style={styles.primaryButtonLabel}
               lightColor={themeColors.buttonPrimaryText}
               darkColor={themeColors.buttonPrimaryText}>
-              Get started
+              {isSaving ? 'Finishing setup...' : 'Get started'}
             </ThemedText>
           </Pressable>
+          {saveError ? (
+            <ThemedText
+              style={styles.errorText}
+              lightColor={themeColors.error}
+              darkColor={themeColors.error}>
+              {saveError}
+            </ThemedText>
+          ) : null}
         </View>
         <ThemedText style={[styles.footer, { color: themeColors.mutedText }]}>
           You can personalize discipline preferences after sign-in.
@@ -102,6 +152,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     marginTop: 4,
+    gap: 10,
   },
   primaryButton: {
     borderRadius: 14,
@@ -117,5 +168,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 13,
     textAlign: 'center',
+  },
+  errorText: {
+    textAlign: 'center',
+    fontSize: 13,
   },
 });
