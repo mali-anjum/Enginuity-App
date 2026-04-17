@@ -9,6 +9,26 @@ import {
 } from '@/sharedModules/services/supabase/supabaseClient';
 import { useAppDispatch } from '@/sharedModules/state/hooks';
 
+const mapSessionToAuthState = (session: { access_token?: string; expires_at?: number; user?: { id?: string; email?: string; user_metadata?: { full_name?: string; avatar_url?: string } } } | null) => {
+  if (!session?.user?.id || !session.access_token) {
+    return { user: null, session: null };
+  }
+
+  return {
+    user: {
+      id: session.user.id,
+      email: session.user.email ?? '',
+      name: session.user.user_metadata?.full_name ?? session.user.email ?? 'User',
+      discipline: null,
+      avatarUrl: session.user.user_metadata?.avatar_url ?? null,
+    },
+    session: {
+      token: session.access_token,
+      expiresAt: session.expires_at ?? null,
+    },
+  };
+};
+
 export function SupabaseAuthSync() {
   const dispatch = useAppDispatch();
 
@@ -35,7 +55,7 @@ export function SupabaseAuthSync() {
     };
 
     if (!getSupabaseClientOrNull()) {
-      dispatch(authStateChanged({ event: 'INITIAL_SESSION', session: null }));
+      dispatch(authStateChanged({ user: null, session: null }));
       return () => {
         isMounted = false;
       };
@@ -50,7 +70,7 @@ export function SupabaseAuthSync() {
           dispatch(setAuthError(error.message));
           return;
         }
-        dispatch(authStateChanged({ event: 'INITIAL_SESSION', session: data.session }));
+        dispatch(authStateChanged(mapSessionToAuthState(data.session)));
         if (data.session?.user?.id) {
           void syncOnboardingStatus(data.session.user.id);
           return;
@@ -79,7 +99,8 @@ export function SupabaseAuthSync() {
         };
       }
       ({ data } = client.auth.onAuthStateChange((event, session) => {
-      dispatch(authStateChanged({ event: event ?? 'INITIAL_SESSION', session }));
+      void event;
+      dispatch(authStateChanged(mapSessionToAuthState(session)));
       if (session?.user?.id) {
         void syncOnboardingStatus(session.user.id);
         return;
