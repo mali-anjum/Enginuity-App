@@ -4,7 +4,9 @@ import type { RootState } from '@/sharedModules/state/store';
 export type HardwareItem = {
   id: string;
   name: string;
-  type: string;
+  type: 'MCU' | 'Sensor' | 'Actuator' | 'Module' | 'Tool' | 'Other';
+  specs: string;
+  datasheetUrl: string;
   serialNumber?: string;
   updatedAt: string;
 };
@@ -29,12 +31,18 @@ export const fetchHardwareThunk = createAsyncThunk<HardwareItem[]>(
   'hardware/fetchHardwareThunk',
   async () => [],
 );
-export const addHardwareThunk = createAsyncThunk<HardwareItem, Pick<HardwareItem, 'name' | 'type' | 'serialNumber'>>(
+export const addHardwareThunk = createAsyncThunk<
+  HardwareItem,
+  Pick<HardwareItem, 'name' | 'type'> &
+    Partial<Pick<HardwareItem, 'serialNumber' | 'specs' | 'datasheetUrl'>>
+>(
   'hardware/addHardwareThunk',
-  async ({ name, type, serialNumber }) => ({
+  async ({ name, type, serialNumber, specs = '', datasheetUrl = '' }) => ({
     id: `hw-${Date.now()}`,
     name,
     type,
+    specs,
+    datasheetUrl,
     serialNumber,
     updatedAt: new Date().toISOString(),
   }),
@@ -94,3 +102,4 @@ export const selectHardwareByType = (type: string) => (state: RootState) =>
   state.hardware.hardware.filter((item) => item.type === type);
 export const selectHardwareById = (hardwareId: string) => (state: RootState) =>
   state.hardware.hardware.find((item) => item.id === hardwareId) ?? null;
+export const selectHardwareTypeFilter = (state: RootState) => state.hardware.filterByType;
