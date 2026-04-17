@@ -38,6 +38,13 @@ export const ROOT_STACK_SCREENS = {
     name: 'hardware/[hardwareId]/edit',
     options: { title: 'Edit hardware', headerShown: true },
   },
+  profileHome: { name: 'profile/index', options: { title: 'Profile', headerShown: true } },
+  profileEdit: { name: 'profile/edit', options: { title: 'Edit profile', headerShown: true } },
+  profileAvatar: { name: 'profile/avatar', options: { title: 'Avatar picker', headerShown: true } },
+  profileStatistics: {
+    name: 'profile/statistics',
+    options: { title: 'Account statistics', headerShown: true },
+  },
   searchGlobal: { name: 'search/index', options: { title: 'Search', headerShown: true } },
   searchResults: { name: 'search/results', options: { title: 'Search results', headerShown: true } },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },
