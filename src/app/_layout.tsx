@@ -107,6 +107,22 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.onboarding.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.projectList.name}
+          options={ROOT_STACK_SCREENS.projectList.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.projectCreate.name}
+          options={ROOT_STACK_SCREENS.projectCreate.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.projectDetail.name}
+          options={ROOT_STACK_SCREENS.projectDetail.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.projectEdit.name}
+          options={ROOT_STACK_SCREENS.projectEdit.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authLogin.name}
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
