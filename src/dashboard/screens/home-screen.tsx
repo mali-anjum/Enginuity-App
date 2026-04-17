@@ -16,6 +16,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 import { HomeFabCreateSheet } from '../organisms/home-fab-create-sheet';
@@ -98,10 +99,20 @@ export default function HomeScreen() {
           styles.header,
           { borderColor: themeColors.border, backgroundColor: themeColors.surface },
         ]}>
-        <ThemedText type="title">Home</ThemedText>
-        <ThemedText style={{ color: themeColors.mutedText }}>
-          {projectStats.total} projects - {projectStats.completed} completed
-        </ThemedText>
+        <View style={styles.headerMain}>
+          <ThemedText type="title">Home</ThemedText>
+          <ThemedText style={{ color: themeColors.mutedText }}>
+            {projectStats.total} projects - {projectStats.completed} completed
+          </ThemedText>
+        </View>
+        <Link href={'/search' as Href} asChild>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open global search"
+            style={styles.searchIconButton}>
+            <IconSymbol name="magnifyingglass" size={26} color={themeColors.primary} />
+          </Pressable>
+        </Link>
       </View>
 
       <View style={styles.content}>
@@ -118,10 +129,6 @@ export default function HomeScreen() {
             {searchQuery.trim() ? searchQuery : 'Quick search projects and activity'}
           </ThemedText>
         </Pressable>
-        <Link href={'/search' as Href}>
-          <ThemedText style={{ color: themeColors.primary }}>Open Global Search</ThemedText>
-        </Link>
-
         <View style={styles.sectionHeader}>
           <ThemedText type="subtitle">Projects</ThemedText>
           <Link href={'/project' as Href}>
@@ -266,7 +273,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 56,
     paddingBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  headerMain: {
+    flex: 1,
     gap: 4,
+  },
+  searchIconButton: {
+    padding: 6,
+    marginTop: -2,
   },
   content: {
     flex: 1,
