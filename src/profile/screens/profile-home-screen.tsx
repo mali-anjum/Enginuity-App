@@ -67,6 +67,11 @@ export default function ProfileHomeScreen() {
         </View>
 
         <View style={styles.actions}>
+          <Link href={'/settings' as Href} asChild>
+            <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
+              <ThemedText>Settings</ThemedText>
+            </Pressable>
+          </Link>
           <Link href={'/profile/edit' as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Edit Profile</ThemedText>
