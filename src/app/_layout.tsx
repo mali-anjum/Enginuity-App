@@ -147,6 +147,26 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.experimentCsvPreview.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.notesList.name}
+          options={ROOT_STACK_SCREENS.notesList.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.notesCreate.name}
+          options={ROOT_STACK_SCREENS.notesCreate.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.notesDetail.name}
+          options={ROOT_STACK_SCREENS.notesDetail.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.notesEdit.name}
+          options={ROOT_STACK_SCREENS.notesEdit.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.notesTags.name}
+          options={ROOT_STACK_SCREENS.notesTags.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authLogin.name}
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
