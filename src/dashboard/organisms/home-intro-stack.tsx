@@ -1,8 +1,8 @@
 import { Link, type Href } from 'expo-router';
 import { Platform, Pressable, StyleSheet } from 'react-native';
 
-import { selectIsAuthenticated } from '@/auth/state/authSlice';
 import { signOut } from '@/auth/services/oauth';
+import { selectIsAuthenticated } from '@/auth/state/authSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';

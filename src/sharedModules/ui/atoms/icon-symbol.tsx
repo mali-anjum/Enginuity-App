@@ -3,7 +3,7 @@ import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+type IconMapping = Record<string, ComponentProps<typeof MaterialIcons>['name']>;
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
@@ -11,6 +11,14 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  sparkles: 'auto-awesome',
+  'paintpalette.fill': 'palette',
+  'person.crop.circle.fill': 'account-circle',
+  'bolt.fill': 'bolt',
+  'arrow.right.circle.fill': 'arrow-circle-right',
+  'checkmark.circle.fill': 'check-circle',
+  'exclamationmark.triangle.fill': 'warning',
+  'xmark.circle.fill': 'cancel',
 } as IconMapping;
 
 export function IconSymbol({

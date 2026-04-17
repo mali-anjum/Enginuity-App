@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ThemedText } from '@/common/atoms/themed-text';
 import { signInWithGoogle } from '@/auth/services/oauth';
+import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
