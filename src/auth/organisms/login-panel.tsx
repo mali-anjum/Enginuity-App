@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { GitHubSignInButton } from '@/auth/atoms/GitHubSignInButton';
 import { GoogleSignInButton } from '@/auth/atoms/GoogleSignInButton';
 import { ThemedText } from '@/common/atoms/themed-text';
 
@@ -9,8 +10,9 @@ export function LoginPanel() {
   return (
     <View style={styles.stack}>
       <ThemedText type="title">Sign in</ThemedText>
-      <AuthSubtitle>Continue with your Google account.</AuthSubtitle>
+      <AuthSubtitle>Continue with Google or GitHub.</AuthSubtitle>
       <GoogleSignInButton />
+      <GitHubSignInButton />
     </View>
   );
 }
