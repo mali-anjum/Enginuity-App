@@ -5,6 +5,8 @@ export type Experiment = {
   id: string;
   projectId: string;
   title: string;
+  codeRef: string;
+  notes: string;
   status: 'draft' | 'in_progress' | 'completed';
   hardwareIds: string[];
   attachmentUrls: string[];
@@ -32,15 +34,29 @@ const initialState: ExperimentState = {
 };
 
 export const fetchExperimentsThunk = createAsyncThunk<Experiment[]>('experiment/fetchExperimentsThunk', async () => []);
-export const createExperimentThunk = createAsyncThunk<Experiment, Pick<Experiment, 'title' | 'projectId'>>(
+export const createExperimentThunk = createAsyncThunk<
+  Experiment,
+  Pick<Experiment, 'title' | 'projectId'> &
+    Partial<Pick<Experiment, 'codeRef' | 'notes' | 'status' | 'hardwareIds' | 'attachmentUrls'>>
+>(
   'experiment/createExperimentThunk',
-  async ({ title, projectId }) => ({
+  async ({
+    title,
+    projectId,
+    codeRef = '',
+    notes = '',
+    status = 'draft',
+    hardwareIds = [],
+    attachmentUrls = [],
+  }) => ({
     id: `exp-${Date.now()}`,
     projectId,
     title,
-    status: 'draft',
-    hardwareIds: [],
-    attachmentUrls: [],
+    codeRef,
+    notes,
+    status,
+    hardwareIds,
+    attachmentUrls,
     updatedAt: new Date().toISOString(),
   }),
 );
@@ -124,3 +140,4 @@ export const selectRecentExperiments = (state: RootState) =>
   [...state.experiment.experiments]
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
     .slice(0, 5);
+export const selectAllExperiments = (state: RootState) => state.experiment.experiments;
