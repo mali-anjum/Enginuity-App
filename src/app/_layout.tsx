@@ -207,6 +207,30 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.searchResults.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsHome.name}
+          options={ROOT_STACK_SCREENS.settingsHome.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsAppearance.name}
+          options={ROOT_STACK_SCREENS.settingsAppearance.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsNotifications.name}
+          options={ROOT_STACK_SCREENS.settingsNotifications.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsStorageSync.name}
+          options={ROOT_STACK_SCREENS.settingsStorageSync.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsAccount.name}
+          options={ROOT_STACK_SCREENS.settingsAccount.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsAbout.name}
+          options={ROOT_STACK_SCREENS.settingsAbout.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authLogin.name}
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
