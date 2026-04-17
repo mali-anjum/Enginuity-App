@@ -49,11 +49,19 @@ async function signInWithProvider(provider: Provider): Promise<void> {
   }
 
   const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectTo);
-  if (result.type === 'cancel') {
-    throw new Error('Sign-in was cancelled. Please try again.');
-  }
-
-  if (result.type === 'dismiss') {
+  if (result.type === 'cancel' || result.type === 'dismiss') {
+    // Some Android browser flows can report dismiss even after successful callback.
+    // Check whether Supabase session was established before surfacing an error.
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      throw new Error(error.message);
+    }
+    if (data.session) {
+      return;
+    }
+    if (result.type === 'cancel') {
+      throw new Error('Sign-in was cancelled. Please try again.');
+    }
     throw new Error('Sign-in was dismissed. Please try again.');
   }
 }
