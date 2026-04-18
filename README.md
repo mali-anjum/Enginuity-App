@@ -50,29 +50,34 @@ Backend shape and enums are defined in SQL migrations under `supabase/migrations
 
 Public client configuration is read in `src/sharedModules/utils/env.ts`. Supported keys include **`EXPO_PUBLIC_SUPABASE_URL`** and **`EXPO_PUBLIC_SUPABASE_ANON_KEY`** (with fallbacks for alternate naming conventions used by other tooling).
 
-### MVP (recommended now)
+### Local development
 
-Use **one local file** so daily work stays simple:
+1. `cp .env.example .env.local`
+2. Paste your **development** Supabase URL and publishable / anon key (**Project Settings → API Keys**).
+3. Run **`yarn start`** (or `yarn android` / `yarn ios` / `yarn web`). Scripts inject `.env.local` via `dotenv-cli` before Expo starts.
 
-1. `cp .env.example .env`
-2. Paste your Supabase URL and anon key (**Project Settings → API**).
-3. Run **`yarn start`**. Expo loads `.env` automatically—no extra scripts.
+If you already have a `.env` from older setup, rename it to `.env.local` (`mv .env .env.local`) so scripts pick it up.
 
-Committed templates: **`.env.example`** (canonical), **`.env.staging.example`** (optional, when you add a staging Supabase project).
+### Production Supabase (separate project)
 
-### When you outgrow a single `.env`
+Keep production credentials in **`.env.production`** (gitignored) for local smoke-tests only:
 
-Copy the same keys into **gitignored** files only when you need **different backends** at the same time (e.g. dev vs QA vs prod smoke-tests):
+1. `cp .env.example .env.production`.
+2. Paste your **production** project URL and key.
+3. Run **`yarn start:prod`** when you need to point the dev client at prod (use sparingly).
+
+**Release builds** should set `EXPO_PUBLIC_*` via **[EAS / CI secrets](https://docs.expo.dev/build-reference/variables/)**, not files in the repo.
+
+### Optional extra environments
 
 | File               | Yarn script          | Typical use                                                                                                                                                       |
 | ------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.env.development` | `yarn start:dev`     | Team dev Supabase project                                                                                                                                         |
-| `.env.staging`     | `yarn start:staging` | Pre-release QA (optional at MVP; add when you create a staging project)                                                                                           |
-| `.env.production`  | `yarn start:prod`    | Local smoke-test against prod-like config only—**real releases should use [EAS secrets](https://docs.expo.dev/build-reference/variables/)**, not a committed file |
+| `.env.development` | `yarn start:dev`     | Alternate dev file if you prefer not to use `.env.local`                                                                                                                                         |
+| `.env.staging`     | `yarn start:staging` | Pre-release QA (optional; add when you have a staging Supabase project)                                                                                           |
 
-You can create `.env.development` by copying from `.env.example`—no separate template file is required, to avoid duplicated docs.
+Committed template: **`.env.example`** only (copy it to `.env.local`, `.env.production`, or `.env.staging` as needed).
 
-**Never commit** `.env`, `.env.development`, `.env.staging`, `.env.production`, or `*.local` overrides (see `.gitignore`). Only `*.example` files belong in Git.
+**Never commit** `.env.local`, `.env.production`, `.env.development`, `.env.staging`, or a legacy `.env` with real keys (see `.gitignore`). Only `*.example` files belong in Git.
 
 ---
 
@@ -80,11 +85,11 @@ You can create `.env.development` by copying from `.env.example`—no separate t
 
 | Script                                   | Description                                                    |
 | ---------------------------------------- | -------------------------------------------------------------- |
-| `yarn start`                             | Expo dev server (loads `.env` if present).                     |
-| `yarn start:dev`                         | Expo with `.env.development` (requires that file).             |
+| `yarn start`                             | Expo dev server (loads `.env.local`).                          |
+| `yarn start:dev`                         | Expo with `.env.development`.                               |
 | `yarn start:staging`                     | Expo with `.env.staging`.                                      |
-| `yarn start:prod`                        | Expo with `.env.production` (local checks only).               |
-| `yarn android` / `yarn ios` / `yarn web` | Same as `start`, then choose platform—or pass `--android` etc. |
+| `yarn start:prod`                        | Expo with `.env.production` (local prod smoke-tests only).    |
+| `yarn android` / `yarn ios` / `yarn web` | Expo for that platform (loads `.env.local`).                  |
 | `yarn lint`                              | ESLint on `src/`, `App.tsx`, `index.ts`.                       |
 | `yarn typecheck`                         | `tsc --noEmit`.                                                |
 
@@ -228,7 +233,7 @@ The codebase mixes **shipping-quality flows** (auth, navigation, core CRUD slice
 
 1. Fork / branch from `main`.
 2. Install deps: `yarn`.
-3. Copy `.env.example` to `.env` and add Supabase credentials.
+3. Copy `.env.example` to `.env.local` and add Supabase credentials.
 4. Run `yarn lint` and `yarn typecheck` before pushing.
 5. Open a PR with a clear description and screenshots for UI changes.
 
