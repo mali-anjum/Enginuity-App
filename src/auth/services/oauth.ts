@@ -17,6 +17,10 @@ export async function signInWithGitHub(): Promise<void> {
   await oauthAuthService.signInWithProvider('github');
 }
 
+export async function signInWithApple(): Promise<void> {
+  await oauthAuthService.signInWithProvider('apple');
+}
+
 export async function signOut(): Promise<void> {
   await oauthAuthService.signOut();
 }

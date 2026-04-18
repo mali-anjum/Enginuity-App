@@ -12,7 +12,10 @@ import {
 import { ThemedView } from '@/common/atoms/themed-view';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { NavigationThemes } from '@/common/constants/theme';
-import { selectHasCompletedOnboarding } from '@/onboarding/state/selectors';
+import {
+  selectHasCompletedOnboarding,
+  selectHasCompletedPreAuthProfile,
+} from '@/onboarding/state/selectors';
 import { ROOT_STACK_SCREENS } from '@/sharedModules/navigation/root-stack-options';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 import { AppProviders } from '@/sharedModules/state/Providers';
@@ -36,12 +39,15 @@ function RootNavigator() {
   const hasInitializedAuth = useAppSelector(selectHasInitializedAuth);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const hasCompletedOnboarding = useAppSelector(selectHasCompletedOnboarding);
+  const hasCompletedPreAuthProfile = useAppSelector(selectHasCompletedPreAuthProfile);
 
   const [primarySegment = '', secondarySegment = ''] = Array.from(segments) as string[];
   const isAuthRoute = primarySegment === 'auth';
   const isCallbackRoute = isAuthRoute && secondarySegment === 'callback';
   const isLoginRoute = isAuthRoute && secondarySegment === 'login';
   const isSignupRoute = isAuthRoute && secondarySegment === 'signup';
+  const isLoginEmailRoute = isAuthRoute && secondarySegment === 'login-email';
+  const isSignupEmailRoute = isAuthRoute && secondarySegment === 'signup-email';
   const isForgotPasswordRoute = isAuthRoute && secondarySegment === 'forgot-password';
   const isResetPasswordRoute = isAuthRoute && secondarySegment === 'reset-password';
   const isAuthSplashRoute = isAuthRoute && secondarySegment === 'splash';
@@ -53,37 +59,46 @@ function RootNavigator() {
     }
 
     if (!isAuthenticated) {
-      if (
-        !isLoginRoute &&
-        !isCallbackRoute &&
-        !isSignupRoute &&
-        !isForgotPasswordRoute &&
-        !isResetPasswordRoute &&
-        !isAuthSplashRoute
-      ) {
-        router.replace('/auth/login');
+      const allowedUnauthenticated =
+        isLoginRoute ||
+        isLoginEmailRoute ||
+        isSignupRoute ||
+        isSignupEmailRoute ||
+        isCallbackRoute ||
+        isForgotPasswordRoute ||
+        isResetPasswordRoute ||
+        isAuthSplashRoute ||
+        isOnboardingRoute;
+
+      if (!allowedUnauthenticated) {
+        if (hasCompletedPreAuthProfile) {
+          router.replace('/auth/signup');
+        } else {
+          router.replace('/onboarding');
+        }
       }
       return;
     }
 
-    if (!hasCompletedOnboarding) {
-      if (!isOnboardingRoute) {
-        router.replace('/onboarding');
-      }
+    if (isAuthenticated && isOnboardingRoute) {
+      router.replace('/');
       return;
     }
 
-    if (isOnboardingRoute || isAuthRoute) {
+    if (hasCompletedOnboarding && isAuthRoute) {
       router.replace('/');
     }
   }, [
     hasCompletedOnboarding,
+    hasCompletedPreAuthProfile,
     hasInitializedAuth,
     isAuthenticated,
     isOnboardingRoute,
     isAuthRoute,
     isLoginRoute,
+    isLoginEmailRoute,
     isSignupRoute,
+    isSignupEmailRoute,
     isForgotPasswordRoute,
     isResetPasswordRoute,
     isAuthSplashRoute,
@@ -103,8 +118,28 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.tabs.options}
         />
         <Stack.Screen
-          name={ROOT_STACK_SCREENS.onboarding.name}
-          options={ROOT_STACK_SCREENS.onboarding.options}
+          name={ROOT_STACK_SCREENS.onboardingIntro.name}
+          options={ROOT_STACK_SCREENS.onboardingIntro.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.onboardingFocus.name}
+          options={ROOT_STACK_SCREENS.onboardingFocus.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.onboardingEducation.name}
+          options={ROOT_STACK_SCREENS.onboardingEducation.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.onboardingUsage.name}
+          options={ROOT_STACK_SCREENS.onboardingUsage.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.onboardingGoals.name}
+          options={ROOT_STACK_SCREENS.onboardingGoals.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.onboardingReview.name}
+          options={ROOT_STACK_SCREENS.onboardingReview.options}
         />
         <Stack.Screen
           name={ROOT_STACK_SCREENS.projectList.name}
@@ -235,12 +270,20 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.authLogin.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.authLoginEmail.name}
+          options={ROOT_STACK_SCREENS.authLoginEmail.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.authSplash.name}
           options={ROOT_STACK_SCREENS.authSplash.options}
         />
         <Stack.Screen
           name={ROOT_STACK_SCREENS.authSignup.name}
           options={ROOT_STACK_SCREENS.authSignup.options}
+        />
+        <Stack.Screen
+          name={ROOT_STACK_SCREENS.authSignupEmail.name}
+          options={ROOT_STACK_SCREENS.authSignupEmail.options}
         />
         <Stack.Screen
           name={ROOT_STACK_SCREENS.authForgotPassword.name}
