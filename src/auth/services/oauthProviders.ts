@@ -1,6 +1,6 @@
 import type { Provider } from '@supabase/supabase-js';
 
-export type OAuthProviderKey = 'google' | 'facebook' | 'github';
+export type OAuthProviderKey = 'google' | 'facebook' | 'github' | 'apple';
 
 export type OAuthProviderConfig = {
   key: OAuthProviderKey;
@@ -35,5 +35,13 @@ export const OAUTH_PROVIDER_CONFIG: Record<OAuthProviderKey, OAuthProviderConfig
     loadingLabel: 'Opening GitHub…',
     errorFallbackMessage: 'GitHub sign-in failed. Please try again.',
     scopes: 'read:user user:email',
+  },
+  apple: {
+    key: 'apple',
+    provider: 'apple',
+    label: 'Continue with Apple',
+    loadingLabel: 'Opening Apple…',
+    errorFallbackMessage: 'Apple sign-in failed. Please try again.',
+    scopes: 'name email',
   },
 };

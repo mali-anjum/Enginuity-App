@@ -1,6 +1,11 @@
 export const ROOT_STACK_SCREENS = {
   tabs: { name: '(tabs)', options: { headerShown: false } },
-  onboarding: { name: 'onboarding/index', options: { title: 'Welcome', headerShown: true } },
+  onboardingIntro: { name: 'onboarding/index', options: { title: 'Welcome', headerShown: true } },
+  onboardingFocus: { name: 'onboarding/focus', options: { title: 'Focus', headerShown: true } },
+  onboardingEducation: { name: 'onboarding/education', options: { title: 'Education', headerShown: true } },
+  onboardingUsage: { name: 'onboarding/usage', options: { title: 'Usage', headerShown: true } },
+  onboardingGoals: { name: 'onboarding/goals', options: { title: 'Goals', headerShown: true } },
+  onboardingReview: { name: 'onboarding/review', options: { title: 'Your plan', headerShown: true } },
   projectList: { name: 'project/index', options: { title: 'Projects', headerShown: true } },
   projectCreate: { name: 'project/create', options: { title: 'Create project', headerShown: true } },
   projectDetail: { name: 'project/[projectId]', options: { title: 'Project detail', headerShown: true } },
@@ -61,7 +66,9 @@ export const ROOT_STACK_SCREENS = {
   settingsAbout: { name: 'settings/about', options: { title: 'About', headerShown: true } },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },
   authLogin: { name: 'auth/login', options: { headerShown: false } },
-  authSignup: { name: 'auth/signup', options: { title: 'Create account', headerShown: true } },
+  authSignup: { name: 'auth/signup', options: { title: 'Create account', headerShown: false } },
+  authLoginEmail: { name: 'auth/login-email', options: { title: 'Email sign in', headerShown: true } },
+  authSignupEmail: { name: 'auth/signup-email', options: { title: 'Email sign up', headerShown: true } },
   authForgotPassword: {
     name: 'auth/forgot-password',
     options: { title: 'Forgot password', headerShown: true },

@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { GoogleSignInButton } from '@/auth/atoms/GoogleSignInButton';
 import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import { loginWithPasswordThunk, selectAuthError, selectAuthStatus } from '@/auth/state/authSlice';
 import { AppButton } from '@/common/atoms/app-button';
@@ -31,8 +30,11 @@ export function LoginPanel() {
 
   return (
     <View style={styles.stack}>
+      <ThemedText type="link" onPress={() => router.replace('/auth/login')}>
+        ← More sign-in options
+      </ThemedText>
       <ThemedText type="title">Sign in</ThemedText>
-      <AuthSubtitle>Use your email and password or continue with Google.</AuthSubtitle>
+      <AuthSubtitle>Use your email and password.</AuthSubtitle>
       <AuthTextInput
         placeholder="Email"
         keyboardType="email-address"
@@ -49,7 +51,6 @@ export function LoginPanel() {
         onChangeText={setPassword}
       />
       <AppButton label={isLoading ? 'Signing in...' : 'Sign in with email'} onPress={handleEmailLogin} disabled={isLoading} />
-      <GoogleSignInButton />
       {authError ? <ThemedText style={styles.errorText}>{authError}</ThemedText> : null}
       <View style={styles.linksRow}>
         <ThemedText type="link" onPress={() => router.push('/auth/forgot-password' as never)}>
