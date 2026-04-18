@@ -3,13 +3,13 @@
   "main": "index.ts",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx expo start",
+    "start": "dotenv -e .env.local -- npx expo start",
     "start:dev": "dotenv -e .env.development -- npx expo start",
     "start:staging": "dotenv -e .env.staging -- npx expo start",
     "start:prod": "dotenv -e .env.production -- npx expo start",
-    "android": "npx expo start --android",
-    "ios": "npx expo start --ios",
-    "web": "npx expo start --web",
+    "android": "dotenv -e .env.local -- npx expo start --android",
+    "ios": "dotenv -e .env.local -- npx expo start --ios",
+    "web": "dotenv -e .env.local -- npx expo start --web",
     "lint": "eslint ./src ./App.tsx ./index.ts",
     "typecheck": "tsc --noEmit"
   },
