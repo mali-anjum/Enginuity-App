@@ -46,7 +46,7 @@ export default function SignupEmailScreen() {
       }),
     );
     if (signupThunk.fulfilled.match(action)) {
-      router.replace('/auth/login');
+      router.replace('/auth/login?notice=check-email');
     }
   };
 
@@ -54,7 +54,7 @@ export default function SignupEmailScreen() {
     <ScrollView contentContainerStyle={styles.content}>
       <ThemedText type="title">Sign up with email</ThemedText>
       <ThemedText style={styles.subtitle}>
-        Your focus areas and plan from onboarding will be saved after you verify and sign in.
+        We will send a confirmation link to your inbox. Verify your email, then sign in to continue.
       </ThemedText>
       <AuthTextInput placeholder="Full name" value={name} onChangeText={setName} />
       <AuthTextInput

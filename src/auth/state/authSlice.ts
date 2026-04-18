@@ -7,6 +7,7 @@ import {
 import type { RootState } from '@/sharedModules/state/store';
 import { oauthAuthService } from '@/auth/services/oauthAuthService';
 import type { OAuthProviderKey } from '@/auth/services/oauthProviders';
+import { mapAuthErrorMessage, toError } from '@/auth/services/authErrorMessages';
 
 export type AuthDiscipline = 'mechanical' | 'electrical' | 'civil' | 'software' | 'chemical' | 'other';
 
@@ -54,8 +55,8 @@ export const loginThunk = createAsyncThunk<AuthSession | null, LoginPayload, { r
     try {
       await oauthAuthService.signInWithProvider(provider);
       return null;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Login failed');
     }
   },
 );
@@ -66,8 +67,8 @@ export const signupThunk = createAsyncThunk<void, SignupPayload, { rejectValue: 
     try {
       await oauthAuthService.signUpWithPassword({ email, password, name, discipline });
       return;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Signup failed');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Signup failed');
     }
   },
 );
@@ -77,8 +78,9 @@ export const loginWithPasswordThunk = createAsyncThunk<void, PasswordLoginPayloa
   async ({ email, password }, { rejectWithValue }) => {
     try {
       await oauthAuthService.signInWithPassword(email, password);
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Email login failed');
+    } catch (error: unknown) {
+      const normalizedError = toError(error);
+      return rejectWithValue(mapAuthErrorMessage(normalizedError.message) || 'Email login failed');
     }
   },
 );
@@ -88,9 +90,10 @@ export const forgotPasswordThunk = createAsyncThunk<void, ForgotPasswordPayload,
   async ({ email }, { rejectWithValue }) => {
     try {
       await oauthAuthService.sendPasswordResetEmail(email);
-    } catch (error) {
+    } catch (error: unknown) {
+      const normalizedError = toError(error);
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Could not send password reset email',
+        normalizedError.message || 'Could not send password reset email',
       );
     }
   },
@@ -107,8 +110,8 @@ export const resetPasswordThunk = createAsyncThunk<void, ResetPasswordPayload, {
     }
     try {
       await oauthAuthService.updatePassword(password);
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Could not reset password');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Could not reset password');
     }
   },
 );
@@ -118,8 +121,8 @@ export const logoutThunk = createAsyncThunk<void, void, { rejectValue: string }>
   async (_, { rejectWithValue }) => {
     try {
       await oauthAuthService.signOut();
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Logout failed');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Logout failed');
     }
   },
 );
@@ -129,8 +132,8 @@ export const refreshSessionThunk = createAsyncThunk<AuthSession, SessionPayload,
   async ({ token, expiresAt }, { rejectWithValue }) => {
     try {
       return { token, expiresAt };
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Session refresh failed');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Session refresh failed');
     }
   },
 );
@@ -149,8 +152,8 @@ export const updateProfileThunk = createAsyncThunk<AuthUser, ProfilePayload, { s
         bio: bio.trim(),
       });
       return { ...currentUser, name: name.trim(), discipline, bio: bio.trim() };
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Profile update failed');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Profile update failed');
     }
   },
 );
@@ -171,8 +174,8 @@ export const fetchProfileThunk = createAsyncThunk<AuthUser, void, { state: RootS
         avatarUrl: profile.avatarUrl,
         bio: profile.bio,
       };
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Could not load profile');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Could not load profile');
     }
   },
 );
@@ -187,8 +190,8 @@ export const uploadAvatarThunk = createAsyncThunk<AuthUser, AvatarPayload, { sta
       }
       const avatarUrl = await uploadAvatarAndPersist(currentUser.id, localUri);
       return { ...currentUser, avatarUrl };
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Avatar upload failed');
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Avatar upload failed');
     }
   },
 );
