@@ -42,7 +42,7 @@ Backend shape and enums are defined in SQL migrations under `supabase/migrations
 
 - **Node.js** (LTS recommended) and **Yarn** (Classic v1 per `package.json` `packageManager`)
 - **Expo CLI** via `npx` (no global install required)
-- A **Supabase** project (URL + anon key) for auth and data
+- Supabase projects for **development** and (optionally) **production**—each has its own **project URL** and **publishable (anon) key**
 
 ---
 
@@ -50,20 +50,36 @@ Backend shape and enums are defined in SQL migrations under `supabase/migrations
 
 Public client configuration is read in `src/sharedModules/utils/env.ts`. Supported keys include **`EXPO_PUBLIC_SUPABASE_URL`** and **`EXPO_PUBLIC_SUPABASE_ANON_KEY`** (with fallbacks for alternate naming conventions used by other tooling).
 
+### Dev vs production Supabase projects
+
+Use **two separate Supabase projects** when you want real users and data isolated from experiments (recommended).
+
+- **`EXPO_PUBLIC_SUPABASE_URL`** is always `https://<project-ref>.supabase.co`. The **`project-ref`** appears in **Project Settings → General** and in the dashboard URL.
+- **`EXPO_PUBLIC_SUPABASE_ANON_KEY`** is the **publishable** key from **Project Settings → API Keys** for that **same** project.
+
+Each environment file must pair **URL + key from one project**. Never mix a URL from project A with a key from project B—the client will authenticate against project A while your dashboard shows project B.
+
+| Gitignored file      | Yarn command        | Typical Supabase project                         |
+| -------------------- | ------------------- | ------------------------------------------------ |
+| **`.env.local`**    | `yarn start`, etc.  | Dev / sandbox (e.g. “App (test)” or team dev)   |
+| **`.env.production`** | `yarn start:prod`   | Production (main app)—local smoke-tests only     |
+
+The committed **`.env.example`** is only a template; copy it twice and fill each copy with credentials from the matching dashboard project.
+
 ### Local development
 
 1. `cp .env.example .env.local`
 2. Paste your **development** Supabase URL and publishable / anon key (**Project Settings → API Keys**).
 3. Run **`yarn start`** (or `yarn android` / `yarn ios` / `yarn web`). Scripts inject `.env.local` via `dotenv-cli` before Expo starts.
 
-If you already have a `.env` from older setup, rename it to `.env.local` (`mv .env .env.local`) so scripts pick it up.
+If you already have a `.env` from older setup, rename it to `.env.local` (`mv .env .env.local`) so scripts pick it up. **Do not commit** `.env`, `.env.local`, or `.env.production`; they are listed in `.gitignore`.
 
 ### Production Supabase (separate project)
 
 Keep production credentials in **`.env.production`** (gitignored) for local smoke-tests only:
 
 1. `cp .env.example .env.production`.
-2. Paste your **production** project URL and key.
+2. Paste your **production** project URL and key from the **production** Supabase project’s API keys page.
 3. Run **`yarn start:prod`** when you need to point the dev client at prod (use sparingly).
 
 **Release builds** should set `EXPO_PUBLIC_*` via **[EAS / CI secrets](https://docs.expo.dev/build-reference/variables/)**, not files in the repo.
@@ -77,7 +93,7 @@ Keep production credentials in **`.env.production`** (gitignored) for local smok
 
 Committed template: **`.env.example`** only (copy it to `.env.local`, `.env.production`, or `.env.staging` as needed).
 
-**Never commit** `.env.local`, `.env.production`, `.env.development`, `.env.staging`, or a legacy `.env` with real keys (see `.gitignore`). Only `*.example` files belong in Git.
+**Never commit** secrets in `.env`, `.env.local`, `.env.production`, `.env.development`, or `.env.staging` (see `.gitignore`). Only `*.example` files belong in Git.
 
 ---
 
