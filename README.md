@@ -132,7 +132,7 @@ We reserve a **fixed day each week** for focused work. That day is not only for 
 2. **Understand** — read diffs, align on architecture decisions, document tradeoffs in PR descriptions.
 3. **Optimize** — performance, bundle size, redundant renders, and Supabase query patterns where it matters.
 4. **Test** — see [Quality and testing](#quality-and-testing).
-5. **Release readiness** — decide what ships in the next train (see [Release strategy](#release-strategy)).
+5. **Release readiness** — decide what ships in the next train (see [Release strategy and timeline](#release-strategy-day-based-timeline-qa-optimization-and-budget)).
 
 This mirrors how large product teams structure time: predictable integration windows instead of random drops.
 
@@ -153,18 +153,63 @@ Automated unit/UI tests are not yet wired to a full suite in-repo; Jest dependen
 
 ---
 
-## Release strategy
+## Release strategy, day-based timeline, QA, optimization, and budget
 
-We aim for **periodic, boring releases**: small increments on a steady cadence—similar in spirit to **release trains** (Chrome), **regular mobile release rhythms** (Meta/Google-style app updates), and **managed rollout** practices (Microsoft/Azure DevOps-style gated deployments)—adapted to a small team and Expo.
+We aim for **predictable release trains**: small, frequent ships—similar in spirit to **release trains** (Google Chrome), **steady mobile rhythms** (large consumer apps), and **gated deployments** (Azure DevOps / enterprise release management)—scaled down for Expo and a small team.
 
-Suggested practice:
+### Where to read “how many days until the next release?”
+
+- Set a **target ship date** (or “train departure”) at **kickoff** of each cycle and track it in **GitHub Milestones** / **Linear** / your board—this README keeps **default phase lengths in days** so the whole team shares one mental model.
+- **Next update date** ≈ **kickoff date** + **sum of phase days below** + **buffer** + **store review time** (Apple/Google review is outside your control; often ~1–3 days after submission for updates, longer for new apps).
+- When priorities change, **update the phase day counts** in planning and briefly note the change in the milestone description so budget and dates stay aligned.
+
+### Default phase lengths (business days)
+
+Use **business days** (Monday–Friday) for engineering estimates; use **calendar dates** when communicating ship targets externally.
+
+| Phase | Days (recommended default) | What happens |
+| ----- | -------------------------- | ------------ |
+| **1 — Development & integration** | **10** | Scoped features on short-lived branches; merge to a release candidate line; `yarn lint` / `yarn typecheck`; dogfood against dev/staging Supabase. |
+| **2 — QA, regression, bugfix** | **5** | QA (or rotating reviewers) runs checklists on real devices; bugs are filed → fixed → verified; loop until exit criteria are met. |
+| **3 — Hardening & code optimization** | **3** | Performance-sensitive paths, bundle size, readability, Supabase usage review; **no new product features** unless release-blocking. |
+| **4 — Release candidate, build, staged rollout** | **2** | EAS builds, internal / staged rollout %, crash and auth monitoring; optional **dependency freeze** on the release branch except security fixes. |
+| **Buffer (risk, CI flakes, store resubmits)** | **2** | Keeps the train on rails when scope slips slightly or stores ask for metadata fixes. |
+| **Typical minor release (sum)** | **22 business days** | About **4.5 calendar weeks**, excluding holidays—adjust per team size. |
+
+**Illustrative timeline (not a promise—replace with your milestone dates):**
+
+| Milestone | Approx. day offset (business days from kickoff) |
+| --------- | ------------------------------------------------ |
+| Kickoff / scope locked | 0 |
+| Feature complete / merge to RC branch | 10 |
+| QA exit (Sev1/Sev2 cleared or waived) | 15 |
+| Optimization & final review complete | 18 |
+| Builds submitted / phased rollout begins | 20–22 |
+
+So: **after ~10 days** you aim to be **done adding features** for that train; **after ~15 days** QA has had a full pass and **critical bugs are addressed**; **after ~18 days** the codebase has had an **optimization / review pass**; **around days 20–22** the **release** goes out (plus store review).
+
+### End-to-end flow (development → QA → optimization → release)
+
+1. **Development window (days 1–10)** — Engineers implement the agreed backlog for this train. If work won’t fit, **cut scope** (“fixed time, flexible scope”) rather than silently slipping quality—same trade-off principle large orgs use in sprint planning.
+2. **QA window (days 11–15)** — Treat the codebase as frozen for feature additions except release blockers; focus on finding defects and verifying fixes.
+3. **Optimization & whole-code review (days 16–18)** — Reduce debt introduced during the sprint: perf, accessibility touchpoints, error handling, migration safety.
+4. **Release (days 19–22)** — RC binaries, staged rollout, watch dashboards; **hotfix branch** only for severe production issues.
+
+### Budget and how it updates when scope changes
+
+- Track effort in **person-days** (engineering) and **QA-days** (testing). Example: **10 development days** per engineer on the train during phase 1 is a planning anchor—multiply by headcount for capacity.
+- **More features than capacity** → increase phase 1–2 **days**, **move the ship date**, or **defer** work to the **next train**—document which option you chose in the milestone.
+- **Fewer features** → shorten the cycle or invest spare capacity in reliability, tests, or docs.
+- **Re-budget triggers**: new surfaces for QA (extra QA-days), heavy schema changes (extra migration review), new OAuth providers or stores (extra certification time). Revisit estimates when the backlog changes mid-cycle.
+
+### Engineering hygiene (versioning, branching, changelog, build)
 
 1. **Versioning** — Semantic versioning (`MAJOR.MINOR.PATCH`) aligned with `app.json` `expo.version`.
-2. **Branching** — `main` stays releasable; feature branches merge via PR; optional `release/x.y` branches if you need hotfixes.
-3. **Changelog** — Maintain `CHANGELOG.md` or GitHub Releases with user-visible changes (add when you cut releases).
-4. **Build** — Use [EAS Build](https://docs.expo.dev/build/introduction/) with env vars from secrets, not committed `.env.production`.
-5. **Rollout** — Use store **staged rollout** (Play Console / App Store phased release) or internal tracks first; expand percentage as confidence grows.
-6. **Cadence** — Ship on the weekly rhythm after the engineering-day validation gate; emergency patches bypass the schedule only for severity.
+2. **Branching** — `main` stays releasable; feature branches merge via PR; optional `release/x.y` for hotfixes.
+3. **Changelog** — `CHANGELOG.md` or GitHub Releases for user-visible changes each train.
+4. **Build** — [EAS Build](https://docs.expo.dev/build/introduction/) with secrets for production; never commit production keys.
+5. **Rollout** — Phased release in Play Console / App Store until metrics look stable.
+6. **Cadence** — Prefer the **weekly engineering day** plus the **release train above**; emergency patches bypass the train only for severity.
 
 ---
 
