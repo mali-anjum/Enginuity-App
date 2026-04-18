@@ -10,18 +10,18 @@ This document describes how the repository is structured, how we work week to we
 
 Routes and screens are declared under `src/app`; feature UI and domain logic live in named folders under `src/` (see [Source layout](#source-layout)).
 
-| Area | What it provides |
-|------|------------------|
-| **Auth** | Login, signup, forgot/reset password, OAuth (Google / Facebook / GitHub), splash and callback handling. Session is synced with Supabase. |
-| **Onboarding** | Discipline selection and welcome flow before the main app. |
+| Area                 | What it provides                                                                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Auth**             | Login, signup, forgot/reset password, OAuth (Google / Facebook / GitHub), splash and callback handling. Session is synced with Supabase.   |
+| **Onboarding**       | Discipline selection and welcome flow before the main app.                                                                                 |
 | **Dashboard (Home)** | Project stats, filters, recent experiments, quick search overlay, FAB for quick create. Second tab is **Explore** (shared explore screen). |
-| **Projects** | List, create, detail, edit; links forward to experiments and notes where relevant. |
-| **Experiments** | List, create, detail, edit; hardware picker; CSV preview and attachment viewer flows. |
-| **Hardware** | Library list, add, detail, edit—reused when composing experiments. |
-| **Notes** | List, create, detail, edit; tag browser; optional knowledge-style overview components live alongside notes. |
-| **Search** | Global search and results (client-side aggregation; database supports FTS-related migrations under `supabase/`). |
-| **Profile** | Overview, edit profile, avatar picker, account statistics. |
-| **Settings** | Appearance, notifications, storage & sync, account, about. |
+| **Projects**         | List, create, detail, edit; links forward to experiments and notes where relevant.                                                         |
+| **Experiments**      | List, create, detail, edit; hardware picker; CSV preview and attachment viewer flows.                                                      |
+| **Hardware**         | Library list, add, detail, edit—reused when composing experiments.                                                                         |
+| **Notes**            | List, create, detail, edit; tag browser; optional knowledge-style overview components live alongside notes.                                |
+| **Search**           | Global search and results (client-side aggregation; database supports FTS-related migrations under `supabase/`).                           |
+| **Profile**          | Overview, edit profile, avatar picker, account statistics.                                                                                 |
+| **Settings**         | Appearance, notifications, storage & sync, account, about.                                                                                 |
 
 Backend shape and enums are defined in SQL migrations under `supabase/migrations/` (projects, workspaces, hardware, experiments, notes, profiles, user settings, search helpers, etc.). Generated types for the client are in `src/sharedModules/services/supabase/database.types.ts`.
 
@@ -29,20 +29,20 @@ Backend shape and enums are defined in SQL migrations under `supabase/migrations
 
 ## Tech stack
 
-- **Runtime:** React 19, React Native 0.81, Expo SDK ~54  
-- **Navigation:** Expo Router 6 (`src/app`), stack + tabs  
-- **State:** Redux Toolkit, redux-persist (auth, onboarding, UI theme)  
-- **Backend:** Supabase (`@supabase/supabase-js`)  
-- **Forms / validation:** react-hook-form, zod  
-- **Tooling:** TypeScript (strict), ESLint (`eslint-config-expo`), Jest/ts-jest listed for future tests  
+- **Runtime:** React 19, React Native 0.81, Expo SDK ~54
+- **Navigation:** Expo Router 6 (`src/app`), stack + tabs
+- **State:** Redux Toolkit, redux-persist (auth, onboarding, UI theme)
+- **Backend:** Supabase (`@supabase/supabase-js`)
+- **Forms / validation:** react-hook-form, zod
+- **Tooling:** TypeScript (strict), ESLint (`eslint-config-expo`), Jest/ts-jest listed for future tests
 
 ---
 
 ## Prerequisites
 
-- **Node.js** (LTS recommended) and **Yarn** (Classic v1 per `package.json` `packageManager`)  
-- **Expo CLI** via `npx` (no global install required)  
-- A **Supabase** project (URL + anon key) for auth and data  
+- **Node.js** (LTS recommended) and **Yarn** (Classic v1 per `package.json` `packageManager`)
+- **Expo CLI** via `npx` (no global install required)
+- A **Supabase** project (URL + anon key) for auth and data
 
 ---
 
@@ -64,11 +64,11 @@ Committed templates: **`.env.example`** (canonical), **`.env.staging.example`** 
 
 Copy the same keys into **gitignored** files only when you need **different backends** at the same time (e.g. dev vs QA vs prod smoke-tests):
 
-| File | Yarn script | Typical use |
-|------|-------------|-------------|
-| `.env.development` | `yarn start:dev` | Team dev Supabase project |
-| `.env.staging` | `yarn start:staging` | Pre-release QA (optional at MVP; add when you create a staging project) |
-| `.env.production` | `yarn start:prod` | Local smoke-test against prod-like config only—**real releases should use [EAS secrets](https://docs.expo.dev/build-reference/variables/)**, not a committed file |
+| File               | Yarn script          | Typical use                                                                                                                                                       |
+| ------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.env.development` | `yarn start:dev`     | Team dev Supabase project                                                                                                                                         |
+| `.env.staging`     | `yarn start:staging` | Pre-release QA (optional at MVP; add when you create a staging project)                                                                                           |
+| `.env.production`  | `yarn start:prod`    | Local smoke-test against prod-like config only—**real releases should use [EAS secrets](https://docs.expo.dev/build-reference/variables/)**, not a committed file |
 
 You can create `.env.development` by copying from `.env.example`—no separate template file is required, to avoid duplicated docs.
 
@@ -78,15 +78,15 @@ You can create `.env.development` by copying from `.env.example`—no separate t
 
 ## Scripts
 
-| Script | Description |
-|--------|-------------|
-| `yarn start` | Expo dev server (loads `.env` if present). |
-| `yarn start:dev` | Expo with `.env.development` (requires that file). |
-| `yarn start:staging` | Expo with `.env.staging`. |
-| `yarn start:prod` | Expo with `.env.production` (local checks only). |
+| Script                                   | Description                                                    |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| `yarn start`                             | Expo dev server (loads `.env` if present).                     |
+| `yarn start:dev`                         | Expo with `.env.development` (requires that file).             |
+| `yarn start:staging`                     | Expo with `.env.staging`.                                      |
+| `yarn start:prod`                        | Expo with `.env.production` (local checks only).               |
 | `yarn android` / `yarn ios` / `yarn web` | Same as `start`, then choose platform—or pass `--android` etc. |
-| `yarn lint` | ESLint on `src/`, `App.tsx`, `index.ts`. |
-| `yarn typecheck` | `tsc --noEmit`. |
+| `yarn lint`                              | ESLint on `src/`, `App.tsx`, `index.ts`.                       |
+| `yarn typecheck`                         | `tsc --noEmit`.                                                |
 
 ---
 
@@ -112,9 +112,9 @@ src/
 └── ui/                  # Cross-cutting UI state (e.g. theme-related slice)
 ```
 
-- **`App.tsx`** wires `expo-router` with `require.context('./src/app')`.  
-- **`index.ts`** registers the root component.  
-- **Supabase** client initialization: `sharedModules/services/supabase/supabaseClient.ts`.  
+- **`App.tsx`** wires `expo-router` with `require.context('./src/app')`.
+- **`index.ts`** registers the root component.
+- **Supabase** client initialization: `sharedModules/services/supabase/supabaseClient.ts`.
 
 ---
 
@@ -128,10 +128,10 @@ SQL migrations live in `supabase/migrations/`. Apply them to your Supabase proje
 
 We reserve a **fixed day each week** for focused work. That day is not only for writing code—it is for the whole delivery loop:
 
-1. **Implement** — features and fixes merged via short-lived branches and reviewed PRs.  
-2. **Understand** — read diffs, align on architecture decisions, document tradeoffs in PR descriptions.  
-3. **Optimize** — performance, bundle size, redundant renders, and Supabase query patterns where it matters.  
-4. **Test** — see [Quality and testing](#quality-and-testing).  
+1. **Implement** — features and fixes merged via short-lived branches and reviewed PRs.
+2. **Understand** — read diffs, align on architecture decisions, document tradeoffs in PR descriptions.
+3. **Optimize** — performance, bundle size, redundant renders, and Supabase query patterns where it matters.
+4. **Test** — see [Quality and testing](#quality-and-testing).
 5. **Release readiness** — decide what ships in the next train (see [Release strategy](#release-strategy)).
 
 This mirrors how large product teams structure time: predictable integration windows instead of random drops.
@@ -142,12 +142,12 @@ This mirrors how large product teams structure time: predictable integration win
 
 Quality is layered so issues are caught at the cheapest stage first.
 
-| Stage | What we run | Goal |
-|-------|-------------|------|
-| **Local (every change)** | `yarn lint`, `yarn typecheck`, manual exercise of touched flows on iOS/Android/web as applicable | Fast feedback; keep main healthy. |
-| **PR review** | Peer review + CI-friendly checks when wired | Catch logic and API misuse before merge. |
-| **Integration** | Supabase-backed flows on a shared dev project | Validate auth, RLS expectations, and migrations together. |
-| **Pre-release** | Exploratory testing on real devices; verify OAuth redirects and deep links | Reduce production surprises. |
+| Stage                    | What we run                                                                                      | Goal                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| **Local (every change)** | `yarn lint`, `yarn typecheck`, manual exercise of touched flows on iOS/Android/web as applicable | Fast feedback; keep main healthy.                         |
+| **PR review**            | Peer review + CI-friendly checks when wired                                                      | Catch logic and API misuse before merge.                  |
+| **Integration**          | Supabase-backed flows on a shared dev project                                                    | Validate auth, RLS expectations, and migrations together. |
+| **Pre-release**          | Exploratory testing on real devices; verify OAuth redirects and deep links                       | Reduce production surprises.                              |
 
 Automated unit/UI tests are not yet wired to a full suite in-repo; Jest dependencies are present for when we add `*.test.ts(x)` and a Jest config. New features should favor small testable pure functions where possible.
 
@@ -159,11 +159,11 @@ We aim for **periodic, boring releases**: small increments on a steady cadence�
 
 Suggested practice:
 
-1. **Versioning** — Semantic versioning (`MAJOR.MINOR.PATCH`) aligned with `app.json` `expo.version`.  
-2. **Branching** — `main` stays releasable; feature branches merge via PR; optional `release/x.y` branches if you need hotfixes.  
-3. **Changelog** — Maintain `CHANGELOG.md` or GitHub Releases with user-visible changes (add when you cut releases).  
-4. **Build** — Use [EAS Build](https://docs.expo.dev/build/introduction/) with env vars from secrets, not committed `.env.production`.  
-5. **Rollout** — Use store **staged rollout** (Play Console / App Store phased release) or internal tracks first; expand percentage as confidence grows.  
+1. **Versioning** — Semantic versioning (`MAJOR.MINOR.PATCH`) aligned with `app.json` `expo.version`.
+2. **Branching** — `main` stays releasable; feature branches merge via PR; optional `release/x.y` branches if you need hotfixes.
+3. **Changelog** — Maintain `CHANGELOG.md` or GitHub Releases with user-visible changes (add when you cut releases).
+4. **Build** — Use [EAS Build](https://docs.expo.dev/build/introduction/) with env vars from secrets, not committed `.env.production`.
+5. **Rollout** — Use store **staged rollout** (Play Console / App Store phased release) or internal tracks first; expand percentage as confidence grows.
 6. **Cadence** — Ship on the weekly rhythm after the engineering-day validation gate; emergency patches bypass the schedule only for severity.
 
 ---
@@ -176,19 +176,19 @@ The codebase mixes **shipping-quality flows** (auth, navigation, core CRUD slice
 
 ## Contributing
 
-1. Fork / branch from `main`.  
-2. Install deps: `yarn`.  
-3. Copy `.env.example` to `.env` and add Supabase credentials.  
-4. Run `yarn lint` and `yarn typecheck` before pushing.  
+1. Fork / branch from `main`.
+2. Install deps: `yarn`.
+3. Copy `.env.example` to `.env` and add Supabase credentials.
+4. Run `yarn lint` and `yarn typecheck` before pushing.
 5. Open a PR with a clear description and screenshots for UI changes.
 
 ---
 
 ## Learn more
 
-- [Expo documentation](https://docs.expo.dev/)  
-- [Expo Router](https://docs.expo.dev/router/introduction/)  
-- [Supabase](https://supabase.com/docs)  
+- [Expo documentation](https://docs.expo.dev/)
+- [Expo Router](https://docs.expo.dev/router/introduction/)
+- [Supabase](https://supabase.com/docs)
 
 ---
 
