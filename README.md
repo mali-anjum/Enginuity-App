@@ -50,30 +50,29 @@ Backend shape and enums are defined in SQL migrations under `supabase/migrations
 
 Public client configuration is read in `src/sharedModules/utils/env.ts`. Supported keys include **`EXPO_PUBLIC_SUPABASE_URL`** and **`EXPO_PUBLIC_SUPABASE_ANON_KEY`** (with fallbacks for alternate naming conventions used by other tooling).
 
-### Setup
+### MVP (recommended now)
 
-1. Copy the template for the environment you need:
+Use **one local file** so daily work stays simple:
 
-   ```bash
-   cp .env.development.example .env.development
-   cp .env.production.example .env.production
-   ```
+1. `cp .env.example .env`
+2. Paste your Supabase URL and anon key (**Project Settings → API**).
+3. Run **`yarn start`**. Expo loads `.env` automatically—no extra scripts.
 
-2. Replace placeholders with values from the Supabase dashboard (**Project Settings → API**).
+Committed templates: **`.env.example`** (canonical), **`.env.staging.example`** (optional, when you add a staging Supabase project).
 
-3. Start Metro with the file you want loaded:
+### When you outgrow a single `.env`
 
-   | Command | Purpose |
-   |---------|---------|
-   | `yarn start` | Default Expo start (Expo also loads a root `.env` when present). |
-   | `yarn start:dev` | Loads **`.env.development`** explicitly. |
-   | `yarn start:prod` | Loads **`.env.production`** (e.g. smoke-testing against prod backend—use carefully). |
+Copy the same keys into **gitignored** files only when you need **different backends** at the same time (e.g. dev vs QA vs prod smoke-tests):
 
-   Platform shortcuts: `yarn android:dev`, `yarn ios:dev`, `yarn web:dev` run Expo with `.env.development`.
+| File | Yarn script | Typical use |
+|------|-------------|-------------|
+| `.env.development` | `yarn start:dev` | Team dev Supabase project |
+| `.env.staging` | `yarn start:staging` | Pre-release QA (optional at MVP; add when you create a staging project) |
+| `.env.production` | `yarn start:prod` | Local smoke-test against prod-like config only—**real releases should use [EAS secrets](https://docs.expo.dev/build-reference/variables/)**, not a committed file |
 
-**Never commit** `.env`, `.env.development`, `.env.production`, or `*.local` overrides—these paths are listed in `.gitignore`. Only the `*.example` files belong in Git.
+You can create `.env.development` by copying from `.env.example`—no separate template file is required, to avoid duplicated docs.
 
-For **EAS Build / CI**, prefer injecting `EXPO_PUBLIC_*` via [EAS secrets](https://docs.expo.dev/build-reference/variables/) or your CI provider rather than checking in production keys.
+**Never commit** `.env`, `.env.development`, `.env.staging`, `.env.production`, or `*.local` overrides (see `.gitignore`). Only `*.example` files belong in Git.
 
 ---
 
@@ -81,12 +80,13 @@ For **EAS Build / CI**, prefer injecting `EXPO_PUBLIC_*` via [EAS secrets](https
 
 | Script | Description |
 |--------|-------------|
-| `yarn start` | Start Expo dev server. |
-| `yarn start:dev` / `yarn start:prod` | Start with explicit env file (see above). |
-| `yarn android`, `yarn ios`, `yarn web` | Start targeting a platform. |
-| `yarn android:dev`, `yarn ios:dev`, `yarn web:dev` | Same with `.env.development`. |
+| `yarn start` | Expo dev server (loads `.env` if present). |
+| `yarn start:dev` | Expo with `.env.development` (requires that file). |
+| `yarn start:staging` | Expo with `.env.staging`. |
+| `yarn start:prod` | Expo with `.env.production` (local checks only). |
+| `yarn android` / `yarn ios` / `yarn web` | Same as `start`, then choose platform—or pass `--android` etc. |
 | `yarn lint` | ESLint on `src/`, `App.tsx`, `index.ts`. |
-| `yarn typecheck` | `tsc --noEmit` (project-wide typecheck). |
+| `yarn typecheck` | `tsc --noEmit`. |
 
 ---
 
@@ -178,7 +178,7 @@ The codebase mixes **shipping-quality flows** (auth, navigation, core CRUD slice
 
 1. Fork / branch from `main`.  
 2. Install deps: `yarn`.  
-3. Configure `.env.development` from `.env.development.example`.  
+3. Copy `.env.example` to `.env` and add Supabase credentials.  
 4. Run `yarn lint` and `yarn typecheck` before pushing.  
 5. Open a PR with a clear description and screenshots for UI changes.
 

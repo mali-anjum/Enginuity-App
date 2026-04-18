@@ -33,12 +33,14 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# Environment (secrets — never commit)
+# Environment (secrets — never commit; templates are *.example only)
 .env
 .env.development
+.env.staging
 .env.production
 .env.local
 .env.development.local
+.env.staging.local
 .env.production.local
 
 # typescript
