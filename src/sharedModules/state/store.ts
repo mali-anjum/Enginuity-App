@@ -39,7 +39,13 @@ const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const onboardingPersistConfig = {
   key: 'onboarding',
   storage: webStorage,
-  whitelist: ['hasCompletedOnboarding', 'selectedDiscipline', 'selectedDisciplines'],
+  whitelist: [
+    'hasCompletedOnboarding',
+    'hasCompletedPreAuthProfile',
+    'selectedDiscipline',
+    'selectedDisciplines',
+    'profileDraft',
+  ],
 };
 
 const persistedOnboardingReducer = persistReducer(onboardingPersistConfig, onboardingReducer);
