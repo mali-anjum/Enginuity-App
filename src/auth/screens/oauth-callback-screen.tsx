@@ -15,6 +15,7 @@ export default function OAuthCallbackScreen() {
   const hasExchangedRef = useRef(false);
   const [isExchanging, setIsExchanging] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
 
@@ -27,12 +28,25 @@ export default function OAuthCallbackScreen() {
       | string
       | string[]
       | undefined;
+    const flowTypeParam = params.type;
+    const flowType = Array.isArray(flowTypeParam) ? flowTypeParam[0] : flowTypeParam;
 
     if (!code) {
       const errText = Array.isArray(errorDescriptionParam)
         ? errorDescriptionParam[0]
         : errorDescriptionParam;
-      if (errText) setError(errText);
+
+      if (errText) {
+        setError(errText);
+        setIsExchanging(false);
+        return;
+      }
+
+      if (flowType === 'signup') {
+        setInfoMessage('Your email is confirmed. Please sign in to continue.');
+      } else {
+        setInfoMessage('If you just confirmed your email, return to login and sign in again.');
+      }
       setIsExchanging(false);
       return;
     }
@@ -55,8 +69,11 @@ export default function OAuthCallbackScreen() {
 
   return (
     <View style={styles.container}>
-      <ThemedText type="title">{isExchanging ? 'Signing you in…' : 'Sign-in issue'}</ThemedText>
+      <ThemedText type="title">
+        {isExchanging ? 'Signing you in...' : error ? 'Sign-in issue' : 'Email confirmation complete'}
+      </ThemedText>
       {error ? <ThemedText style={[styles.errorText, { color: themeColors.danger }]}>{error}</ThemedText> : null}
+      {!error && infoMessage ? <ThemedText style={styles.infoText}>{infoMessage}</ThemedText> : null}
       {!isExchanging ? (
         <Pressable
           style={[
@@ -81,6 +98,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   errorText: {
+    lineHeight: 22,
+  },
+  infoText: {
     lineHeight: 22,
   },
   button: {
