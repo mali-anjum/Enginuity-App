@@ -157,50 +157,55 @@ Automated unit/UI tests are not yet wired to a full suite in-repo; Jest dependen
 
 We aim for **predictable release trains**: small, frequent ships—similar in spirit to **release trains** (Google Chrome), **steady mobile rhythms** (large consumer apps), and **gated deployments** (Azure DevOps / enterprise release management)—scaled down for Expo and a small team.
 
+**Default here: 9 business days end-to-end** (dev + QA + optimization + rollout). That matches a **focused sprint-like rhythm** common in strong product teams: short cycles, explicit gates, **smaller scope per train** instead of packing a month of work into one release.
+
 ### Where to read “how many days until the next release?”
 
 - Set a **target ship date** (or “train departure”) at **kickoff** of each cycle and track it in **GitHub Milestones** / **Linear** / your board—this README keeps **default phase lengths in days** so the whole team shares one mental model.
-- **Next update date** ≈ **kickoff date** + **sum of phase days below** + **buffer** + **store review time** (Apple/Google review is outside your control; often ~1–3 days after submission for updates, longer for new apps).
+- **Next update date** ≈ **kickoff date** + **9 business days** (default train below) + **store review time** (Apple/Google review is outside your control; often ~1–3 days after submission for updates, longer for new apps).
 - When priorities change, **update the phase day counts** in planning and briefly note the change in the milestone description so budget and dates stay aligned.
 
-### Default phase lengths (business days)
+### Default phase lengths (business days): **9-day train** (QA + optimization included)
 
-Use **business days** (Monday–Friday) for engineering estimates; use **calendar dates** when communicating ship targets externally.
+We use a **single short train** so planning stays simple: **development, QA, hardening/optimization, and rollout all fit inside one cycle**—similar to how teams timebox a sprint and **stack** verification work after feature work, except here the numbers are explicit and **≤ 9 working days total** (not “9 days per calendar week”; a week has at most **5 business days** in most locales).
 
-| Phase | Days (recommended default) | What happens |
-| ----- | -------------------------- | ------------ |
-| **1 — Development & integration** | **10** | Scoped features on short-lived branches; merge to a release candidate line; `yarn lint` / `yarn typecheck`; dogfood against dev/staging Supabase. |
-| **2 — QA, regression, bugfix** | **5** | QA (or rotating reviewers) runs checklists on real devices; bugs are filed → fixed → verified; loop until exit criteria are met. |
-| **3 — Hardening & code optimization** | **3** | Performance-sensitive paths, bundle size, readability, Supabase usage review; **no new product features** unless release-blocking. |
-| **4 — Release candidate, build, staged rollout** | **2** | EAS builds, internal / staged rollout %, crash and auth monitoring; optional **dependency freeze** on the release branch except security fixes. |
-| **Buffer (risk, CI flakes, store resubmits)** | **2** | Keeps the train on rails when scope slips slightly or stores ask for metadata fixes. |
-| **Typical minor release (sum)** | **22 business days** | About **4.5 calendar weeks**, excluding holidays—adjust per team size. |
+Use **business days** (Monday–Friday) for estimates; use **calendar dates** when communicating with stakeholders.
 
-**Illustrative timeline (not a promise—replace with your milestone dates):**
+| Phase | Days | What happens |
+| ----- | ---- | ------------ |
+| **1 — Development & integration** | **5** | Scoped features on branches; merge toward a release candidate; `yarn lint` / `yarn typecheck`; dogfood on dev/staging Supabase. |
+| **2 — QA + regression + bugfix** | **2** | Checklists on devices; bugs filed → fixed → verified; freeze features except release blockers. |
+| **3 — Hardening & code optimization** | **1** | Perf hot spots, bundle sanity, readability, Supabase/query review—**no new features** unless blocking. |
+| **4 — Release candidate, build, phased rollout** | **1** | EAS build, staged %, monitor crashes/auth. |
+| **Typical minor release (sum)** | **9 business days** | About **2 calendar weeks** at one train at a time—**smaller scope per train** than a month-long cycle. |
 
-| Milestone | Approx. day offset (business days from kickoff) |
-| --------- | ------------------------------------------------ |
+**Optional tighter cycle (≤ 7 days)** when scope is tiny (doc fixes, single bugfix release): **3 dev + 2 QA + 1 optimization + 1 rollout**—only if you accept less soak time.
+
+**Illustrative milestones (replace dates in your tracker):**
+
+| Milestone | Day offset (business days from kickoff) |
+| --------- | --------------------------------------- |
 | Kickoff / scope locked | 0 |
-| Feature complete / merge to RC branch | 10 |
-| QA exit (Sev1/Sev2 cleared or waived) | 15 |
-| Optimization & final review complete | 18 |
-| Builds submitted / phased rollout begins | 20–22 |
+| Feature complete / merged for QA | 5 |
+| QA exit (critical bugs fixed or waived) | 7 |
+| Optimization / review complete | 8 |
+| Builds submitted / phased rollout starts | 9 |
 
-So: **after ~10 days** you aim to be **done adding features** for that train; **after ~15 days** QA has had a full pass and **critical bugs are addressed**; **after ~18 days** the codebase has had an **optimization / review pass**; **around days 20–22** the **release** goes out (plus store review).
+So: **after ~5 days** stop adding features for this train (unless blocking); **days 6–7** are QA + fixes; **day 8** is optimization/review; **day 9** is ship—then **store review** follows separately.
 
-### End-to-end flow (development → QA → optimization → release)
+### End-to-end flow (stacked inside the same 9 days)
 
-1. **Development window (days 1–10)** — Engineers implement the agreed backlog for this train. If work won’t fit, **cut scope** (“fixed time, flexible scope”) rather than silently slipping quality—same trade-off principle large orgs use in sprint planning.
-2. **QA window (days 11–15)** — Treat the codebase as frozen for feature additions except release blockers; focus on finding defects and verifying fixes.
-3. **Optimization & whole-code review (days 16–18)** — Reduce debt introduced during the sprint: perf, accessibility touchpoints, error handling, migration safety.
-4. **Release (days 19–22)** — RC binaries, staged rollout, watch dashboards; **hotfix branch** only for severe production issues.
+1. **Days 1–5 — Development** — Deliver the smallest valuable slice that fits five days; if it won’t fit, **cut scope** (fixed time, flexible scope).
+2. **Days 6–7 — QA + bugfixes** — QA and developers overlap on fixes; no scope expansion except blockers.
+3. **Day 8 — Optimization & review** — Short, deliberate pass on performance and clarity introduced this train.
+4. **Day 9 — Release** — RC, rollout, watch metrics; hotfix branch only for severe issues.
 
 ### Budget and how it updates when scope changes
 
-- Track effort in **person-days** (engineering) and **QA-days** (testing). Example: **10 development days** per engineer on the train during phase 1 is a planning anchor—multiply by headcount for capacity.
-- **More features than capacity** → increase phase 1–2 **days**, **move the ship date**, or **defer** work to the **next train**—document which option you chose in the milestone.
-- **Fewer features** → shorten the cycle or invest spare capacity in reliability, tests, or docs.
-- **Re-budget triggers**: new surfaces for QA (extra QA-days), heavy schema changes (extra migration review), new OAuth providers or stores (extra certification time). Revisit estimates when the backlog changes mid-cycle.
+- Budget in **person-days**: roughly **~5 engineer-days** of focused dev per engineer per train in phase 1 (adjust for headcount); QA is **part of the same 9 days**, not a separate multi-week line item.
+- **Scope up** → **defer** to the **next 9-day train**, or **move the ship date**—do not silently compress QA to zero.
+- **Need more QA** → either add **half a day** to phases 2–3 and **slip day 9** by one business day, or **shrink dev** to 4.5 days—document the tradeoff.
+- **Re-budget triggers**: new user-facing surfaces, risky migrations, or new store capabilities—may require a **second train** or a one-off longer window.
 
 ### Engineering hygiene (versioning, branching, changelog, build)
 
