@@ -2,7 +2,15 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { nextExperimentStatus } from '@/experiment/constants';
 import type { ExperimentStatus } from '@/experiment/constants';
+import {
+  deleteExperimentForUser,
+  fetchExperimentsForUser,
+  insertExperimentForUser,
+  updateExperimentForUser,
+} from '@/experiment/services/experimentSupabaseService';
 import type { RootState } from '@/sharedModules/state/store';
+import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
+import { isUuid } from '@/sharedModules/utils/uuid';
 
 export type Experiment = {
   id: string;
@@ -40,7 +48,17 @@ const initialState: ExperimentState = {
   error: null,
 };
 
-export const fetchExperimentsThunk = createAsyncThunk<Experiment[]>('experiment/fetchExperimentsThunk', async () => []);
+export const fetchExperimentsThunk = createAsyncThunk<Experiment[], void, { state: RootState }>(
+  'experiment/fetchExperimentsThunk',
+  async (_, { getState }) => {
+    const userId = getState().auth.user?.id;
+    if (!userId) return [];
+    return withSupabaseClient((client) => fetchExperimentsForUser(client, userId), {
+      returnOnUnavailable: [],
+    });
+  },
+);
+
 export const createExperimentThunk = createAsyncThunk<
   Experiment,
   Pick<Experiment, 'title' | 'projectId'> &
@@ -54,10 +72,12 @@ export const createExperimentThunk = createAsyncThunk<
         | 'hardwareIds'
         | 'attachmentUrls'
       >
-    >
->(
-  'experiment/createExperimentThunk',
-  async ({
+    >,
+  { state: RootState }
+>('experiment/createExperimentThunk', async (payload, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  const {
     title,
     projectId,
     objective = '',
@@ -66,30 +86,60 @@ export const createExperimentThunk = createAsyncThunk<
     status = 'pending',
     hardwareIds = [],
     attachmentUrls = [],
-  }) => {
-    const now = new Date().toISOString();
-    return {
-      id: `exp-${Date.now()}`,
-      projectId,
+  } = payload;
+
+  if (user && client && isUuid(projectId)) {
+    return insertExperimentForUser(client, user.id, {
       title,
+      projectId,
       objective,
       observations,
       githubCommit,
       status,
       hardwareIds,
       attachmentUrls,
-      createdAt: now,
-      updatedAt: now,
-    };
+    });
+  }
+
+  const now = new Date().toISOString();
+  return {
+    id: `exp-${Date.now()}`,
+    projectId,
+    title,
+    objective,
+    observations,
+    githubCommit,
+    status,
+    hardwareIds,
+    attachmentUrls,
+    createdAt: now,
+    updatedAt: now,
+  };
+});
+
+export const updateExperimentThunk = createAsyncThunk<Experiment, Experiment, { state: RootState }>(
+  'experiment/updateExperimentThunk',
+  async (experiment, { getState }) => {
+    const next: Experiment = { ...experiment, updatedAt: new Date().toISOString() };
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(experiment.id)) {
+      return updateExperimentForUser(client, next);
+    }
+    return next;
   },
 );
-export const updateExperimentThunk = createAsyncThunk<Experiment, Experiment>(
-  'experiment/updateExperimentThunk',
-  async (experiment) => ({ ...experiment, updatedAt: new Date().toISOString() }),
-);
-export const deleteExperimentThunk = createAsyncThunk<string, string>(
+
+export const deleteExperimentThunk = createAsyncThunk<string, string, { state: RootState }>(
   'experiment/deleteExperimentThunk',
-  async (experimentId) => experimentId,
+  async (experimentId, { getState }) => {
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(experimentId)) {
+      await deleteExperimentForUser(client, experimentId);
+    }
+    return experimentId;
+  },
 );
 export const uploadAttachmentThunk = createAsyncThunk<
   { experimentId: string; url: string },
@@ -121,6 +171,14 @@ const experimentSlice = createSlice({
       if (!experiment) return;
       experiment.status = nextExperimentStatus(experiment.status);
       experiment.updatedAt = new Date().toISOString();
+    },
+    clearExperimentData(state) {
+      state.experiments = [];
+      state.selectedExperimentId = null;
+      state.filterByProject = null;
+      state.filterByStatus = null;
+      state.filterByHardware = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -163,6 +221,7 @@ export const {
   setExperimentStatusFilter,
   setExperimentHardwareFilter,
   cycleExperimentStatus,
+  clearExperimentData,
 } = experimentSlice.actions;
 export default experimentSlice.reducer;
 

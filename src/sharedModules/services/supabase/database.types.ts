@@ -175,6 +175,89 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['tasks']['Insert']>;
       };
+      hardware_library: {
+        Row: {
+          id: string;
+          owner_id: string;
+          name: string;
+          category: 'MCU' | 'Sensor' | 'Actuator' | 'Module' | 'Tool';
+          manufacturer: string | null;
+          model_number: string | null;
+          specifications: string | null;
+          datasheet_url: string | null;
+          quantity_available: number;
+          quantity_in_use: number;
+          status: 'available' | 'in_use' | 'maintenance' | 'depleted';
+          image_url: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          name: string;
+          category: 'MCU' | 'Sensor' | 'Actuator' | 'Module' | 'Tool';
+          manufacturer?: string | null;
+          model_number?: string | null;
+          specifications?: string | null;
+          datasheet_url?: string | null;
+          quantity_available?: number;
+          quantity_in_use?: number;
+          status?: 'available' | 'in_use' | 'maintenance' | 'depleted';
+          image_url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['hardware_library']['Insert']>;
+      };
+      experiments: {
+        Row: {
+          id: string;
+          project_id: string;
+          owner_id: string;
+          title: string;
+          objective: string | null;
+          observations: string | null;
+          status: 'pending' | 'in_progress' | 'completed' | 'failed';
+          github_commit: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          owner_id: string;
+          title: string;
+          objective?: string | null;
+          observations?: string | null;
+          status?: 'pending' | 'in_progress' | 'completed' | 'failed';
+          github_commit?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['experiments']['Insert']>;
+      };
+      experiment_hardware: {
+        Row: {
+          id: string;
+          experiment_id: string;
+          hardware_id: string;
+          quantity_used: number;
+        };
+        Insert: {
+          id?: string;
+          experiment_id: string;
+          hardware_id: string;
+          quantity_used?: number;
+        };
+        Update: Partial<Database['public']['Tables']['experiment_hardware']['Insert']>;
+      };
       notes: {
         Row: {
           id: string;

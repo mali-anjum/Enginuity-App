@@ -1,20 +1,28 @@
 /**
- * Background persistence for experiments after optimistic Redux updates.
- * Wire Supabase (or another backend) here without blocking the UI thread.
+ * Background persistence after optimistic Redux updates (e.g. status chip).
  */
+
+import { patchExperimentStatusForUser } from '@/experiment/services/experimentSupabaseService';
+import { getSupabaseClientOrNull } from '@/sharedModules/services/supabase/supabaseClient';
+import { store } from '@/sharedModules/state/store';
+import { isUuid } from '@/sharedModules/utils/uuid';
 
 export function enqueueExperimentRemoteSync(experimentId: string): void {
   queueMicrotask(() => {
-    void persistExperimentStub(experimentId);
+    void persistExperimentRemote(experimentId);
   });
 }
 
-async function persistExperimentStub(experimentId: string): Promise<void> {
+async function persistExperimentRemote(experimentId: string): Promise<void> {
   try {
-    // Future: load session, map local id → server row, upsert status & updated_at.
-    // Local-only ids (e.g. exp-…) skip until unified sync ships.
-    void experimentId;
+    const experiment = store.getState().experiment.experiments.find((item) => item.id === experimentId);
+    if (!experiment || !isUuid(experimentId)) return;
+
+    const client = getSupabaseClientOrNull();
+    if (!client) return;
+
+    await patchExperimentStatusForUser(client, experimentId, experiment.status);
   } catch {
-    // Swallow sync errors — optimistic UI already advanced; reconcile on next fetch when wired.
+    // Optimistic UI already advanced; reconcile on next fetch.
   }
 }

@@ -1,7 +1,15 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import type { HardwareCategory } from '@/hardware/constants';
+import {
+  deleteHardwareForUser,
+  fetchHardwareForUser,
+  insertHardwareForUser,
+  updateHardwareForUser,
+} from '@/hardware/services/hardwareSupabaseService';
 import type { RootState } from '@/sharedModules/state/store';
+import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
+import { isUuid } from '@/sharedModules/utils/uuid';
 
 export type HardwareItem = {
   id: string;
@@ -29,34 +37,62 @@ const initialState: HardwareState = {
   error: null,
 };
 
-export const fetchHardwareThunk = createAsyncThunk<HardwareItem[]>(
+export const fetchHardwareThunk = createAsyncThunk<HardwareItem[], void, { state: RootState }>(
   'hardware/fetchHardwareThunk',
-  async () => [],
+  async (_, { getState }) => {
+    const userId = getState().auth.user?.id;
+    if (!userId) return [];
+    return withSupabaseClient((client) => fetchHardwareForUser(client, userId), {
+      returnOnUnavailable: [],
+    });
+  },
 );
 
 export const addHardwareThunk = createAsyncThunk<
   HardwareItem,
-  Pick<HardwareItem, 'name' | 'category'> & Partial<Pick<HardwareItem, 'specs' | 'datasheetUrl'>>
->(
-  'hardware/addHardwareThunk',
-  async ({ name, category, specs = '', datasheetUrl = '' }) => ({
+  Pick<HardwareItem, 'name' | 'category'> & Partial<Pick<HardwareItem, 'specs' | 'datasheetUrl'>>,
+  { state: RootState }
+>('hardware/addHardwareThunk', async (payload, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  if (user && client) {
+    return insertHardwareForUser(client, user.id, payload);
+  }
+
+  const { name, category, specs = '', datasheetUrl = '' } = payload;
+  return {
     id: `hw-${Date.now()}`,
     name,
     category,
     specs,
     datasheetUrl,
     updatedAt: new Date().toISOString(),
-  }),
-);
+  };
+});
 
-export const updateHardwareThunk = createAsyncThunk<HardwareItem, HardwareItem>(
+export const updateHardwareThunk = createAsyncThunk<HardwareItem, HardwareItem, { state: RootState }>(
   'hardware/updateHardwareThunk',
-  async (hardware) => ({ ...hardware, updatedAt: new Date().toISOString() }),
+  async (hardware, { getState }) => {
+    const next: HardwareItem = { ...hardware, updatedAt: new Date().toISOString() };
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(hardware.id)) {
+      return updateHardwareForUser(client, next);
+    }
+    return next;
+  },
 );
 
-export const deleteHardwareThunk = createAsyncThunk<string, string>(
+export const deleteHardwareThunk = createAsyncThunk<string, string, { state: RootState }>(
   'hardware/deleteHardwareThunk',
-  async (hardwareId) => hardwareId,
+  async (hardwareId, { getState }) => {
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(hardwareId)) {
+      await deleteHardwareForUser(client, hardwareId);
+    }
+    return hardwareId;
+  },
 );
 
 const hardwareSlice = createSlice({
@@ -68,6 +104,12 @@ const hardwareSlice = createSlice({
     },
     setHardwareCategoryFilter(state, action: PayloadAction<HardwareCategory | null>) {
       state.filterByCategory = action.payload;
+    },
+    clearHardwareData(state) {
+      state.hardware = [];
+      state.selectedHardwareId = null;
+      state.filterByCategory = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -97,7 +139,8 @@ const hardwareSlice = createSlice({
   },
 });
 
-export const { setSelectedHardwareId, setHardwareCategoryFilter } = hardwareSlice.actions;
+export const { setSelectedHardwareId, setHardwareCategoryFilter, clearHardwareData } =
+  hardwareSlice.actions;
 export default hardwareSlice.reducer;
 
 export const selectAllHardware = (state: RootState) => state.hardware.hardware;
