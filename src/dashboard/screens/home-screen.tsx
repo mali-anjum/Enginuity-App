@@ -1,52 +1,62 @@
 import { Link, useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { experimentStatusLabel } from '@/experiment/constants';
 import {
-  createExperimentThunk,
-  selectRecentExperiments,
-} from '@/experiment/state/experimentSlice';
-import {
-  selectProjectStats,
-  selectProjectsSortedByLastActivity,
-} from '@/project/state/projectSlice';
+  selectProjectsWithExperimentCounts,
+  selectRecentExperimentsForHome,
+} from '@/dashboard/selectors/home-dashboard';
+import { HomeEmptyProjects } from '@/dashboard/organisms/home-empty-projects';
+import type { Project } from '@/project/state/projectSlice';
+import { selectProjectStats } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/sharedModules/state/hooks';
 
 import { HomeFabCreateSheet } from '../organisms/home-fab-create-sheet';
 import { HomeQuickSearchOverlay } from '../organisms/home-quick-search-overlay';
+
+function formatProjectStatusLabel(status: Project['status']): string {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function projectChipColors(
+  theme: (typeof Colors)['light'],
+  status: Project['status'],
+): { border: string; background: string } {
+  switch (status) {
+    case 'active':
+      return { border: theme.primary, background: theme.heroTint };
+    case 'completed':
+      return { border: theme.accentBorder, background: theme.accentSoft };
+    case 'archived':
+      return { border: theme.border, background: theme.surfaceElevated };
+    default:
+      return { border: theme.border, background: theme.surfaceElevated };
+  }
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
-  const dispatch = useAppDispatch();
-  const projectsByActivity = useAppSelector(selectProjectsSortedByLastActivity);
-  const recentExperiments = useAppSelector(selectRecentExperiments);
+  const projectsWithCounts = useAppSelector(selectProjectsWithExperimentCounts);
+  const recentRows = useAppSelector(selectRecentExperimentsForHome);
   const projectStats = useAppSelector(selectProjectStats);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const activityFeed = useMemo(() => {
-    return recentExperiments.map((experiment) => ({
-      id: experiment.id,
-      title: experiment.title,
-      subtitle: `Status: ${experimentStatusLabel(experiment.status)}`,
-    }));
-  }, [recentExperiments]);
-
   const searchResults = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (!normalizedQuery) return [];
 
-    const projectMatches = projectsByActivity
+    const projectMatches = projectsWithCounts
       .filter((project) => project.title.toLowerCase().includes(normalizedQuery))
       .map((project) => ({
         id: `project-${project.id}`,
@@ -54,35 +64,32 @@ export default function HomeScreen() {
         subtitle: 'Project',
       }));
 
-    const experimentMatches = recentExperiments
-      .filter((experiment) => experiment.title.toLowerCase().includes(normalizedQuery))
-      .map((experiment) => ({
-        id: `experiment-${experiment.id}`,
-        title: experiment.title,
-        subtitle: 'Experiment activity',
+    const experimentMatches = recentRows
+      .filter((row) =>
+        row.experiment.title.toLowerCase().includes(normalizedQuery),
+      )
+      .map((row) => ({
+        id: `experiment-${row.experiment.id}`,
+        title: row.experiment.title,
+        subtitle: 'Experiment',
       }));
 
     return [...projectMatches, ...experimentMatches].slice(0, 8);
-  }, [searchQuery, projectsByActivity, recentExperiments]);
+  }, [searchQuery, projectsWithCounts, recentRows]);
 
-  const createProject = () => {
+  const openCreateProject = () => {
     setIsCreateSheetOpen(false);
     router.push('/project/create');
   };
 
-  const createExperiment = () => {
-    const fallbackProject = projectsByActivity[0];
-    if (!fallbackProject) {
+  const openCreateExperimentForRecentProject = () => {
+    const target = projectsWithCounts[0];
+    if (!target) {
       setIsCreateSheetOpen(false);
       return;
     }
-    void dispatch(
-      createExperimentThunk({
-        title: `Experiment ${new Date().toLocaleTimeString()}`,
-        projectId: fallbackProject.id,
-      }),
-    );
     setIsCreateSheetOpen(false);
+    router.push(`/experiment/create?projectId=${encodeURIComponent(target.id)}` as Href);
   };
 
   return (
@@ -95,7 +102,8 @@ export default function HomeScreen() {
         <View style={styles.headerMain}>
           <ThemedText type="title">Home</ThemedText>
           <ThemedText style={{ color: themeColors.mutedText }}>
-            {projectStats.total} projects - {projectStats.completed} completed
+            {projectStats.total} project{projectStats.total === 1 ? '' : 's'}
+            {projectStats.total > 0 ? ` · ${projectStats.active} active` : ''}
           </ThemedText>
         </View>
         <Link href={'/search' as Href} asChild>
@@ -108,7 +116,7 @@ export default function HomeScreen() {
         </Link>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <Pressable
           style={[
             styles.searchBarButton,
@@ -119,24 +127,84 @@ export default function HomeScreen() {
           ]}
           onPress={() => setIsSearchOpen(true)}>
           <ThemedText style={{ color: themeColors.mutedText }}>
-            {searchQuery.trim() ? searchQuery : 'Quick search projects and activity'}
+            {searchQuery.trim() ? searchQuery : 'Search projects and experiments'}
           </ThemedText>
         </Pressable>
+
         <View style={styles.sectionHeader}>
           <ThemedText type="subtitle">Projects</ThemedText>
-          <Link href={'/project' as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Open Project Module</ThemedText>
-          </Link>
+          {projectsWithCounts.length > 0 ? (
+            <Link href={'/project' as Href}>
+              <ThemedText style={{ color: themeColors.primary }}>See all</ThemedText>
+            </Link>
+          ) : null}
         </View>
 
         <View style={styles.sectionBody}>
-          {projectsByActivity.length === 0 ? (
+          {projectsWithCounts.length === 0 ? (
+            <HomeEmptyProjects onCreateProject={openCreateProject} />
+          ) : (
+            projectsWithCounts.map((project) => {
+              const chip = projectChipColors(themeColors, project.status);
+              return (
+                <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
+                  <Pressable
+                    style={[
+                      styles.projectCard,
+                      {
+                        borderColor: themeColors.border,
+                        backgroundColor: themeColors.surfaceElevated,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Open project ${project.title}`}>
+                    <View style={styles.projectCardTop}>
+                      <ThemedText type="defaultSemiBold" style={styles.projectTitle} numberOfLines={2}>
+                        {project.title}
+                      </ThemedText>
+                      <View style={[styles.statusChip, { borderColor: chip.border, backgroundColor: chip.background }]}>
+                        <ThemedText style={{ fontSize: 12, fontWeight: '600' }}>
+                          {formatProjectStatusLabel(project.status)}
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.projectMeta}>
+                      <ThemedText style={{ color: themeColors.mutedText }}>
+                        {project.experimentCount} experiment{project.experimentCount === 1 ? '' : 's'}
+                      </ThemedText>
+                      <ThemedText style={{ color: themeColors.subtleText }}>
+                        Updated {new Date(project.updatedAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </ThemedText>
+                    </View>
+                  </Pressable>
+                </Link>
+              );
+            })
+          )}
+        </View>
+
+        <View style={[styles.sectionHeader, styles.sectionSpacer]}>
+          <ThemedText type="subtitle">Recent experiments</ThemedText>
+          {recentRows.length > 0 ? (
+            <Link href={'/experiment' as Href}>
+              <ThemedText style={{ color: themeColors.primary }}>See all</ThemedText>
+            </Link>
+          ) : null}
+        </View>
+        <View style={styles.sectionBody}>
+          {recentRows.length === 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>
-              No projects yet. Use the + button to create one.
+              {projectsWithCounts.length === 0
+                ? 'Experiments you log will appear here.'
+                : 'No experiments yet. Tap + to log one in your latest project.'}
             </ThemedText>
           ) : (
-            projectsByActivity.map((project) => (
-              <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
+            recentRows.map(({ experiment, projectTitle }) => (
+              <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href} asChild>
                 <Pressable
                   style={[
                     styles.card,
@@ -144,61 +212,28 @@ export default function HomeScreen() {
                       borderColor: themeColors.border,
                       backgroundColor: themeColors.surfaceElevated,
                     },
-                  ]}>
-                  <ThemedText type="defaultSemiBold">{project.title}</ThemedText>
-                  <ThemedText style={{ color: themeColors.mutedText }}>
-                    Last activity {new Date(project.updatedAt).toLocaleString()}
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open experiment ${experiment.title}`}>
+                  <ThemedText type="defaultSemiBold" numberOfLines={2}>
+                    {experiment.title}
+                  </ThemedText>
+                  <ThemedText style={{ color: themeColors.mutedText }} numberOfLines={1}>
+                    {projectTitle} · {experimentStatusLabel(experiment.status)}
+                  </ThemedText>
+                  <ThemedText style={{ color: themeColors.subtleText, fontSize: 12 }}>
+                    {new Date(experiment.updatedAt).toLocaleString()}
                   </ThemedText>
                 </Pressable>
               </Link>
             ))
           )}
         </View>
-
-        <View style={styles.sectionHeader}>
-          <ThemedText type="subtitle">Recent Activity</ThemedText>
-          <Link href={'/profile' as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Open Profile Module</ThemedText>
-          </Link>
-          <Link href={'/settings' as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Open Settings Module</ThemedText>
-          </Link>
-          <Link href={'/experiment' as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Open Experiment Module</ThemedText>
-          </Link>
-          <Link href={'/notes' as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Open Notes Module</ThemedText>
-          </Link>
-          <Link href={'/hardware' as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Open Hardware Library</ThemedText>
-          </Link>
-        </View>
-        <View style={styles.sectionBody}>
-          {activityFeed.length === 0 ? (
-            <ThemedText style={{ color: themeColors.mutedText }}>
-              No experiment activity yet. Create an experiment from the + button.
-            </ThemedText>
-          ) : (
-            activityFeed.map((activity) => (
-              <View
-                key={activity.id}
-                style={[
-                  styles.card,
-                  {
-                    borderColor: themeColors.border,
-                    backgroundColor: themeColors.surfaceElevated,
-                  },
-                ]}>
-                <ThemedText type="defaultSemiBold">{activity.title}</ThemedText>
-                <ThemedText style={{ color: themeColors.mutedText }}>{activity.subtitle}</ThemedText>
-              </View>
-            ))
-          )}
-        </View>
-      </View>
+      </ScrollView>
 
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel="Create project or experiment"
         style={[styles.fab, { backgroundColor: themeColors.primary }]}
         onPress={() => setIsCreateSheetOpen(true)}>
         <ThemedText
@@ -225,7 +260,7 @@ export default function HomeScreen() {
             },
           ]}>
           <TextInput
-            placeholder="Search projects and activity..."
+            placeholder="Search projects and experiments..."
             placeholderTextColor={themeColors.mutedText}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -239,8 +274,10 @@ export default function HomeScreen() {
       ) : null}
       <HomeFabCreateSheet
         isOpen={isCreateSheetOpen}
-        onCreateProject={createProject}
-        onCreateExperiment={createExperiment}
+        hasProjects={projectsWithCounts.length > 0}
+        recentProjectTitle={projectsWithCounts[0]?.title ?? null}
+        onCreateProject={openCreateProject}
+        onCreateExperiment={openCreateExperimentForRecentProject}
         onClose={() => setIsCreateSheetOpen(false)}
       />
     </ThemedView>
@@ -269,8 +306,7 @@ const styles = StyleSheet.create({
     padding: 6,
     marginTop: -2,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     padding: 16,
     gap: 12,
     paddingBottom: 100,
@@ -283,8 +319,42 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionSpacer: {
+    marginTop: 16,
   },
   sectionBody: {
+    gap: 10,
+  },
+  projectCard: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  projectCardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  projectTitle: {
+    flex: 1,
+  },
+  statusChip: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  projectMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 8,
   },
   card: {
@@ -292,7 +362,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 11,
     paddingHorizontal: 12,
-    gap: 2,
+    gap: 4,
   },
   fab: {
     position: 'absolute',
