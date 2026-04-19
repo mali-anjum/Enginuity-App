@@ -16,9 +16,17 @@ export type ExperimentFormValues = {
   attachmentInput: string;
 };
 
+export type SelectedHardwareChip = {
+  id: string;
+  name: string;
+  category: string;
+};
+
 type ExperimentFormProps = {
   values: ExperimentFormValues;
   selectedHardwareCount: number;
+  selectedHardwareChips: SelectedHardwareChip[];
+  onRemoveHardware?: (hardwareId: string) => void;
   onChange: (patch: Partial<ExperimentFormValues>) => void;
   onOpenHardwarePicker: () => void;
   submitLabel: string;
@@ -30,6 +38,8 @@ const STATUS_OPTIONS: ExperimentFormValues['status'][] = ['draft', 'in_progress'
 export function ExperimentForm({
   values,
   selectedHardwareCount,
+  selectedHardwareChips,
+  onRemoveHardware,
   onChange,
   onOpenHardwarePicker,
   submitLabel,
@@ -82,10 +92,37 @@ export function ExperimentForm({
           style={[styles.input, styles.pickerButton, { borderColor: themeColors.border }]}>
           <ThemedText>
             {selectedHardwareCount > 0
-              ? `${selectedHardwareCount} hardware selected`
-              : 'Select hardware (multi-select)'}
+              ? `${selectedHardwareCount} selected — tap to change`
+              : 'Choose from hardware library (multi-select)'}
           </ThemedText>
         </Pressable>
+        {selectedHardwareChips.length > 0 ? (
+          <View style={styles.chipWrap}>
+            {selectedHardwareChips.map((item) => (
+              <Pressable
+                key={item.id}
+                onPress={() => onRemoveHardware?.(item.id)}
+                disabled={!onRemoveHardware}
+                style={[
+                  styles.hardwareChip,
+                  {
+                    borderColor: themeColors.primary,
+                    backgroundColor: themeColors.heroTint,
+                  },
+                ]}>
+                <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                  {item.name}
+                </ThemedText>
+                <ThemedText style={[styles.chipCategory, { color: themeColors.mutedText }]}>
+                  {item.category}
+                </ThemedText>
+                {onRemoveHardware ? (
+                  <ThemedText style={[styles.removeHint, { color: themeColors.primary }]}>✕</ThemedText>
+                ) : null}
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.group}>
@@ -168,5 +205,19 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 88, textAlignVertical: 'top' },
   choiceWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   choiceChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  hardwareChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    maxWidth: '100%',
+  },
+  chipCategory: { fontSize: 12 },
+  removeHint: { fontSize: 14, marginLeft: 2 },
   submitButton: { borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
 });
