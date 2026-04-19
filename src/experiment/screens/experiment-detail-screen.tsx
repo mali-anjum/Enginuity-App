@@ -58,12 +58,27 @@ export default function ExperimentDetailScreen() {
           {linkedHardware.length === 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>No hardware linked.</ThemedText>
           ) : (
-            linkedHardware.map((hardware) => (
-              <View key={hardware.id} style={[styles.card, { borderColor: themeColors.border }]}>
-                <ThemedText type="defaultSemiBold">{hardware.name}</ThemedText>
-                <ThemedText style={{ color: themeColors.mutedText }}>{hardware.type}</ThemedText>
-              </View>
-            ))
+            <View style={styles.chipWrap}>
+              {linkedHardware.map((hardware) => (
+                <Link key={hardware.id} href={`/hardware/${hardware.id}` as Href} asChild>
+                  <Pressable
+                    style={[
+                      styles.hardwareChip,
+                      {
+                        borderColor: themeColors.primary,
+                        backgroundColor: themeColors.heroTint,
+                      },
+                    ]}>
+                    <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                      {hardware.name}
+                    </ThemedText>
+                    <ThemedText style={[styles.chipMeta, { color: themeColors.mutedText }]}>
+                      {hardware.category}
+                    </ThemedText>
+                  </Pressable>
+                </Link>
+              ))}
+            </View>
           )}
         </View>
 
@@ -100,5 +115,17 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   section: { gap: 8 },
-  card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 10, gap: 2 },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  hardwareChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    maxWidth: '100%',
+  },
+  chipMeta: { fontSize: 12 },
 });
