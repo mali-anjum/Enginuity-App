@@ -5,12 +5,9 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { experimentStatusLabel } from '@/experiment/constants';
+import { experimentStatusLabel, nextExperimentStatus } from '@/experiment/constants';
 import type { ExperimentStatus } from '@/experiment/constants';
-import {
-  cycleExperimentStatus,
-  selectExperimentById,
-} from '@/experiment/state/experimentSlice';
+import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -64,7 +61,14 @@ export default function ExperimentDetailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityHint="Cycles Pending, In Progress, Completed, Failed"
-          onPress={() => dispatch(cycleExperimentStatus(experiment.id))}
+          onPress={() => {
+            void dispatch(
+              updateExperimentThunk({
+                ...experiment,
+                status: nextExperimentStatus(experiment.status),
+              }),
+            );
+          }}
           style={[
             styles.statusChip,
             { borderColor: chipColors.border, backgroundColor: chipColors.background },
