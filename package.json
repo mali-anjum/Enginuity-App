@@ -11,7 +11,9 @@
     "ios": "dotenv -e .env.local -- npx expo start --ios",
     "web": "dotenv -e .env.local -- npx expo start --web",
     "lint": "eslint ./src ./App.tsx ./index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
