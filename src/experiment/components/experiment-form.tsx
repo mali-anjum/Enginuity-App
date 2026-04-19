@@ -4,9 +4,11 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { EXPERIMENT_STATUSES } from '@/experiment/constants';
-import type { ExperimentStatus } from '@/experiment/constants';
-import { experimentStatusLabel } from '@/experiment/constants';
+import {
+  EXPERIMENT_STATUSES,
+  experimentStatusLabel,
+  type ExperimentStatus,
+} from '@/experiment/constants';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
