@@ -1,15 +1,16 @@
 import { Link, useLocalSearchParams, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { experimentStatusLabel } from '@/experiment/constants';
-import { selectExperimentsByProject } from '@/experiment/state/experimentSlice';
+import { ExperimentStatusChip } from '@/experiment/components/experiment-status-chip';
+import { enqueueExperimentRemoteSync } from '@/experiment/services/experimentRemoteSync';
+import { cycleExperimentStatus, selectExperimentsByProject } from '@/experiment/state/experimentSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 type DetailTab = 'experiments' | 'notes';
 
@@ -17,10 +18,19 @@ export default function ProjectDetailScreen() {
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<DetailTab>('experiments');
 
   const project = useAppSelector(selectProjectById(projectId ?? ''));
   const experiments = useAppSelector(selectExperimentsByProject(projectId ?? ''));
+
+  const experimentsSorted = useMemo(
+    () =>
+      [...experiments].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      ),
+    [experiments],
+  );
 
   if (!project) {
     return (
@@ -104,7 +114,7 @@ export default function ProjectDetailScreen() {
                 <ThemedText style={{ color: themeColors.primary }}>Add experiment</ThemedText>
               </Link>
             </View>
-            {experiments.length === 0 ? (
+            {experimentsSorted.length === 0 ? (
               <View
                 style={[
                   styles.emptyCard,
@@ -126,24 +136,42 @@ export default function ProjectDetailScreen() {
                 </Link>
               </View>
             ) : (
-              experiments.map((experiment) => (
-                <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href} asChild>
-                  <Pressable
-                    style={[
-                      styles.card,
-                      {
-                        borderColor: themeColors.border,
-                        backgroundColor: themeColors.surfaceElevated,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open experiment ${experiment.title}`}>
-                    <ThemedText type="defaultSemiBold">{experiment.title}</ThemedText>
-                    <ThemedText style={{ color: themeColors.mutedText }}>
-                      {experimentStatusLabel(experiment.status)}
-                    </ThemedText>
-                  </Pressable>
-                </Link>
+              experimentsSorted.map((experiment) => (
+                <View
+                  key={experiment.id}
+                  style={[
+                    styles.experimentRow,
+                    {
+                      borderColor: themeColors.border,
+                      backgroundColor: themeColors.surfaceElevated,
+                    },
+                  ]}>
+                  <Link href={`/experiment/${experiment.id}` as Href} asChild>
+                    <Pressable
+                      style={styles.experimentMain}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Open experiment ${experiment.title}`}>
+                      <ThemedText type="defaultSemiBold" numberOfLines={2}>
+                        {experiment.title}
+                      </ThemedText>
+                      <ThemedText style={[styles.metaHint, { color: themeColors.mutedText }]}>
+                        Updated {new Date(experiment.updatedAt).toLocaleDateString()}
+                      </ThemedText>
+                    </Pressable>
+                  </Link>
+                  <ExperimentStatusChip
+                    status={experiment.status}
+                    onPress={() => {
+                      dispatch(
+                        cycleExperimentStatus({
+                          experimentId: experiment.id,
+                          projectId: experiment.projectId,
+                        }),
+                      );
+                      enqueueExperimentRemoteSync(experiment.id);
+                    }}
+                  />
+                </View>
               ))
             )}
           </View>
@@ -215,12 +243,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
-  card: {
+  experimentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 10,
+  },
+  experimentMain: {
+    flex: 1,
+    minWidth: 0,
     gap: 4,
+    paddingVertical: 2,
+  },
+  metaHint: {
+    fontSize: 12,
   },
   emptyIcon: {
     fontSize: 40,
