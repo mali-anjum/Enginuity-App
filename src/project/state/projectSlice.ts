@@ -1,7 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+import { createExperimentThunk, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import type { RootState } from '@/sharedModules/state/store';
 
-type ProjectFilter = 'active' | 'completed' | 'favourites';
+export type ProjectFilter = 'active' | 'completed' | 'archived' | 'favourites';
 export type ProjectStatus = 'active' | 'completed' | 'archived';
 
 export type Project = {
@@ -48,7 +50,7 @@ export const createProjectThunk = createAsyncThunk<
     dueDate,
     status,
     fileUrls: [],
-    isCompleted: false,
+    isCompleted: status === 'completed',
     isFavourite: false,
     updatedAt: new Date().toISOString(),
   }),
@@ -56,7 +58,11 @@ export const createProjectThunk = createAsyncThunk<
 
 export const updateProjectThunk = createAsyncThunk<Project, Project>(
   'project/updateProjectThunk',
-  async (project) => ({ ...project, updatedAt: new Date().toISOString() }),
+  async (project) => ({
+    ...project,
+    isCompleted: project.status === 'completed',
+    updatedAt: new Date().toISOString(),
+  }),
 );
 
 export const deleteProjectThunk = createAsyncThunk<string, string>(
@@ -128,6 +134,14 @@ const projectSlice = createSlice({
         project.status = project.isCompleted ? 'completed' : 'active';
         project.updatedAt = new Date().toISOString();
       })
+      .addCase(createExperimentThunk.fulfilled, (state, action) => {
+        const project = state.projects.find((item) => item.id === action.payload.projectId);
+        if (project) project.updatedAt = new Date().toISOString();
+      })
+      .addCase(updateExperimentThunk.fulfilled, (state, action) => {
+        const project = state.projects.find((item) => item.id === action.payload.projectId);
+        if (project) project.updatedAt = new Date().toISOString();
+      })
       .addCase(attachProjectFileThunk.fulfilled, (state, action) => {
         const project = state.projects.find((item) => item.id === action.payload.projectId);
         if (!project) return;
@@ -140,19 +154,34 @@ const projectSlice = createSlice({
 export const { setSelectedProjectId, setProjectFilter } = projectSlice.actions;
 export default projectSlice.reducer;
 
+const sortByLastActivity = (projects: Project[]) =>
+  [...projects].sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  );
+
 export const selectAllProjects = (state: RootState) => state.project.projects;
+
+/** All projects sorted by most recently touched (updatedAt descending). */
+export const selectProjectsSortedByLastActivity = (state: RootState) =>
+  sortByLastActivity(state.project.projects);
+
 export const selectFilteredProjects = (state: RootState) => {
   const { projects, filter } = state.project;
-  if (filter === 'favourites') return projects.filter((item) => item.isFavourite);
-  if (filter === 'completed') return projects.filter((item) => item.isCompleted);
-  return projects.filter((item) => !item.isCompleted);
+  if (filter === 'favourites') return sortByLastActivity(projects.filter((item) => item.isFavourite));
+  if (filter === 'completed')
+    return sortByLastActivity(projects.filter((item) => item.status === 'completed'));
+  if (filter === 'archived')
+    return sortByLastActivity(projects.filter((item) => item.status === 'archived'));
+  return sortByLastActivity(projects.filter((item) => item.status === 'active'));
 };
 export const selectProjectById = (projectId: string) => (state: RootState) =>
   state.project.projects.find((item) => item.id === projectId) ?? null;
 export const selectProjectStats = (state: RootState) => {
-  const total = state.project.projects.length;
-  const completed = state.project.projects.filter((item) => item.isCompleted).length;
-  const favourites = state.project.projects.filter((item) => item.isFavourite).length;
-  return { total, completed, favourites, active: total - completed };
+  const projects = state.project.projects;
+  const total = projects.length;
+  const completed = projects.filter((item) => item.status === 'completed').length;
+  const favourites = projects.filter((item) => item.isFavourite).length;
+  const active = projects.filter((item) => item.status === 'active').length;
+  return { total, completed, favourites, active };
 };
 export const selectProjectFilter = (state: RootState) => state.project.filter;
