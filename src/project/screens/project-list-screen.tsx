@@ -12,7 +12,7 @@ import {
 } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
-const FILTERS = ['active', 'completed', 'favourites'] as const;
+const FILTERS = ['active', 'completed', 'archived', 'favourites'] as const;
 
 export default function ProjectListScreen() {
   const colorScheme = useColorScheme() ?? 'light';

@@ -31,16 +31,18 @@ export default function CreateProjectScreen() {
           submitLabel="Save Project"
           onSubmit={() => {
             if (!values.title.trim()) return;
-            void dispatch(
-              createProjectThunk({
-                title: values.title.trim(),
-                description: values.description.trim(),
-                startDate: values.startDate.trim() || null,
-                dueDate: values.dueDate.trim() || null,
-                status: values.status,
-              }),
-            );
-            router.replace('/project');
+            void (async () => {
+              const created = await dispatch(
+                createProjectThunk({
+                  title: values.title.trim(),
+                  description: values.description.trim(),
+                  startDate: values.startDate.trim() || null,
+                  dueDate: values.dueDate.trim() || null,
+                  status: values.status,
+                }),
+              ).unwrap();
+              router.replace(`/project/${created.id}`);
+            })();
           }}
         />
       </ScrollView>
