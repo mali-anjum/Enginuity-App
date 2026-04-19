@@ -1,4 +1,4 @@
-import { Link, type Href } from 'expo-router';
+import { Link, useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -7,10 +7,8 @@ import {
   selectRecentExperiments,
 } from '@/experiment/state/experimentSlice';
 import {
-  createProjectThunk,
-  selectFilteredProjects,
   selectProjectStats,
-  setProjectFilter,
+  selectProjectsSortedByLastActivity,
 } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
@@ -20,19 +18,17 @@ import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 import { HomeFabCreateSheet } from '../organisms/home-fab-create-sheet';
-import { HomeProjectFilterSheet } from '../organisms/home-project-filter-sheet';
 import { HomeQuickSearchOverlay } from '../organisms/home-quick-search-overlay';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
-  const filteredProjects = useAppSelector(selectFilteredProjects);
+  const projectsByActivity = useAppSelector(selectProjectsSortedByLastActivity);
   const recentExperiments = useAppSelector(selectRecentExperiments);
   const projectStats = useAppSelector(selectProjectStats);
-  const activeFilter = useAppSelector((state) => state.project.filter);
 
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,7 +45,7 @@ export default function HomeScreen() {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (!normalizedQuery) return [];
 
-    const projectMatches = filteredProjects
+    const projectMatches = projectsByActivity
       .filter((project) => project.title.toLowerCase().includes(normalizedQuery))
       .map((project) => ({
         id: `project-${project.id}`,
@@ -66,19 +62,15 @@ export default function HomeScreen() {
       }));
 
     return [...projectMatches, ...experimentMatches].slice(0, 8);
-  }, [searchQuery, filteredProjects, recentExperiments]);
+  }, [searchQuery, projectsByActivity, recentExperiments]);
 
   const createProject = () => {
-    void dispatch(
-      createProjectThunk({
-        title: `Project ${new Date().toLocaleTimeString()}`,
-      }),
-    );
     setIsCreateSheetOpen(false);
+    router.push('/project/create');
   };
 
   const createExperiment = () => {
-    const fallbackProject = filteredProjects[0];
+    const fallbackProject = projectsByActivity[0];
     if (!fallbackProject) {
       setIsCreateSheetOpen(false);
       return;
@@ -134,22 +126,15 @@ export default function HomeScreen() {
           <Link href={'/project' as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Open Project Module</ThemedText>
           </Link>
-          <Pressable
-            style={[styles.filterButton, { borderColor: themeColors.border }]}
-            onPress={() => setIsFilterOpen(true)}>
-            <ThemedText style={{ color: themeColors.subtleText }}>
-              Filter: {activeFilter[0].toUpperCase() + activeFilter.slice(1)}
-            </ThemedText>
-          </Pressable>
         </View>
 
         <View style={styles.sectionBody}>
-          {filteredProjects.length === 0 ? (
+          {projectsByActivity.length === 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>
-              No projects in this filter yet. Use the + button to add one.
+              No projects yet. Use the + button to create one.
             </ThemedText>
           ) : (
-            filteredProjects.map((project) => (
+            projectsByActivity.map((project) => (
               <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
                 <Pressable
                   style={[
@@ -161,7 +146,7 @@ export default function HomeScreen() {
                   ]}>
                   <ThemedText type="defaultSemiBold">{project.title}</ThemedText>
                   <ThemedText style={{ color: themeColors.mutedText }}>
-                    Updated {new Date(project.updatedAt).toLocaleString()}
+                    Last activity {new Date(project.updatedAt).toLocaleString()}
                   </ThemedText>
                 </Pressable>
               </Link>
@@ -223,15 +208,6 @@ export default function HomeScreen() {
         </ThemedText>
       </Pressable>
 
-      <HomeProjectFilterSheet
-        isOpen={isFilterOpen}
-        activeFilter={activeFilter}
-        onSelectFilter={(filter) => {
-          dispatch(setProjectFilter(filter));
-          setIsFilterOpen(false);
-        }}
-        onClose={() => setIsFilterOpen(false)}
-      />
       <HomeQuickSearchOverlay
         isOpen={isSearchOpen}
         query={searchQuery}
@@ -306,14 +282,6 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginTop: 4,
-  },
-  filterButton: {
-    marginTop: 8,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
   },
   sectionBody: {
     gap: 8,
