@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import type { ExperimentStatus } from '@/experiment/constants';
-import { nextExperimentStatus } from '@/experiment/constants';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type Experiment = {
@@ -112,13 +111,6 @@ const experimentSlice = createSlice({
     setExperimentHardwareFilter(state, action: PayloadAction<string | null>) {
       state.filterByHardware = action.payload;
     },
-    /** Single tap on detail: cycle Pending → In Progress → Completed → Failed → … */
-    cycleExperimentStatus(state, action: PayloadAction<string>) {
-      const experiment = state.experiments.find((item) => item.id === action.payload);
-      if (!experiment) return;
-      experiment.status = nextExperimentStatus(experiment.status);
-      experiment.updatedAt = new Date().toISOString();
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -159,7 +151,6 @@ export const {
   setExperimentProjectFilter,
   setExperimentStatusFilter,
   setExperimentHardwareFilter,
-  cycleExperimentStatus,
 } = experimentSlice.actions;
 export default experimentSlice.reducer;
 
