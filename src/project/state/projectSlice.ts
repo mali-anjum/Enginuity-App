@@ -5,7 +5,15 @@ import {
   cycleExperimentStatus,
   updateExperimentThunk,
 } from '@/experiment/state/experimentSlice';
+import {
+  deleteProjectForUser,
+  fetchProjectsForUser,
+  insertProjectForUser,
+  updateProjectForUser,
+} from '@/project/services/projectSupabaseService';
 import type { RootState } from '@/sharedModules/state/store';
+import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
+import { isUuid } from '@/sharedModules/utils/uuid';
 
 export type ProjectFilter = 'active' | 'completed' | 'archived' | 'favourites';
 export type ProjectStatus = 'active' | 'completed' | 'archived';
@@ -39,14 +47,30 @@ const initialState: ProjectState = {
   error: null,
 };
 
-export const fetchProjectsThunk = createAsyncThunk<Project[]>('project/fetchProjectsThunk', async () => []);
+export const fetchProjectsThunk = createAsyncThunk<Project[], void, { state: RootState }>(
+  'project/fetchProjectsThunk',
+  async (_, { getState }) => {
+    const userId = getState().auth.user?.id;
+    if (!userId) return [];
+    return withSupabaseClient((client) => fetchProjectsForUser(client, userId), {
+      returnOnUnavailable: [],
+    });
+  },
+);
 
 export const createProjectThunk = createAsyncThunk<
   Project,
-  Pick<Project, 'title'> & Partial<Pick<Project, 'description' | 'startDate' | 'dueDate' | 'status'>>
->(
-  'project/createProjectThunk',
-  async ({ title, description = '', startDate = null, dueDate = null, status = 'active' }) => ({
+  Pick<Project, 'title'> & Partial<Pick<Project, 'description' | 'startDate' | 'dueDate' | 'status'>>,
+  { state: RootState }
+>('project/createProjectThunk', async (payload, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  if (user && client) {
+    return insertProjectForUser(client, user.id, payload);
+  }
+
+  const { title, description = '', startDate = null, dueDate = null, status = 'active' } = payload;
+  return {
     id: `project-${Date.now()}`,
     title,
     description,
@@ -57,30 +81,79 @@ export const createProjectThunk = createAsyncThunk<
     isCompleted: status === 'completed',
     isFavourite: false,
     updatedAt: new Date().toISOString(),
-  }),
-);
+  };
+});
 
-export const updateProjectThunk = createAsyncThunk<Project, Project>(
+export const updateProjectThunk = createAsyncThunk<Project, Project, { state: RootState }>(
   'project/updateProjectThunk',
-  async (project) => ({
-    ...project,
-    isCompleted: project.status === 'completed',
-    updatedAt: new Date().toISOString(),
-  }),
+  async (project, { getState }) => {
+    const next: Project = {
+      ...project,
+      isCompleted: project.status === 'completed',
+      updatedAt: new Date().toISOString(),
+    };
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(project.id)) {
+      return updateProjectForUser(client, next);
+    }
+    return next;
+  },
 );
 
-export const deleteProjectThunk = createAsyncThunk<string, string>(
+export const deleteProjectThunk = createAsyncThunk<string, string, { state: RootState }>(
   'project/deleteProjectThunk',
-  async (projectId) => projectId,
+  async (projectId, { getState }) => {
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(projectId)) {
+      await deleteProjectForUser(client, projectId);
+    }
+    return projectId;
+  },
 );
 
-export const toggleFavouriteThunk = createAsyncThunk<string, string>(
+export const toggleFavouriteThunk = createAsyncThunk<Project, string, { state: RootState }>(
   'project/toggleFavouriteThunk',
-  async (projectId) => projectId,
+  async (projectId, { getState }) => {
+    const project = getState().project.projects.find((item) => item.id === projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+    const next: Project = {
+      ...project,
+      isFavourite: !project.isFavourite,
+      updatedAt: new Date().toISOString(),
+    };
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(projectId)) {
+      return updateProjectForUser(client, next);
+    }
+    return next;
+  },
 );
-export const toggleProjectStatusThunk = createAsyncThunk<string, string>(
+export const toggleProjectStatusThunk = createAsyncThunk<Project, string, { state: RootState }>(
   'project/toggleProjectStatusThunk',
-  async (projectId) => projectId,
+  async (projectId, { getState }) => {
+    const project = getState().project.projects.find((item) => item.id === projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+    const isCompleted = !project.isCompleted;
+    const next: Project = {
+      ...project,
+      isCompleted,
+      status: isCompleted ? 'completed' : 'active',
+      updatedAt: new Date().toISOString(),
+    };
+    const user = getState().auth.user;
+    const client = getSupabaseClientOrNull();
+    if (user && client && isUuid(projectId)) {
+      return updateProjectForUser(client, next);
+    }
+    return next;
+  },
 );
 export const attachProjectFileThunk = createAsyncThunk<
   { projectId: string; fileUrl: string },
@@ -96,6 +169,11 @@ const projectSlice = createSlice({
     },
     setProjectFilter(state, action: PayloadAction<ProjectFilter>) {
       state.filter = action.payload;
+    },
+    clearProjectData(state) {
+      state.projects = [];
+      state.selectedProjectId = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -125,18 +203,12 @@ const projectSlice = createSlice({
         state.projects = state.projects.filter((item) => item.id !== action.payload);
       })
       .addCase(toggleFavouriteThunk.fulfilled, (state, action) => {
-        const project = state.projects.find((item) => item.id === action.payload);
-        if (project) {
-          project.isFavourite = !project.isFavourite;
-          project.updatedAt = new Date().toISOString();
-        }
+        const index = state.projects.findIndex((item) => item.id === action.payload.id);
+        if (index >= 0) state.projects[index] = action.payload;
       })
       .addCase(toggleProjectStatusThunk.fulfilled, (state, action) => {
-        const project = state.projects.find((item) => item.id === action.payload);
-        if (!project) return;
-        project.isCompleted = !project.isCompleted;
-        project.status = project.isCompleted ? 'completed' : 'active';
-        project.updatedAt = new Date().toISOString();
+        const index = state.projects.findIndex((item) => item.id === action.payload.id);
+        if (index >= 0) state.projects[index] = action.payload;
       })
       .addCase(createExperimentThunk.fulfilled, (state, action) => {
         const project = state.projects.find((item) => item.id === action.payload.projectId);
@@ -159,7 +231,7 @@ const projectSlice = createSlice({
   },
 });
 
-export const { setSelectedProjectId, setProjectFilter } = projectSlice.actions;
+export const { setSelectedProjectId, setProjectFilter, clearProjectData } = projectSlice.actions;
 export default projectSlice.reducer;
 
 const sortByLastActivity = (projects: Project[]) =>
