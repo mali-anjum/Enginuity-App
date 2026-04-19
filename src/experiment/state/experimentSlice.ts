@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+import { nextExperimentStatus } from '@/experiment/constants';
 import type { ExperimentStatus } from '@/experiment/constants';
 import type { RootState } from '@/sharedModules/state/store';
 
@@ -111,6 +112,16 @@ const experimentSlice = createSlice({
     setExperimentHardwareFilter(state, action: PayloadAction<string | null>) {
       state.filterByHardware = action.payload;
     },
+    /** One-tap status cycle for list chips (synchronous optimistic update). */
+    cycleExperimentStatus(
+      state,
+      action: PayloadAction<{ experimentId: string; projectId: string }>,
+    ) {
+      const experiment = state.experiments.find((item) => item.id === action.payload.experimentId);
+      if (!experiment) return;
+      experiment.status = nextExperimentStatus(experiment.status);
+      experiment.updatedAt = new Date().toISOString();
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -151,6 +162,7 @@ export const {
   setExperimentProjectFilter,
   setExperimentStatusFilter,
   setExperimentHardwareFilter,
+  cycleExperimentStatus,
 } = experimentSlice.actions;
 export default experimentSlice.reducer;
 

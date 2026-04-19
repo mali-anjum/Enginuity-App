@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { createExperimentThunk, updateExperimentThunk } from '@/experiment/state/experimentSlice';
+import {
+  createExperimentThunk,
+  cycleExperimentStatus,
+  updateExperimentThunk,
+} from '@/experiment/state/experimentSlice';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type ProjectFilter = 'active' | 'completed' | 'archived' | 'favourites';
@@ -139,6 +143,10 @@ const projectSlice = createSlice({
         if (project) project.updatedAt = new Date().toISOString();
       })
       .addCase(updateExperimentThunk.fulfilled, (state, action) => {
+        const project = state.projects.find((item) => item.id === action.payload.projectId);
+        if (project) project.updatedAt = new Date().toISOString();
+      })
+      .addCase(cycleExperimentStatus, (state, action) => {
         const project = state.projects.find((item) => item.id === action.payload.projectId);
         if (project) project.updatedAt = new Date().toISOString();
       })
