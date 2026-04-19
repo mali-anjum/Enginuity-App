@@ -5,8 +5,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { EXPERIMENT_STATUSES } from '@/experiment/constants';
-import { experimentStatusLabel } from '@/experiment/constants';
+import { EXPERIMENT_STATUSES, experimentStatusLabel } from '@/experiment/constants';
 import {
   selectAllExperiments,
   setExperimentStatusFilter,
