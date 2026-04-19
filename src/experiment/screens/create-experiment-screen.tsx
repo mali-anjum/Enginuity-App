@@ -8,14 +8,16 @@ import { ExperimentForm, type ExperimentFormValues } from '@/experiment/componen
 import { HardwarePickerSheet } from '@/experiment/components/hardware-picker-sheet';
 import { createExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
+import { selectProjectById } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: ExperimentFormValues = {
   title: '',
   projectId: '',
-  codeRef: '',
-  notes: '',
-  status: 'draft',
+  objective: '',
+  observations: '',
+  githubCommit: '',
+  status: 'pending',
   attachmentInput: '',
 };
 
@@ -34,8 +36,11 @@ export default function CreateExperimentScreen() {
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>([]);
   const [isHardwarePickerOpen, setIsHardwarePickerOpen] = useState(false);
   const hardwareItems = useAppSelector(selectAllHardware);
+  const lockedProject = useAppSelector(selectProjectById(initialProjectId));
   const dispatch = useAppDispatch();
   const router = useRouter();
+
+  const lockedProjectTitle = initialProjectId ? lockedProject?.title : undefined;
 
   const selectedHardwareChips = useMemo(() => {
     const map = new Map(hardwareItems.map((h) => [h.id, h]));
@@ -53,6 +58,7 @@ export default function CreateExperimentScreen() {
           values={values}
           selectedHardwareCount={selectedHardwareIds.length}
           selectedHardwareChips={selectedHardwareChips}
+          lockedProjectTitle={lockedProjectTitle}
           onRemoveHardware={(hardwareId) =>
             setSelectedHardwareIds((prev) => prev.filter((id) => id !== hardwareId))
           }
@@ -67,8 +73,9 @@ export default function CreateExperimentScreen() {
                 createExperimentThunk({
                   title: values.title.trim(),
                   projectId: values.projectId,
-                  codeRef: values.codeRef.trim(),
-                  notes: values.notes.trim(),
+                  objective: values.objective.trim(),
+                  observations: values.observations.trim(),
+                  githubCommit: values.githubCommit.trim(),
                   status: values.status,
                   hardwareIds: selectedHardwareIds,
                   attachmentUrls,
