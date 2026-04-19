@@ -4,15 +4,19 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { EXPERIMENT_STATUSES } from '@/experiment/constants';
+import type { ExperimentStatus } from '@/experiment/constants';
+import { experimentStatusLabel } from '@/experiment/constants';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
 export type ExperimentFormValues = {
   title: string;
   projectId: string;
-  codeRef: string;
-  notes: string;
-  status: 'draft' | 'in_progress' | 'completed';
+  objective: string;
+  observations: string;
+  githubCommit: string;
+  status: ExperimentStatus;
   attachmentInput: string;
 };
 
@@ -26,6 +30,8 @@ type ExperimentFormProps = {
   values: ExperimentFormValues;
   selectedHardwareCount: number;
   selectedHardwareChips: SelectedHardwareChip[];
+  /** When set, project is fixed (e.g. opened from project detail) for faster logging. */
+  lockedProjectTitle?: string;
   onRemoveHardware?: (hardwareId: string) => void;
   onChange: (patch: Partial<ExperimentFormValues>) => void;
   onOpenHardwarePicker: () => void;
@@ -33,12 +39,11 @@ type ExperimentFormProps = {
   onSubmit: () => void;
 };
 
-const STATUS_OPTIONS: ExperimentFormValues['status'][] = ['draft', 'in_progress', 'completed'];
-
 export function ExperimentForm({
   values,
   selectedHardwareCount,
   selectedHardwareChips,
+  lockedProjectTitle,
   onRemoveHardware,
   onChange,
   onOpenHardwarePicker,
@@ -56,21 +61,45 @@ export function ExperimentForm({
         <TextInput
           value={values.title}
           onChangeText={(text) => onChange({ title: text })}
-          placeholder="Experiment title"
+          placeholder="Short label for this run"
           placeholderTextColor={themeColors.mutedText}
           style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
       </View>
 
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Project</ThemedText>
+        <ThemedText type="defaultSemiBold">Objective</ThemedText>
+        <TextInput
+          value={values.objective}
+          onChangeText={(text) => onChange({ objective: text })}
+          placeholder="What are you testing?"
+          placeholderTextColor={themeColors.mutedText}
+          multiline
+          style={[styles.input, styles.textAreaCompact, { borderColor: themeColors.border, color: themeColors.text }]}
+        />
+      </View>
+
+      <View style={styles.group}>
+        <ThemedText type="defaultSemiBold">Observations</ThemedText>
+        <TextInput
+          value={values.observations}
+          onChangeText={(text) => onChange({ observations: text })}
+          placeholder="What happened (optional for a quick log)"
+          placeholderTextColor={themeColors.mutedText}
+          multiline
+          style={[styles.input, styles.textArea, { borderColor: themeColors.border, color: themeColors.text }]}
+        />
+      </View>
+
+      <View style={styles.group}>
+        <ThemedText type="defaultSemiBold">Status</ThemedText>
         <View style={styles.choiceWrap}>
-          {projects.map((project) => {
-            const selected = values.projectId === project.id;
+          {EXPERIMENT_STATUSES.map((status) => {
+            const selected = values.status === status;
             return (
               <Pressable
-                key={project.id}
-                onPress={() => onChange({ projectId: project.id })}
+                key={status}
+                onPress={() => onChange({ status })}
                 style={[
                   styles.choiceChip,
                   {
@@ -78,12 +107,60 @@ export function ExperimentForm({
                     backgroundColor: selected ? themeColors.heroTint : themeColors.background,
                   },
                 ]}>
-                <ThemedText>{project.title}</ThemedText>
+                <ThemedText>{experimentStatusLabel(status)}</ThemedText>
               </Pressable>
             );
           })}
         </View>
       </View>
+
+      <View style={styles.group}>
+        <ThemedText type="defaultSemiBold">GitHub commit</ThemedText>
+        <TextInput
+          value={values.githubCommit}
+          onChangeText={(text) => onChange({ githubCommit: text })}
+          placeholder="abc1237 or github.com/org/repo/commit/..."
+          placeholderTextColor={themeColors.mutedText}
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
+        />
+      </View>
+
+      {lockedProjectTitle ? (
+        <View style={styles.group}>
+          <ThemedText type="defaultSemiBold">Project</ThemedText>
+          <View style={[styles.input, styles.lockedProject, { borderColor: themeColors.border }]}>
+            <ThemedText>{lockedProjectTitle}</ThemedText>
+            <ThemedText style={{ color: themeColors.mutedText, fontSize: 12 }}>
+              Linked from project — change via Edit if needed.
+            </ThemedText>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.group}>
+          <ThemedText type="defaultSemiBold">Project</ThemedText>
+          <View style={styles.choiceWrap}>
+            {projects.map((project) => {
+              const selected = values.projectId === project.id;
+              return (
+                <Pressable
+                  key={project.id}
+                  onPress={() => onChange({ projectId: project.id })}
+                  style={[
+                    styles.choiceChip,
+                    {
+                      borderColor: selected ? themeColors.primary : themeColors.border,
+                      backgroundColor: selected ? themeColors.heroTint : themeColors.background,
+                    },
+                  ]}>
+                  <ThemedText>{project.title}</ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      )}
 
       <View style={styles.group}>
         <ThemedText type="defaultSemiBold">Hardware</ThemedText>
@@ -93,7 +170,7 @@ export function ExperimentForm({
           <ThemedText>
             {selectedHardwareCount > 0
               ? `${selectedHardwareCount} selected — tap to change`
-              : 'Choose from hardware library (multi-select)'}
+              : 'Choose from hardware library (optional)'}
           </ThemedText>
         </Pressable>
         {selectedHardwareChips.length > 0 ? (
@@ -126,29 +203,6 @@ export function ExperimentForm({
       </View>
 
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Code Ref</ThemedText>
-        <TextInput
-          value={values.codeRef}
-          onChangeText={(text) => onChange({ codeRef: text })}
-          placeholder="commit/hash/file path"
-          placeholderTextColor={themeColors.mutedText}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
-        />
-      </View>
-
-      <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Notes</ThemedText>
-        <TextInput
-          value={values.notes}
-          onChangeText={(text) => onChange({ notes: text })}
-          placeholder="Experiment observations"
-          placeholderTextColor={themeColors.mutedText}
-          multiline
-          style={[styles.input, styles.textArea, { borderColor: themeColors.border, color: themeColors.text }]}
-        />
-      </View>
-
-      <View style={styles.group}>
         <ThemedText type="defaultSemiBold">Attachment URL</ThemedText>
         <TextInput
           value={values.attachmentInput}
@@ -157,29 +211,6 @@ export function ExperimentForm({
           placeholderTextColor={themeColors.mutedText}
           style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
-      </View>
-
-      <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Status</ThemedText>
-        <View style={styles.choiceWrap}>
-          {STATUS_OPTIONS.map((status) => {
-            const selected = values.status === status;
-            return (
-              <Pressable
-                key={status}
-                onPress={() => onChange({ status })}
-                style={[
-                  styles.choiceChip,
-                  {
-                    borderColor: selected ? themeColors.primary : themeColors.border,
-                    backgroundColor: selected ? themeColors.heroTint : themeColors.background,
-                  },
-                ]}>
-                <ThemedText>{status.replace('_', ' ')}</ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
       </View>
 
       <Pressable style={[styles.submitButton, { backgroundColor: themeColors.primary }]} onPress={onSubmit}>
@@ -201,8 +232,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
   },
+  lockedProject: { gap: 4, minHeight: 44, justifyContent: 'center' },
   pickerButton: { minHeight: 44, justifyContent: 'center' },
-  textArea: { minHeight: 88, textAlignVertical: 'top' },
+  textArea: { minHeight: 72, textAlignVertical: 'top' },
+  textAreaCompact: { minHeight: 56, textAlignVertical: 'top' },
   choiceWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   choiceChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
