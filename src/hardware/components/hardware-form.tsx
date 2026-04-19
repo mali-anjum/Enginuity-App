@@ -4,14 +4,14 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import type { HardwareItem } from '@/hardware/state/hardwareSlice';
+import { HARDWARE_CATEGORIES } from '@/hardware/constants';
+import type { HardwareCategory } from '@/hardware/constants';
 
 export type HardwareFormValues = {
   name: string;
-  type: HardwareItem['type'];
+  category: HardwareCategory;
   specs: string;
   datasheetUrl: string;
-  serialNumber: string;
 };
 
 type HardwareFormProps = {
@@ -20,8 +20,6 @@ type HardwareFormProps = {
   submitLabel: string;
   onSubmit: () => void;
 };
-
-const TYPE_OPTIONS: HardwareItem['type'][] = ['MCU', 'Sensor', 'Actuator', 'Module', 'Tool', 'Other'];
 
 export function HardwareForm({ values, onChange, submitLabel, onSubmit }: HardwareFormProps) {
   const colorScheme = useColorScheme() ?? 'light';
@@ -34,20 +32,20 @@ export function HardwareForm({ values, onChange, submitLabel, onSubmit }: Hardwa
         <TextInput
           value={values.name}
           onChangeText={(text) => onChange({ name: text })}
-          placeholder="Component name"
+          placeholder="e.g. Arduino Nano, MPU6050, ESP32"
           placeholderTextColor={themeColors.mutedText}
           style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
       </View>
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Type</ThemedText>
+        <ThemedText type="defaultSemiBold">Category</ThemedText>
         <View style={styles.typeWrap}>
-          {TYPE_OPTIONS.map((type) => {
-            const active = values.type === type;
+          {HARDWARE_CATEGORIES.map((category) => {
+            const active = values.category === category;
             return (
               <Pressable
-                key={type}
-                onPress={() => onChange({ type })}
+                key={category}
+                onPress={() => onChange({ category })}
                 style={[
                   styles.typeChip,
                   {
@@ -55,7 +53,7 @@ export function HardwareForm({ values, onChange, submitLabel, onSubmit }: Hardwa
                     backgroundColor: active ? themeColors.heroTint : themeColors.background,
                   },
                 ]}>
-                <ThemedText>{type}</ThemedText>
+                <ThemedText>{category}</ThemedText>
               </Pressable>
             );
           })}
@@ -67,28 +65,21 @@ export function HardwareForm({ values, onChange, submitLabel, onSubmit }: Hardwa
           value={values.specs}
           onChangeText={(text) => onChange({ specs: text })}
           multiline
-          placeholder="Pinout, ranges, limits..."
+          placeholder="Pinout, voltage, ranges, package…"
           placeholderTextColor={themeColors.mutedText}
           style={[styles.input, styles.textArea, { borderColor: themeColors.border, color: themeColors.text }]}
         />
       </View>
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Datasheet URL</ThemedText>
+        <ThemedText type="defaultSemiBold">Datasheet URL (optional)</ThemedText>
         <TextInput
           value={values.datasheetUrl}
           onChangeText={(text) => onChange({ datasheetUrl: text })}
           placeholder="https://..."
           placeholderTextColor={themeColors.mutedText}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
-        />
-      </View>
-      <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Serial Number (optional)</ThemedText>
-        <TextInput
-          value={values.serialNumber}
-          onChangeText={(text) => onChange({ serialNumber: text })}
-          placeholder="SN-..."
-          placeholderTextColor={themeColors.mutedText}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
           style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
       </View>

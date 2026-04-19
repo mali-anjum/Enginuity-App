@@ -17,10 +17,9 @@ export default function EditHardwareScreen() {
   const initialValues = useMemo<HardwareFormValues>(
     () => ({
       name: hardware?.name ?? '',
-      type: hardware?.type ?? 'MCU',
+      category: hardware?.category ?? 'MCU',
       specs: hardware?.specs ?? '',
       datasheetUrl: hardware?.datasheetUrl ?? '',
-      serialNumber: hardware?.serialNumber ?? '',
     }),
     [hardware],
   );
@@ -48,10 +47,9 @@ export default function EditHardwareScreen() {
               updateHardwareThunk({
                 ...hardware,
                 name: values.name.trim(),
-                type: values.type,
+                category: values.category,
                 specs: values.specs.trim(),
                 datasheetUrl: values.datasheetUrl.trim(),
-                serialNumber: values.serialNumber.trim() || undefined,
               }),
             );
             router.replace(`/hardware/${hardware.id}`);

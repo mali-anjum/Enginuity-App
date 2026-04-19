@@ -1,20 +1,22 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+import type { HardwareCategory } from '@/hardware/constants';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type HardwareItem = {
   id: string;
   name: string;
-  type: 'MCU' | 'Sensor' | 'Actuator' | 'Module' | 'Tool' | 'Other';
+  category: HardwareCategory;
   specs: string;
+  /** Optional datasheet link (PDF or vendor page). */
   datasheetUrl: string;
-  serialNumber?: string;
   updatedAt: string;
 };
 
 type HardwareState = {
   hardware: HardwareItem[];
   selectedHardwareId: string | null;
-  filterByType: string | null;
+  filterByCategory: HardwareCategory | null;
   isLoading: boolean;
   error: string | null;
 };
@@ -22,7 +24,7 @@ type HardwareState = {
 const initialState: HardwareState = {
   hardware: [],
   selectedHardwareId: null,
-  filterByType: null,
+  filterByCategory: null,
   isLoading: false,
   error: null,
 };
@@ -31,26 +33,27 @@ export const fetchHardwareThunk = createAsyncThunk<HardwareItem[]>(
   'hardware/fetchHardwareThunk',
   async () => [],
 );
+
 export const addHardwareThunk = createAsyncThunk<
   HardwareItem,
-  Pick<HardwareItem, 'name' | 'type'> &
-    Partial<Pick<HardwareItem, 'serialNumber' | 'specs' | 'datasheetUrl'>>
+  Pick<HardwareItem, 'name' | 'category'> & Partial<Pick<HardwareItem, 'specs' | 'datasheetUrl'>>
 >(
   'hardware/addHardwareThunk',
-  async ({ name, type, serialNumber, specs = '', datasheetUrl = '' }) => ({
+  async ({ name, category, specs = '', datasheetUrl = '' }) => ({
     id: `hw-${Date.now()}`,
     name,
-    type,
+    category,
     specs,
     datasheetUrl,
-    serialNumber,
     updatedAt: new Date().toISOString(),
   }),
 );
+
 export const updateHardwareThunk = createAsyncThunk<HardwareItem, HardwareItem>(
   'hardware/updateHardwareThunk',
   async (hardware) => ({ ...hardware, updatedAt: new Date().toISOString() }),
 );
+
 export const deleteHardwareThunk = createAsyncThunk<string, string>(
   'hardware/deleteHardwareThunk',
   async (hardwareId) => hardwareId,
@@ -63,8 +66,8 @@ const hardwareSlice = createSlice({
     setSelectedHardwareId(state, action: PayloadAction<string | null>) {
       state.selectedHardwareId = action.payload;
     },
-    setHardwareTypeFilter(state, action: PayloadAction<string | null>) {
-      state.filterByType = action.payload;
+    setHardwareCategoryFilter(state, action: PayloadAction<HardwareCategory | null>) {
+      state.filterByCategory = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -94,12 +97,17 @@ const hardwareSlice = createSlice({
   },
 });
 
-export const { setSelectedHardwareId, setHardwareTypeFilter } = hardwareSlice.actions;
+export const { setSelectedHardwareId, setHardwareCategoryFilter } = hardwareSlice.actions;
 export default hardwareSlice.reducer;
 
 export const selectAllHardware = (state: RootState) => state.hardware.hardware;
-export const selectHardwareByType = (type: string) => (state: RootState) =>
-  state.hardware.hardware.filter((item) => item.type === type);
+
+export const selectHardwareByCategory =
+  (category: HardwareCategory) => (state: RootState) =>
+    state.hardware.hardware.filter((item) => item.category === category);
+
 export const selectHardwareById = (hardwareId: string) => (state: RootState) =>
   state.hardware.hardware.find((item) => item.id === hardwareId) ?? null;
-export const selectHardwareTypeFilter = (state: RootState) => state.hardware.filterByType;
+
+export const selectHardwareCategoryFilter = (state: RootState) =>
+  state.hardware.filterByCategory;

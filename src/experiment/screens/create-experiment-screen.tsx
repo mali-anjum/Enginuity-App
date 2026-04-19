@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -37,6 +37,14 @@ export default function CreateExperimentScreen() {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
+  const selectedHardwareChips = useMemo(() => {
+    const map = new Map(hardwareItems.map((h) => [h.id, h]));
+    return selectedHardwareIds
+      .map((id) => map.get(id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .map((h) => ({ id: h.id, name: h.name, category: h.category }));
+  }, [hardwareItems, selectedHardwareIds]);
+
   return (
     <ThemedView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -44,24 +52,30 @@ export default function CreateExperimentScreen() {
         <ExperimentForm
           values={values}
           selectedHardwareCount={selectedHardwareIds.length}
+          selectedHardwareChips={selectedHardwareChips}
+          onRemoveHardware={(hardwareId) =>
+            setSelectedHardwareIds((prev) => prev.filter((id) => id !== hardwareId))
+          }
           onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
           onOpenHardwarePicker={() => setIsHardwarePickerOpen(true)}
           submitLabel="Save Experiment"
           onSubmit={() => {
             if (!values.title.trim() || !values.projectId) return;
             const attachmentUrls = values.attachmentInput.trim() ? [values.attachmentInput.trim()] : [];
-            void dispatch(
-              createExperimentThunk({
-                title: values.title.trim(),
-                projectId: values.projectId,
-                codeRef: values.codeRef.trim(),
-                notes: values.notes.trim(),
-                status: values.status,
-                hardwareIds: selectedHardwareIds,
-                attachmentUrls,
-              }),
-            );
-            router.replace('/experiment');
+            void (async () => {
+              const created = await dispatch(
+                createExperimentThunk({
+                  title: values.title.trim(),
+                  projectId: values.projectId,
+                  codeRef: values.codeRef.trim(),
+                  notes: values.notes.trim(),
+                  status: values.status,
+                  hardwareIds: selectedHardwareIds,
+                  attachmentUrls,
+                }),
+              ).unwrap();
+              router.replace(`/experiment/${created.id}`);
+            })();
           }}
         />
       </ScrollView>

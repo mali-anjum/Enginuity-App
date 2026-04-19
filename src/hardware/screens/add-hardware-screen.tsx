@@ -10,10 +10,9 @@ import { useAppDispatch } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: HardwareFormValues = {
   name: '',
-  type: 'MCU',
+  category: 'MCU',
   specs: '',
   datasheetUrl: '',
-  serialNumber: '',
 };
 
 export default function AddHardwareScreen() {
@@ -34,10 +33,9 @@ export default function AddHardwareScreen() {
             void dispatch(
               addHardwareThunk({
                 name: values.name.trim(),
-                type: values.type,
+                category: values.category,
                 specs: values.specs.trim(),
                 datasheetUrl: values.datasheetUrl.trim(),
-                serialNumber: values.serialNumber.trim() || undefined,
               }),
             );
             router.replace('/hardware');

@@ -39,13 +39,10 @@ export default function HardwareDetailScreen() {
           </Link>
         </View>
 
-        <ThemedText style={{ color: themeColors.mutedText }}>{hardware.type}</ThemedText>
+        <ThemedText style={{ color: themeColors.mutedText }}>{hardware.category}</ThemedText>
         <ThemedText>{hardware.specs || 'No specs added.'}</ThemedText>
         <ThemedText style={{ color: themeColors.subtleText }}>
           Datasheet: {hardware.datasheetUrl || 'Not provided'}
-        </ThemedText>
-        <ThemedText style={{ color: themeColors.subtleText }}>
-          Serial: {hardware.serialNumber || 'N/A'}
         </ThemedText>
 
         <View style={styles.section}>
