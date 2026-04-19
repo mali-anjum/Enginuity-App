@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -20,7 +20,17 @@ const INITIAL_VALUES: ExperimentFormValues = {
 };
 
 export default function CreateExperimentScreen() {
-  const [values, setValues] = useState<ExperimentFormValues>(INITIAL_VALUES);
+  const { projectId: projectIdParam } = useLocalSearchParams<{ projectId?: string | string[] }>();
+  const initialProjectId =
+    typeof projectIdParam === 'string'
+      ? projectIdParam
+      : Array.isArray(projectIdParam)
+        ? projectIdParam[0] ?? ''
+        : '';
+  const [values, setValues] = useState<ExperimentFormValues>({
+    ...INITIAL_VALUES,
+    projectId: initialProjectId,
+  });
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>([]);
   const [isHardwarePickerOpen, setIsHardwarePickerOpen] = useState(false);
   const hardwareItems = useAppSelector(selectAllHardware);
