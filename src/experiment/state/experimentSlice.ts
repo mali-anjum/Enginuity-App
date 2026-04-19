@@ -1,15 +1,22 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+import type { ExperimentStatus } from '@/experiment/constants';
+import { nextExperimentStatus } from '@/experiment/constants';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type Experiment = {
   id: string;
   projectId: string;
   title: string;
-  codeRef: string;
-  notes: string;
-  status: 'draft' | 'in_progress' | 'completed';
+  objective: string;
+  observations: string;
+  /** Git commit SHA or GitHub URL for this run. */
+  githubCommit: string;
+  status: ExperimentStatus;
   hardwareIds: string[];
   attachmentUrls: string[];
+  /** Set once when the experiment is created. */
+  createdAt: string;
   updatedAt: string;
 };
 
@@ -37,28 +44,44 @@ export const fetchExperimentsThunk = createAsyncThunk<Experiment[]>('experiment/
 export const createExperimentThunk = createAsyncThunk<
   Experiment,
   Pick<Experiment, 'title' | 'projectId'> &
-    Partial<Pick<Experiment, 'codeRef' | 'notes' | 'status' | 'hardwareIds' | 'attachmentUrls'>>
+    Partial<
+      Pick<
+        Experiment,
+        | 'objective'
+        | 'observations'
+        | 'githubCommit'
+        | 'status'
+        | 'hardwareIds'
+        | 'attachmentUrls'
+      >
+    >
 >(
   'experiment/createExperimentThunk',
   async ({
     title,
     projectId,
-    codeRef = '',
-    notes = '',
-    status = 'draft',
+    objective = '',
+    observations = '',
+    githubCommit = '',
+    status = 'pending',
     hardwareIds = [],
     attachmentUrls = [],
-  }) => ({
-    id: `exp-${Date.now()}`,
-    projectId,
-    title,
-    codeRef,
-    notes,
-    status,
-    hardwareIds,
-    attachmentUrls,
-    updatedAt: new Date().toISOString(),
-  }),
+  }) => {
+    const now = new Date().toISOString();
+    return {
+      id: `exp-${Date.now()}`,
+      projectId,
+      title,
+      objective,
+      observations,
+      githubCommit,
+      status,
+      hardwareIds,
+      attachmentUrls,
+      createdAt: now,
+      updatedAt: now,
+    };
+  },
 );
 export const updateExperimentThunk = createAsyncThunk<Experiment, Experiment>(
   'experiment/updateExperimentThunk',
@@ -88,6 +111,13 @@ const experimentSlice = createSlice({
     },
     setExperimentHardwareFilter(state, action: PayloadAction<string | null>) {
       state.filterByHardware = action.payload;
+    },
+    /** Single tap on detail: cycle Pending → In Progress → Completed → Failed → … */
+    cycleExperimentStatus(state, action: PayloadAction<string>) {
+      const experiment = state.experiments.find((item) => item.id === action.payload);
+      if (!experiment) return;
+      experiment.status = nextExperimentStatus(experiment.status);
+      experiment.updatedAt = new Date().toISOString();
     },
   },
   extraReducers: (builder) => {
@@ -129,6 +159,7 @@ export const {
   setExperimentProjectFilter,
   setExperimentStatusFilter,
   setExperimentHardwareFilter,
+  cycleExperimentStatus,
 } = experimentSlice.actions;
 export default experimentSlice.reducer;
 
