@@ -2,6 +2,7 @@ import { Link, useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { experimentStatusLabel } from '@/experiment/constants';
 import {
   createExperimentThunk,
   selectRecentExperiments,
@@ -37,7 +38,7 @@ export default function HomeScreen() {
     return recentExperiments.map((experiment) => ({
       id: experiment.id,
       title: experiment.title,
-      subtitle: `Status: ${experiment.status.replace('_', ' ')}`,
+      subtitle: `Status: ${experimentStatusLabel(experiment.status)}`,
     }));
   }, [recentExperiments]);
 
