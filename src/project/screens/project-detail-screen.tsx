@@ -1,37 +1,25 @@
 import { Link, useLocalSearchParams, type Href } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { selectExperimentsByProject } from '@/experiment/state/experimentSlice';
-import { selectNotesByProject } from '@/notes/state/notesSlice';
-import {
-  attachProjectFileThunk,
-  selectProjectById,
-  toggleFavouriteThunk,
-  toggleProjectStatusThunk,
-} from '@/project/state/projectSlice';
+import { selectProjectById } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/sharedModules/state/hooks';
 
-type DetailTab = 'overview' | 'experiments' | 'notes' | 'files';
-
-const TABS: DetailTab[] = ['overview', 'experiments', 'notes', 'files'];
+type DetailTab = 'experiments' | 'notes';
 
 export default function ProjectDetailScreen() {
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
-  const dispatch = useAppDispatch();
-  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
+  const [activeTab, setActiveTab] = useState<DetailTab>('experiments');
 
   const project = useAppSelector(selectProjectById(projectId ?? ''));
   const experiments = useAppSelector(selectExperimentsByProject(projectId ?? ''));
-  const notes = useAppSelector(selectNotesByProject(projectId ?? ''));
-
-  const fileItems = useMemo(() => project?.fileUrls ?? [], [project?.fileUrls]);
 
   if (!project) {
     return (
@@ -40,6 +28,8 @@ export default function ProjectDetailScreen() {
       </ThemedView>
     );
   }
+
+  const experimentCreateHref = `/experiment/create?projectId=${encodeURIComponent(project.id)}` as Href;
 
   return (
     <ThemedView style={styles.screen}>
@@ -51,63 +41,100 @@ export default function ProjectDetailScreen() {
           </Link>
         </View>
 
-        <View style={styles.tabRow}>
-          {TABS.map((tab) => {
-            const active = activeTab === tab;
-            return (
-              <Pressable
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                style={[
-                  styles.tabButton,
-                  {
-                    borderColor: active ? themeColors.primary : themeColors.border,
-                    backgroundColor: active ? themeColors.heroTint : themeColors.background,
-                  },
-                ]}>
-                <ThemedText>{tab}</ThemedText>
-              </Pressable>
-            );
-          })}
+        <View
+          style={[
+            styles.metaCard,
+            {
+              borderColor: themeColors.border,
+              backgroundColor: themeColors.surfaceElevated,
+            },
+          ]}>
+          <ThemedText style={{ color: themeColors.mutedText }}>
+            {project.description?.trim() ? project.description : 'No description yet.'}
+          </ThemedText>
+          <View style={styles.metaRow}>
+            <ThemedText style={{ color: themeColors.mutedText }}>
+              Start: {project.startDate ?? '—'}
+            </ThemedText>
+            <ThemedText style={{ color: themeColors.mutedText }}>
+              Due: {project.dueDate ?? '—'}
+            </ThemedText>
+          </View>
+          <View style={styles.statusBadge}>
+            <ThemedText type="defaultSemiBold" style={{ textTransform: 'capitalize' }}>
+              {project.status}
+            </ThemedText>
+          </View>
         </View>
 
-        {activeTab === 'overview' ? (
-          <View style={styles.section}>
-            <ThemedText type="defaultSemiBold">Metadata</ThemedText>
-            <ThemedText>{project.description || 'No description provided.'}</ThemedText>
-            <ThemedText style={{ color: themeColors.mutedText }}>
-              Start: {project.startDate ?? '-'} | Due: {project.dueDate ?? '-'}
-            </ThemedText>
-            <ThemedText style={{ color: themeColors.mutedText }}>Status: {project.status}</ThemedText>
-            <View style={styles.rowActions}>
-              <Pressable
-                style={[styles.actionButton, { borderColor: themeColors.border }]}
-                onPress={() => {
-                  void dispatch(toggleProjectStatusThunk(project.id));
-                }}>
-                <ThemedText>Toggle Status</ThemedText>
-              </Pressable>
-              <Pressable
-                style={[styles.actionButton, { borderColor: themeColors.border }]}
-                onPress={() => {
-                  void dispatch(toggleFavouriteThunk(project.id));
-                }}>
-                <ThemedText>{project.isFavourite ? 'Unfavourite' : 'Favourite'}</ThemedText>
-              </Pressable>
-            </View>
-          </View>
-        ) : null}
+        <View style={styles.tabRow}>
+          <Pressable
+            onPress={() => setActiveTab('experiments')}
+            style={[
+              styles.tabButton,
+              styles.tabButtonFlex,
+              {
+                borderColor: activeTab === 'experiments' ? themeColors.primary : themeColors.border,
+                backgroundColor:
+                  activeTab === 'experiments' ? themeColors.heroTint : themeColors.background,
+              },
+            ]}>
+            <ThemedText type="defaultSemiBold">Experiments</ThemedText>
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('notes')}
+            style={[
+              styles.tabButton,
+              styles.tabButtonFlex,
+              {
+                borderColor: activeTab === 'notes' ? themeColors.primary : themeColors.border,
+                backgroundColor: activeTab === 'notes' ? themeColors.heroTint : themeColors.background,
+              },
+            ]}>
+            <ThemedText type="defaultSemiBold">Notes</ThemedText>
+          </Pressable>
+        </View>
 
         {activeTab === 'experiments' ? (
           <View style={styles.section}>
-            <ThemedText type="defaultSemiBold">Project Experiments</ThemedText>
+            <View style={styles.sectionTitleRow}>
+              <ThemedText type="defaultSemiBold">Experiments</ThemedText>
+              <Link href={experimentCreateHref}>
+                <ThemedText style={{ color: themeColors.primary }}>Add experiment</ThemedText>
+              </Link>
+            </View>
             {experiments.length === 0 ? (
-              <ThemedText style={{ color: themeColors.mutedText }}>
-                No experiments linked to this project.
-              </ThemedText>
+              <View
+                style={[
+                  styles.emptyCard,
+                  {
+                    borderColor: themeColors.border,
+                    backgroundColor: themeColors.surfaceElevated,
+                  },
+                ]}>
+                <ThemedText style={{ color: themeColors.mutedText }}>
+                  No experiments yet. Add one to track work inside this project.
+                </ThemedText>
+                <Link href={experimentCreateHref} asChild>
+                  <Pressable
+                    style={[styles.primaryOutline, { borderColor: themeColors.primary }]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Create experiment for this project">
+                    <ThemedText style={{ color: themeColors.primary }}>Create experiment</ThemedText>
+                  </Pressable>
+                </Link>
+              </View>
             ) : (
               experiments.map((experiment) => (
-                <View key={experiment.id} style={[styles.card, { borderColor: themeColors.border }]}>
+                <View
+                  key={experiment.id}
+                  style={[
+                    styles.card,
+                    {
+                      borderColor: themeColors.border,
+                      backgroundColor: themeColors.surfaceElevated,
+                    },
+                  ]}>
                   <ThemedText type="defaultSemiBold">{experiment.title}</ThemedText>
                   <ThemedText style={{ color: themeColors.mutedText }}>
                     {experiment.status.replace('_', ' ')}
@@ -116,57 +143,17 @@ export default function ProjectDetailScreen() {
               ))
             )}
           </View>
-        ) : null}
-
-        {activeTab === 'notes' ? (
+        ) : (
           <View style={styles.section}>
-            <ThemedText type="defaultSemiBold">Project Notes</ThemedText>
-            {notes.length === 0 ? (
-              <ThemedText style={{ color: themeColors.mutedText }}>
-                No notes linked to this project.
+            <View style={styles.notesEmpty}>
+              <ThemedText style={[styles.emptyIcon, { color: themeColors.mutedText }]}>📝</ThemedText>
+              <ThemedText type="defaultSemiBold">Notes coming soon</ThemedText>
+              <ThemedText style={[styles.emptyCaption, { color: themeColors.mutedText }]}>
+                Project notes will appear here. You can focus on experiments for now.
               </ThemedText>
-            ) : (
-              notes.map((note) => (
-                <View key={note.id} style={[styles.card, { borderColor: themeColors.border }]}>
-                  <ThemedText type="defaultSemiBold">{note.title}</ThemedText>
-                  <ThemedText style={{ color: themeColors.mutedText }} numberOfLines={2}>
-                    {note.body}
-                  </ThemedText>
-                </View>
-              ))
-            )}
-          </View>
-        ) : null}
-
-        {activeTab === 'files' ? (
-          <View style={styles.section}>
-            <View style={styles.topRow}>
-              <ThemedText type="defaultSemiBold">Project Files</ThemedText>
-              <Pressable
-                onPress={() => {
-                  void dispatch(
-                    attachProjectFileThunk({
-                      projectId: project.id,
-                      fileUrl: `sample-file-${Date.now()}.pdf`,
-                    }),
-                  );
-                }}>
-                <ThemedText style={{ color: themeColors.primary }}>Attach file</ThemedText>
-              </Pressable>
             </View>
-            {fileItems.length === 0 ? (
-              <ThemedText style={{ color: themeColors.mutedText }}>
-                No files attached yet. Add CSVs, images, or PDFs.
-              </ThemedText>
-            ) : (
-              fileItems.map((file) => (
-                <View key={file} style={[styles.card, { borderColor: themeColors.border }]}>
-                  <ThemedText>{file}</ThemedText>
-                </View>
-              ))
-            )}
           </View>
-        ) : null}
+        )}
       </ScrollView>
     </ThemedView>
   );
@@ -176,10 +163,74 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  tabRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tabButton: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
-  section: { gap: 8 },
-  rowActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  actionButton: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 },
-  card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 10, gap: 3 },
+  metaCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+  },
+  tabRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  tabButton: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabButtonFlex: {
+    flex: 1,
+  },
+  section: { gap: 10 },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  emptyCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    gap: 12,
+  },
+  primaryOutline: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  card: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  emptyIcon: {
+    fontSize: 40,
+    lineHeight: 44,
+  },
+  notesEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  emptyCaption: {
+    textAlign: 'center',
+    maxWidth: 280,
+  },
 });
