@@ -5,13 +5,13 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { EXPERIMENT_STATUSES } from '@/experiment/constants';
+import { experimentStatusLabel } from '@/experiment/constants';
 import {
   selectAllExperiments,
   setExperimentStatusFilter,
 } from '@/experiment/state/experimentSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
-
-const STATUS_FILTERS = ['draft', 'in_progress', 'completed'] as const;
 
 export default function ExperimentListScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -44,9 +44,9 @@ export default function ExperimentListScreen() {
                 backgroundColor: activeStatus === null ? themeColors.heroTint : themeColors.background,
               },
             ]}>
-            <ThemedText>all</ThemedText>
+            <ThemedText>All</ThemedText>
           </Pressable>
-          {STATUS_FILTERS.map((status) => {
+          {EXPERIMENT_STATUSES.map((status) => {
             const active = activeStatus === status;
             return (
               <Pressable
@@ -59,7 +59,7 @@ export default function ExperimentListScreen() {
                     backgroundColor: active ? themeColors.heroTint : themeColors.background,
                   },
                 ]}>
-                <ThemedText>{status.replace('_', ' ')}</ThemedText>
+                <ThemedText>{experimentStatusLabel(status)}</ThemedText>
               </Pressable>
             );
           })}
@@ -80,7 +80,7 @@ export default function ExperimentListScreen() {
                   ]}>
                   <ThemedText type="defaultSemiBold">{experiment.title}</ThemedText>
                   <ThemedText style={{ color: themeColors.mutedText }}>
-                    {experiment.status.replace('_', ' ')}
+                    {experimentStatusLabel(experiment.status)}
                   </ThemedText>
                 </Pressable>
               </Link>
