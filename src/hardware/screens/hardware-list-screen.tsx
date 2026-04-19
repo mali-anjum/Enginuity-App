@@ -5,24 +5,25 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { HARDWARE_CATEGORIES } from '@/hardware/constants';
+import type { HardwareCategory } from '@/hardware/constants';
 import {
   selectAllHardware,
-  selectHardwareTypeFilter,
-  setHardwareTypeFilter,
-  type HardwareItem,
+  selectHardwareCategoryFilter,
+  setHardwareCategoryFilter,
 } from '@/hardware/state/hardwareSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
-const TYPE_OPTIONS: ('All' | HardwareItem['type'])[] = ['All', 'MCU', 'Sensor', 'Actuator', 'Module', 'Tool', 'Other'];
+const FILTER_OPTIONS: ('All' | HardwareCategory)[] = ['All', ...HARDWARE_CATEGORIES];
 
 export default function HardwareListScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
-  const filterByType = useAppSelector(selectHardwareTypeFilter);
+  const filterByCategory = useAppSelector(selectHardwareCategoryFilter);
   const hardwareItems = useAppSelector(selectAllHardware);
-  const filteredItems = filterByType
-    ? hardwareItems.filter((item) => item.type === filterByType)
+  const filteredItems = filterByCategory
+    ? hardwareItems.filter((item) => item.category === filterByCategory)
     : hardwareItems;
 
   return (
@@ -36,12 +37,17 @@ export default function HardwareListScreen() {
         </View>
 
         <View style={styles.filterRow}>
-          {TYPE_OPTIONS.map((option) => {
-            const active = option === 'All' ? filterByType === null : filterByType === option;
+          {FILTER_OPTIONS.map((option) => {
+            const active =
+              option === 'All'
+                ? filterByCategory === null
+                : filterByCategory === option;
             return (
               <Pressable
                 key={option}
-                onPress={() => dispatch(setHardwareTypeFilter(option === 'All' ? null : option))}
+                onPress={() =>
+                  dispatch(setHardwareCategoryFilter(option === 'All' ? null : option))
+                }
                 style={[
                   styles.filterChip,
                   {
@@ -67,7 +73,12 @@ export default function HardwareListScreen() {
                     { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
                   ]}>
                   <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-                  <ThemedText style={{ color: themeColors.mutedText }}>{item.type}</ThemedText>
+                  <ThemedText style={{ color: themeColors.mutedText }}>{item.category}</ThemedText>
+                  {item.specs.trim() ? (
+                    <ThemedText style={{ color: themeColors.subtleText }} numberOfLines={2}>
+                      {item.specs}
+                    </ThemedText>
+                  ) : null}
                 </Pressable>
               </Link>
             ))
