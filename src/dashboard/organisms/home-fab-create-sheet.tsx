@@ -7,6 +7,10 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
 type HomeFabCreateSheetProps = {
   isOpen: boolean;
+  /** When false, experiment action should be unavailable (no projects yet). */
+  hasProjects: boolean;
+  /** Most recently updated project title for experiment subtitle. */
+  recentProjectTitle?: string | null;
   onCreateProject: () => void;
   onCreateExperiment: () => void;
   onClose: () => void;
@@ -14,6 +18,8 @@ type HomeFabCreateSheetProps = {
 
 export function HomeFabCreateSheet({
   isOpen,
+  hasProjects,
+  recentProjectTitle,
   onCreateProject,
   onCreateExperiment,
   onClose,
@@ -22,6 +28,12 @@ export function HomeFabCreateSheet({
   const themeColors = Colors[colorScheme];
 
   if (!isOpen) return null;
+
+  const experimentSubtitle = !hasProjects
+    ? 'Create a project first'
+    : recentProjectTitle
+      ? `Uses your most recent project: ${recentProjectTitle}`
+      : 'Opens in your most recently updated project';
 
   return (
     <View style={styles.overlay}>
@@ -40,13 +52,25 @@ export function HomeFabCreateSheet({
             onPress={onCreateProject}
             style={[styles.actionButton, { borderColor: themeColors.border }]}>
             <ThemedText type="defaultSemiBold">New Project</ThemedText>
-            <ThemedText style={{ color: themeColors.mutedText }}>Add to your project feed</ThemedText>
+            <ThemedText style={{ color: themeColors.mutedText }}>
+              Name, timeline, and status for a new workspace
+            </ThemedText>
           </Pressable>
           <Pressable
-            onPress={onCreateExperiment}
-            style={[styles.actionButton, { borderColor: themeColors.border }]}>
+            onPress={() => {
+              if (!hasProjects) return;
+              onCreateExperiment();
+            }}
+            disabled={!hasProjects}
+            style={[
+              styles.actionButton,
+              {
+                borderColor: themeColors.border,
+                opacity: hasProjects ? 1 : 0.55,
+              },
+            ]}>
             <ThemedText type="defaultSemiBold">New Experiment</ThemedText>
-            <ThemedText style={{ color: themeColors.mutedText }}>Track recent engineering work</ThemedText>
+            <ThemedText style={{ color: themeColors.mutedText }}>{experimentSubtitle}</ThemedText>
           </Pressable>
         </View>
       </ThemedView>
