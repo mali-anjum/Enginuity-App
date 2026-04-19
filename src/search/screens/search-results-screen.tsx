@@ -49,7 +49,9 @@ export default function SearchResultsScreen() {
       if (params.status && item.status !== params.status) return false;
       if (params.projectId && item.projectId !== params.projectId) return false;
       if (params.hardwareId && !item.hardwareIds.includes(params.hardwareId)) return false;
-      if (query && !item.title.toLowerCase().includes(query) && !item.notes.toLowerCase().includes(query)) {
+      const haystack =
+        `${item.title} ${item.objective} ${item.observations}`.toLowerCase();
+      if (query && !haystack.includes(query)) {
         return false;
       }
       return true;

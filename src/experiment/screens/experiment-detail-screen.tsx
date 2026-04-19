@@ -5,14 +5,35 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { selectExperimentById } from '@/experiment/state/experimentSlice';
+import { experimentStatusLabel, nextExperimentStatus } from '@/experiment/constants';
+import type { ExperimentStatus } from '@/experiment/constants';
+import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+
+function statusChipColors(
+  themeColors: (typeof Colors)['light'],
+  status: ExperimentStatus,
+): { border: string; background: string } {
+  switch (status) {
+    case 'pending':
+      return { border: themeColors.border, background: themeColors.surfaceElevated };
+    case 'in_progress':
+      return { border: themeColors.primary, background: themeColors.heroTint };
+    case 'completed':
+      return { border: themeColors.accentBorder, background: themeColors.accentSoft };
+    case 'failed':
+      return { border: themeColors.danger, background: themeColors.surfaceElevated };
+    default:
+      return { border: themeColors.border, background: themeColors.surfaceElevated };
+  }
+}
 
 export default function ExperimentDetailScreen() {
   const { experimentId } = useLocalSearchParams<{ experimentId: string }>();
   const experiment = useAppSelector(selectExperimentById(experimentId ?? ''));
   const hardwareItems = useAppSelector(selectAllHardware);
+  const dispatch = useAppDispatch();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
 
@@ -25,6 +46,7 @@ export default function ExperimentDetailScreen() {
   }
 
   const linkedHardware = hardwareItems.filter((item) => experiment.hardwareIds.includes(item.id));
+  const chipColors = statusChipColors(themeColors, experiment.status);
 
   return (
     <ThemedView style={styles.screen}>
@@ -36,21 +58,49 @@ export default function ExperimentDetailScreen() {
           </Link>
         </View>
 
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">Status</ThemedText>
-          <ThemedText style={{ color: themeColors.mutedText }}>
-            {experiment.status.replace('_', ' ')}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityHint="Cycles Pending, In Progress, Completed, Failed"
+          onPress={() => {
+            void dispatch(
+              updateExperimentThunk({
+                ...experiment,
+                status: nextExperimentStatus(experiment.status),
+              }),
+            );
+          }}
+          style={[
+            styles.statusChip,
+            { borderColor: chipColors.border, backgroundColor: chipColors.background },
+          ]}>
+          <ThemedText type="defaultSemiBold">{experimentStatusLabel(experiment.status)}</ThemedText>
+          <ThemedText style={[styles.statusHint, { color: themeColors.mutedText }]}>
+            Tap to update status
           </ThemedText>
+        </Pressable>
+
+        <ThemedText style={{ color: themeColors.mutedText, fontSize: 13 }}>
+          Logged {new Date(experiment.createdAt).toLocaleString()}
+          {experiment.updatedAt !== experiment.createdAt
+            ? ` · Updated ${new Date(experiment.updatedAt).toLocaleString()}`
+            : ''}
+        </ThemedText>
+
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">Objective</ThemedText>
+          <ThemedText>{experiment.objective.trim() ? experiment.objective : '—'}</ThemedText>
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">Code Ref</ThemedText>
-          <ThemedText>{experiment.codeRef || 'No code reference added.'}</ThemedText>
+          <ThemedText type="defaultSemiBold">Observations</ThemedText>
+          <ThemedText>{experiment.observations.trim() ? experiment.observations : '—'}</ThemedText>
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">Notes</ThemedText>
-          <ThemedText>{experiment.notes || 'No notes added.'}</ThemedText>
+          <ThemedText type="defaultSemiBold">GitHub commit</ThemedText>
+          <ThemedText selectable>
+            {experiment.githubCommit.trim() ? experiment.githubCommit : '—'}
+          </ThemedText>
         </View>
 
         <View style={styles.section}>
@@ -114,6 +164,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+  statusChip: {
+    alignSelf: 'flex-start',
+    borderWidth: 2,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 2,
+  },
+  statusHint: { fontSize: 11 },
   section: { gap: 8 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   hardwareChip: {

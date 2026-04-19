@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { experimentStatusLabel } from '@/experiment/constants';
 import { selectExperimentsByProject } from '@/experiment/state/experimentSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -126,20 +127,23 @@ export default function ProjectDetailScreen() {
               </View>
             ) : (
               experiments.map((experiment) => (
-                <View
-                  key={experiment.id}
-                  style={[
-                    styles.card,
-                    {
-                      borderColor: themeColors.border,
-                      backgroundColor: themeColors.surfaceElevated,
-                    },
-                  ]}>
-                  <ThemedText type="defaultSemiBold">{experiment.title}</ThemedText>
-                  <ThemedText style={{ color: themeColors.mutedText }}>
-                    {experiment.status.replace('_', ' ')}
-                  </ThemedText>
-                </View>
+                <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href} asChild>
+                  <Pressable
+                    style={[
+                      styles.card,
+                      {
+                        borderColor: themeColors.border,
+                        backgroundColor: themeColors.surfaceElevated,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Open experiment ${experiment.title}`}>
+                    <ThemedText type="defaultSemiBold">{experiment.title}</ThemedText>
+                    <ThemedText style={{ color: themeColors.mutedText }}>
+                      {experimentStatusLabel(experiment.status)}
+                    </ThemedText>
+                  </Pressable>
+                </Link>
               ))
             )}
           </View>
