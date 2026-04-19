@@ -32,6 +32,14 @@ export default function EditExperimentScreen() {
   const [values, setValues] = useState<ExperimentFormValues>(initialValues);
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>(experiment?.hardwareIds ?? []);
 
+  const selectedHardwareChips = useMemo(() => {
+    const map = new Map(hardwareItems.map((h) => [h.id, h]));
+    return selectedHardwareIds
+      .map((id) => map.get(id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .map((h) => ({ id: h.id, name: h.name, category: h.category }));
+  }, [hardwareItems, selectedHardwareIds]);
+
   if (!experiment) {
     return (
       <ThemedView style={styles.screen}>
@@ -47,6 +55,10 @@ export default function EditExperimentScreen() {
         <ExperimentForm
           values={values}
           selectedHardwareCount={selectedHardwareIds.length}
+          selectedHardwareChips={selectedHardwareChips}
+          onRemoveHardware={(hardwareId) =>
+            setSelectedHardwareIds((prev) => prev.filter((id) => id !== hardwareId))
+          }
           onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
           onOpenHardwarePicker={() => setIsHardwarePickerOpen(true)}
           submitLabel="Update Experiment"
