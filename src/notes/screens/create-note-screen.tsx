@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -17,7 +17,12 @@ const INITIAL_VALUES: NoteFormValues = {
 };
 
 export default function CreateNoteScreen() {
-  const [values, setValues] = useState<NoteFormValues>(INITIAL_VALUES);
+  const { projectId, experimentId } = useLocalSearchParams<{ projectId?: string; experimentId?: string }>();
+  const [values, setValues] = useState<NoteFormValues>({
+    ...INITIAL_VALUES,
+    projectId: projectId ?? '',
+    experimentId: experimentId ?? '',
+  });
   const dispatch = useAppDispatch();
   const router = useRouter();
 

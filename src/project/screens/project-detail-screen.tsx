@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ExperimentStatusChip } from '@/experiment/components/experiment-status-chip';
 import { enqueueExperimentRemoteSync } from '@/experiment/services/experimentRemoteSync';
 import { cycleExperimentStatus, selectExperimentsByProject } from '@/experiment/state/experimentSlice';
+import { selectNotesByProject } from '@/notes/state/notesSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
@@ -23,6 +24,7 @@ export default function ProjectDetailScreen() {
 
   const project = useAppSelector(selectProjectById(projectId ?? ''));
   const experiments = useAppSelector(selectExperimentsByProject(projectId ?? ''));
+  const notes = useAppSelector(selectNotesByProject(projectId ?? ''));
 
   const experimentsSorted = useMemo(
     () =>
@@ -177,13 +179,41 @@ export default function ProjectDetailScreen() {
           </View>
         ) : (
           <View style={styles.section}>
-            <View style={styles.notesEmpty}>
-              <ThemedText style={[styles.emptyIcon, { color: themeColors.mutedText }]}>📝</ThemedText>
-              <ThemedText type="defaultSemiBold">Notes coming soon</ThemedText>
-              <ThemedText style={[styles.emptyCaption, { color: themeColors.mutedText }]}>
-                Project notes will appear here. You can focus on experiments for now.
-              </ThemedText>
+            <View style={styles.sectionTitleRow}>
+              <ThemedText type="defaultSemiBold">Notes</ThemedText>
+              <Link href={`/notes/create?projectId=${encodeURIComponent(project.id)}` as Href}>
+                <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
+              </Link>
             </View>
+            {notes.length === 0 ? (
+              <View style={styles.notesEmpty}>
+                <ThemedText style={[styles.emptyIcon, { color: themeColors.mutedText }]}>📝</ThemedText>
+                <ThemedText type="defaultSemiBold">No project notes yet</ThemedText>
+                <ThemedText style={[styles.emptyCaption, { color: themeColors.mutedText }]}>
+                  Linked notes appear here so your design decisions stay with this project.
+                </ThemedText>
+              </View>
+            ) : (
+              notes.map((note) => (
+                <Link key={note.id} href={`/notes/${note.id}` as Href} asChild>
+                  <Pressable
+                    style={[
+                      styles.noteCard,
+                      {
+                        borderColor: themeColors.border,
+                        backgroundColor: themeColors.surfaceElevated,
+                      },
+                    ]}>
+                    <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                      {note.title}
+                    </ThemedText>
+                    <ThemedText style={[styles.metaHint, { color: themeColors.mutedText }]} numberOfLines={2}>
+                      {note.body || 'No note body.'}
+                    </ThemedText>
+                  </Pressable>
+                </Link>
+              ))
+            )}
           </View>
         )}
       </ScrollView>
@@ -275,5 +305,12 @@ const styles = StyleSheet.create({
   emptyCaption: {
     textAlign: 'center',
     maxWidth: 280,
+  },
+  noteCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
   },
 });
