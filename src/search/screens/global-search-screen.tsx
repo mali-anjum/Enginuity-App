@@ -6,6 +6,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
+import { selectAllTags } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -20,7 +21,7 @@ const INITIAL_FILTERS: AdvancedFilters = {
   dateFrom: '',
   dateTo: '',
   hardwareId: '',
-  tag: '',
+  tagNames: [],
   status: '',
   projectId: '',
 };
@@ -56,6 +57,7 @@ export default function GlobalSearchScreen() {
 
   const projects = useAppSelector(selectAllProjects);
   const hardware = useAppSelector(selectAllHardware);
+  const tagOptions = useAppSelector(selectAllTags);
 
   const cloudCounts = useMemo(() => aggregateGlobalSearchCounts(cloudHits), [cloudHits]);
   const experimentHits = useMemo(
@@ -88,7 +90,7 @@ export default function GlobalSearchScreen() {
           filterProjectId: filters.projectId || undefined,
           filterStatus: filters.status || undefined,
           filterHardwareId: filters.hardwareId || undefined,
-          filterTag: filters.tag || undefined,
+          filterTags: filters.tagNames,
           dateFrom: filters.dateFrom || undefined,
           dateTo: filters.dateTo || undefined,
         });
@@ -107,7 +109,7 @@ export default function GlobalSearchScreen() {
     filters.dateFrom,
     filters.dateTo,
     filters.hardwareId,
-    filters.tag,
+    filters.tagNames,
     filters.status,
     filters.projectId,
   ]);
@@ -189,6 +191,7 @@ export default function GlobalSearchScreen() {
         isOpen={isFilterSheetOpen}
         values={filters}
         hardwareOptions={hardware}
+        tagOptions={tagOptions}
         projectOptions={projects.map((project) => ({ id: project.id, title: project.title }))}
         onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
         onClose={() => setIsFilterSheetOpen(false)}
