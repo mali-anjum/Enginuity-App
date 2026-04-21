@@ -1,11 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { useForm } from 'react-hook-form';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
-import { selectNoteById, updateNoteThunk } from '@/notes/state/notesSlice';
+import { createCustomTagThunk, selectNoteById, updateNoteThunk } from '@/notes/state/notesSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function EditNoteScreen() {
@@ -18,13 +19,16 @@ export default function EditNoteScreen() {
     () => ({
       title: note?.title ?? '',
       body: note?.body ?? '',
-      tagsInput: note?.tags.join(', ') ?? '',
+      tags: note?.tags ?? [],
       projectId: note?.projectId ?? '',
       experimentId: note?.experimentId ?? '',
     }),
     [note],
   );
-  const [values, setValues] = useState<NoteFormValues>(initialValues);
+  const { watch, setValue, handleSubmit } = useForm<NoteFormValues>({
+    values: initialValues,
+  });
+  const values = watch();
 
   if (!note) {
     return (
@@ -40,26 +44,27 @@ export default function EditNoteScreen() {
         <ThemedText type="title">Edit Note</ThemedText>
         <NoteForm
           values={values}
-          onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
+          onChange={(patch) => {
+            for (const [key, value] of Object.entries(patch)) {
+              setValue(key as keyof NoteFormValues, value as never);
+            }
+          }}
+          onAddCustomTag={(tag) => void dispatch(createCustomTagThunk(tag))}
           submitLabel="Update Note"
-          onSubmit={() => {
-            if (!values.title.trim()) return;
-            const tags = values.tagsInput
-              .split(',')
-              .map((tag) => tag.trim())
-              .filter(Boolean);
+          onSubmit={handleSubmit((formValues) => {
+            if (!formValues.title.trim()) return;
             void dispatch(
               updateNoteThunk({
                 ...note,
-                title: values.title.trim(),
-                body: values.body.trim(),
-                projectId: values.projectId || null,
-                experimentId: values.experimentId || null,
-                tags,
+                title: formValues.title.trim(),
+                body: formValues.body.trim(),
+                projectId: formValues.projectId || null,
+                experimentId: formValues.experimentId || null,
+                tags: formValues.tags,
               }),
             );
             router.replace(`/notes/${note.id}`);
-          }}
+          })}
         />
       </ScrollView>
     </ThemedView>
