@@ -360,6 +360,9 @@ export type Database = {
           entity_type: string;
           entity_id: string;
           title: string;
+          project_id: string | null;
+          project_title: string | null;
+          snippet: string | null;
           rank: number;
         }[];
       };
