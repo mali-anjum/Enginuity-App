@@ -8,6 +8,7 @@ import {
 } from '@/auth/state/authSlice';
 import { clearExperimentData, fetchExperimentsThunk } from '@/experiment/state/experimentSlice';
 import { clearHardwareData, fetchHardwareThunk } from '@/hardware/state/hardwareSlice';
+import { fetchNotesThunk, fetchTagCountsThunk } from '@/notes/state/notesSlice';
 import { resetOnboarding, setOnboardingCompleted } from '@/onboarding/state/onboardingSlice';
 import { clearProjectData, fetchProjectsThunk } from '@/project/state/projectSlice';
 import { seedEngineeringTagsForWorkspace } from '@/sharedModules/services/supabase/tagSupabaseService';
@@ -105,6 +106,8 @@ export function SupabaseAuthSync() {
           void dispatch(fetchProjectsThunk());
           void dispatch(fetchHardwareThunk());
           void dispatch(fetchExperimentsThunk());
+          void dispatch(fetchNotesThunk());
+          void dispatch(fetchTagCountsThunk());
           void seedEngineeringTags(data.session.user.id);
           return;
         }
@@ -141,6 +144,8 @@ export function SupabaseAuthSync() {
           void dispatch(fetchProjectsThunk());
           void dispatch(fetchHardwareThunk());
           void dispatch(fetchExperimentsThunk());
+          void dispatch(fetchNotesThunk());
+          void dispatch(fetchTagCountsThunk());
           void seedEngineeringTags(session.user.id);
           return;
         }
