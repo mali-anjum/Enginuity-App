@@ -1,3 +1,4 @@
+import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -38,6 +39,9 @@ export default function EditExperimentScreen() {
   const [values, setValues] = useState<ExperimentFormValues>(initialValues);
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>(experiment?.hardwareIds ?? []);
   const [pendingPhotoUris, setPendingPhotoUris] = useState<string[]>([]);
+  const [pendingFileAssets, setPendingFileAssets] = useState<
+    Array<{ uri: string; name: string; mimeType: string | null; size: number | null }>
+  >([]);
 
   const selectedHardwareChips = useMemo(() => {
     const map = new Map(hardwareItems.map((h) => [h.id, h]));
@@ -80,7 +84,33 @@ export default function EditExperimentScreen() {
               setPendingPhotoUris((prev) => [...prev, result.assets[0].uri]);
             })();
           }}
+          onAttachFile={() => {
+            void (async () => {
+              const result = await DocumentPicker.getDocumentAsync({
+                type: ['text/csv', 'application/pdf', 'text/comma-separated-values', '.csv', '.pdf'],
+                multiple: false,
+                copyToCacheDirectory: true,
+              });
+              if (result.canceled || !result.assets[0]) return;
+              const asset = result.assets[0];
+              setPendingFileAssets((prev) => [
+                ...prev,
+                {
+                  uri: asset.uri,
+                  name: asset.name,
+                  mimeType: asset.mimeType ?? null,
+                  size: asset.size ?? null,
+                },
+              ]);
+            })();
+          }}
           attachmentPreviewUrls={[...experiment.attachmentUrls, ...pendingPhotoUris]}
+          fileAttachmentCount={
+            (experiment.attachments ?? []).filter((item) => {
+              const type = item.fileType?.toLowerCase() ?? '';
+              return type.includes('csv') || type.includes('pdf');
+            }).length + pendingFileAssets.length
+          }
           submitLabel="Update Experiment"
           onSubmit={() => {
             if (!values.title.trim() || !values.projectId) return;
@@ -96,6 +126,7 @@ export default function EditExperimentScreen() {
                   status: values.status,
                   hardwareIds: selectedHardwareIds,
                   attachmentUrls: experiment.attachmentUrls,
+                  attachments: experiment.attachments ?? [],
                   tags: values.tagsInput
                     .split(',')
                     .map((tag) => tag.trim())
@@ -103,7 +134,24 @@ export default function EditExperimentScreen() {
                 }),
               ).unwrap();
               for (const uri of pendingPhotoUris) {
-                await dispatch(uploadAttachmentThunk({ experimentId: experiment.id, localUri: uri })).unwrap();
+                await dispatch(
+                  uploadAttachmentThunk({
+                    experimentId: experiment.id,
+                    localUri: uri,
+                    fileType: 'image/jpeg',
+                  }),
+                ).unwrap();
+              }
+              for (const file of pendingFileAssets) {
+                await dispatch(
+                  uploadAttachmentThunk({
+                    experimentId: experiment.id,
+                    localUri: file.uri,
+                    fileName: file.name,
+                    fileType: file.mimeType,
+                    fileSize: file.size,
+                  }),
+                ).unwrap();
               }
               router.replace(`/experiment/${experiment.id}`);
             })();

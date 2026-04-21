@@ -1,3 +1,4 @@
+import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -36,6 +37,9 @@ export default function CreateExperimentScreen() {
   });
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>([]);
   const [pendingPhotoUris, setPendingPhotoUris] = useState<string[]>([]);
+  const [pendingFileAssets, setPendingFileAssets] = useState<
+    Array<{ uri: string; name: string; mimeType: string | null; size: number | null }>
+  >([]);
   const [isHardwarePickerOpen, setIsHardwarePickerOpen] = useState(false);
   const hardwareItems = useAppSelector(selectAllHardware);
   const lockedProject = useAppSelector(selectProjectById(initialProjectId));
@@ -78,7 +82,28 @@ export default function CreateExperimentScreen() {
               setPendingPhotoUris((prev) => [...prev, result.assets[0].uri]);
             })();
           }}
+          onAttachFile={() => {
+            void (async () => {
+              const result = await DocumentPicker.getDocumentAsync({
+                type: ['text/csv', 'application/pdf', 'text/comma-separated-values', '.csv', '.pdf'],
+                multiple: false,
+                copyToCacheDirectory: true,
+              });
+              if (result.canceled || !result.assets[0]) return;
+              const asset = result.assets[0];
+              setPendingFileAssets((prev) => [
+                ...prev,
+                {
+                  uri: asset.uri,
+                  name: asset.name,
+                  mimeType: asset.mimeType ?? null,
+                  size: asset.size ?? null,
+                },
+              ]);
+            })();
+          }}
           attachmentPreviewUrls={pendingPhotoUris}
+          fileAttachmentCount={pendingFileAssets.length}
           submitLabel="Save Experiment"
           onSubmit={() => {
             if (!values.title.trim() || !values.projectId) return;
@@ -100,7 +125,24 @@ export default function CreateExperimentScreen() {
                 }),
               ).unwrap();
               for (const uri of pendingPhotoUris) {
-                await dispatch(uploadAttachmentThunk({ experimentId: created.id, localUri: uri })).unwrap();
+                await dispatch(
+                  uploadAttachmentThunk({
+                    experimentId: created.id,
+                    localUri: uri,
+                    fileType: 'image/jpeg',
+                  }),
+                ).unwrap();
+              }
+              for (const file of pendingFileAssets) {
+                await dispatch(
+                  uploadAttachmentThunk({
+                    experimentId: created.id,
+                    localUri: file.uri,
+                    fileName: file.name,
+                    fileType: file.mimeType,
+                    fileSize: file.size,
+                  }),
+                ).unwrap();
               }
               router.replace(`/experiment/${created.id}`);
             })();
