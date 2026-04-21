@@ -12,6 +12,7 @@ import {
   searchNotesThunk,
   selectAllNotes,
   selectAllTags,
+  setActiveTag,
   toggleNoteFavoriteThunk,
 } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
@@ -127,7 +128,10 @@ export default function NotesListScreen() {
             {tags.map((tag) => (
               <Pressable
                 key={tag}
-                onPress={() => setSelectedTag(tag)}
+                onPress={() => {
+                  setSelectedTag(tag);
+                  dispatch(setActiveTag(tag));
+                }}
                 style={[
                   styles.sortChip,
                   {
