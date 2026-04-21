@@ -1,14 +1,11 @@
-import { Link, type Href } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
-import { selectAllNotes } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -28,6 +25,25 @@ const INITIAL_FILTERS: AdvancedFilters = {
   projectId: '',
 };
 
+type SearchTab = 'experiments' | 'notes' | 'hardware';
+
+function HighlightedText({ text, query }: { text: string; query: string }) {
+  const q = query.trim();
+  if (!q) return <ThemedText>{text}</ThemedText>;
+  const index = text.toLowerCase().indexOf(q.toLowerCase());
+  if (index < 0) return <ThemedText>{text}</ThemedText>;
+  const start = text.slice(0, index);
+  const match = text.slice(index, index + q.length);
+  const end = text.slice(index + q.length);
+  return (
+    <ThemedText>
+      {start}
+      <Text style={{ fontWeight: '700' }}>{match}</Text>
+      {end}
+    </ThemedText>
+  );
+}
+
 export default function GlobalSearchScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
@@ -36,25 +52,24 @@ export default function GlobalSearchScreen() {
   const [filters, setFilters] = useState<AdvancedFilters>(INITIAL_FILTERS);
   const [cloudHits, setCloudHits] = useState<GlobalSearchEntityRow[]>([]);
   const [cloudLoading, setCloudLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<SearchTab>('experiments');
 
   const projects = useAppSelector(selectAllProjects);
-  const experiments = useAppSelector(selectAllExperiments);
-  const notes = useAppSelector(selectAllNotes);
   const hardware = useAppSelector(selectAllHardware);
 
-  const quickCount = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return { projects: projects.length, experiments: experiments.length, notes: notes.length };
-    return {
-      projects: projects.filter((item) => item.title.toLowerCase().includes(q)).length,
-      experiments: experiments.filter((item) => item.title.toLowerCase().includes(q)).length,
-      notes: notes.filter((item) => item.title.toLowerCase().includes(q) || item.body.toLowerCase().includes(q))
-        .length,
-    };
-  }, [query, projects, experiments, notes]);
-
   const cloudCounts = useMemo(() => aggregateGlobalSearchCounts(cloudHits), [cloudHits]);
-  const cloudTotal = cloudCounts.projects + cloudCounts.experiments + cloudCounts.notes;
+  const experimentHits = useMemo(
+    () => cloudHits.filter((row) => row.entity_type === 'experiment'),
+    [cloudHits],
+  );
+  const noteHits = useMemo(
+    () => cloudHits.filter((row) => row.entity_type === 'note'),
+    [cloudHits],
+  );
+  const hardwareHits = useMemo(
+    () => cloudHits.filter((row) => row.entity_type === 'hardware'),
+    [cloudHits],
+  );
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -97,21 +112,12 @@ export default function GlobalSearchScreen() {
     filters.projectId,
   ]);
 
-  const resultsHref =
-    `/search/results?query=${encodeURIComponent(query)}` +
-    `&status=${encodeURIComponent(filters.status)}` +
-    `&projectId=${encodeURIComponent(filters.projectId)}` +
-    `&hardwareId=${encodeURIComponent(filters.hardwareId)}` +
-    `&tag=${encodeURIComponent(filters.tag)}` +
-    `&dateFrom=${encodeURIComponent(filters.dateFrom)}` +
-    `&dateTo=${encodeURIComponent(filters.dateTo)}`;
-
   return (
     <ThemedView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Global Search</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
-          Search across projects, experiments, and notes.
+          Search across experiment titles/observations, notes, and hardware names.
         </ThemedText>
 
         <TextInput
@@ -128,39 +134,55 @@ export default function GlobalSearchScreen() {
           <ThemedText>Open Advanced Filters</ThemedText>
         </Pressable>
 
-        <View style={styles.countGrid}>
-          <View style={[styles.countCard, { borderColor: themeColors.border }]}>
-            <ThemedText type="defaultSemiBold">Projects</ThemedText>
-            <ThemedText>{quickCount.projects}</ThemedText>
-          </View>
-          <View style={[styles.countCard, { borderColor: themeColors.border }]}>
-            <ThemedText type="defaultSemiBold">Experiments</ThemedText>
-            <ThemedText>{quickCount.experiments}</ThemedText>
-          </View>
-          <View style={[styles.countCard, { borderColor: themeColors.border }]}>
-            <ThemedText type="defaultSemiBold">Notes</ThemedText>
-            <ThemedText>{quickCount.notes}</ThemedText>
-          </View>
-        </View>
-
         {query.trim() ? (
           cloudLoading ? (
             <ThemedText style={{ color: themeColors.mutedText }}>Searching cloud index (Supabase FTS)…</ThemedText>
-          ) : cloudTotal > 0 ? (
+          ) : cloudHits.length > 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>
-              Cloud (Supabase FTS): {cloudCounts.projects} projects · {cloudCounts.experiments} experiments ·{' '}
-              {cloudCounts.notes} notes
+              Cloud (Supabase FTS): {cloudCounts.experiments} experiments · {cloudCounts.notes} notes ·{' '}
+              {cloudCounts.hardware} hardware
             </ThemedText>
           ) : null
         ) : null}
 
-        <Link href={resultsHref as Href} asChild>
-          <Pressable style={[styles.resultsButton, { backgroundColor: themeColors.primary }]}>
-            <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
-              Open Search Results
-            </ThemedText>
-          </Pressable>
-        </Link>
+        <View style={styles.tabRow}>
+          {(['experiments', 'notes', 'hardware'] as SearchTab[]).map((tab) => {
+            const active = activeTab === tab;
+            const count = tab === 'experiments' ? experimentHits.length : tab === 'notes' ? noteHits.length : hardwareHits.length;
+            return (
+              <Pressable
+                key={tab}
+                onPress={() => setActiveTab(tab)}
+                style={[
+                  styles.tabChip,
+                  {
+                    borderColor: active ? themeColors.primary : themeColors.border,
+                    backgroundColor: active ? themeColors.heroTint : themeColors.background,
+                  },
+                ]}>
+                <ThemedText>{`${tab[0].toUpperCase()}${tab.slice(1)} (${count})`}</ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.resultList}>
+          {(activeTab === 'experiments' ? experimentHits : activeTab === 'notes' ? noteHits : hardwareHits).map((row) => (
+            <Pressable
+              key={`${row.entity_type}-${row.entity_id}`}
+              style={[styles.resultCard, { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated }]}>
+              <HighlightedText text={row.title} query={query} />
+              <ThemedText style={{ color: themeColors.mutedText }}>
+                {row.project_title ? `Project: ${row.project_title}` : 'Project context unavailable'}
+              </ThemedText>
+              {row.snippet ? (
+                <ThemedText style={{ color: themeColors.subtleText }} numberOfLines={2}>
+                  {row.snippet}
+                </ThemedText>
+              ) : null}
+            </Pressable>
+          ))}
+        </View>
       </ScrollView>
 
       <AdvancedFilterSheet
@@ -180,7 +202,8 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   searchInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
   filterButton: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, alignSelf: 'flex-start' },
-  countGrid: { gap: 8 },
-  countCard: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, gap: 4 },
-  resultsButton: { borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
+  tabRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tabChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
+  resultList: { gap: 10 },
+  resultCard: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, gap: 4 },
 });
