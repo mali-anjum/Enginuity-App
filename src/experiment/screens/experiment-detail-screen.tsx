@@ -9,6 +9,7 @@ import { experimentStatusLabel, nextExperimentStatus } from '@/experiment/consta
 import type { ExperimentStatus } from '@/experiment/constants';
 import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
+import { selectNotesByExperiment } from '@/notes/state/notesSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 function statusChipColors(
@@ -33,6 +34,7 @@ export default function ExperimentDetailScreen() {
   const { experimentId } = useLocalSearchParams<{ experimentId: string }>();
   const experiment = useAppSelector(selectExperimentById(experimentId ?? ''));
   const hardwareItems = useAppSelector(selectAllHardware);
+  const linkedNotes = useAppSelector(selectNotesByExperiment(experimentId ?? ''));
   const dispatch = useAppDispatch();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
@@ -94,6 +96,39 @@ export default function ExperimentDetailScreen() {
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">Observations</ThemedText>
           <ThemedText>{experiment.observations.trim() ? experiment.observations : '—'}</ThemedText>
+          <View style={styles.notesRow}>
+            <View style={styles.topRow}>
+              <ThemedText type="defaultSemiBold">Linked notes</ThemedText>
+              <Link href={`/notes/create?experimentId=${encodeURIComponent(experiment.id)}` as Href}>
+                <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
+              </Link>
+            </View>
+            {linkedNotes.length === 0 ? (
+              <ThemedText style={{ color: themeColors.mutedText }}>
+                No notes linked to this experiment yet.
+              </ThemedText>
+            ) : (
+              linkedNotes.map((note) => (
+                <Link key={note.id} href={`/notes/${note.id}` as Href} asChild>
+                  <Pressable
+                    style={[
+                      styles.noteCard,
+                      {
+                        borderColor: themeColors.border,
+                        backgroundColor: themeColors.surfaceElevated,
+                      },
+                    ]}>
+                    <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                      {note.title}
+                    </ThemedText>
+                    <ThemedText style={[styles.chipMeta, { color: themeColors.mutedText }]} numberOfLines={2}>
+                      {note.body || 'No note body.'}
+                    </ThemedText>
+                  </Pressable>
+                </Link>
+              ))
+            )}
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -174,6 +209,7 @@ const styles = StyleSheet.create({
   },
   statusHint: { fontSize: 11 },
   section: { gap: 8 },
+  notesRow: { gap: 8, marginTop: 6 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   hardwareChip: {
     flexDirection: 'row',
@@ -187,4 +223,11 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   chipMeta: { fontSize: 12 },
+  noteCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
+  },
 });

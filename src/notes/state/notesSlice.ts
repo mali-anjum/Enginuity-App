@@ -116,6 +116,8 @@ export const selectNoteById = (noteId: string) => (state: RootState) =>
   state.notes.notes.find((note) => note.id === noteId) ?? null;
 export const selectNotesByProject = (projectId: string) => (state: RootState) =>
   state.notes.notes.filter((note) => note.projectId === projectId);
+export const selectNotesByExperiment = (experimentId: string) => (state: RootState) =>
+  state.notes.notes.filter((note) => note.experimentId === experimentId);
 export const selectAllNotes = (state: RootState) => state.notes.notes;
 export const selectAllTags = (state: RootState) =>
   Array.from(new Set(state.notes.notes.flatMap((note) => note.tags))).sort((a, b) =>
