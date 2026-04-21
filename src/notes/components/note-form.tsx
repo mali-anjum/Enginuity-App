@@ -43,7 +43,7 @@ export function NoteForm({ values, onChange, submitLabel, onSubmit }: NoteFormPr
       </View>
 
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Body (rich text placeholder)</ThemedText>
+        <ThemedText type="defaultSemiBold">Body (use **bold** and *italic*)</ThemedText>
         <TextInput
           multiline
           value={values.body}
