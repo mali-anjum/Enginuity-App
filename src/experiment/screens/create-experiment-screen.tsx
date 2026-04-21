@@ -4,8 +4,8 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { ExperimentForm, type ExperimentFormValues } from '@/experiment/components/experiment-form';
-import { HardwarePickerSheet } from '@/experiment/components/hardware-picker-sheet';
+import { ExperimentForm, type ExperimentFormValues } from '@/experiment/organisms/experiment-form';
+import { HardwarePickerSheet } from '@/experiment/organisms/hardware-picker-sheet';
 import { createExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectProjectById } from '@/project/state/projectSlice';

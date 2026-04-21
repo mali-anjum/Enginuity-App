@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { HardwareForm, type HardwareFormValues } from '@/hardware/components/hardware-form';
+import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hardware-form';
 import { selectHardwareById, updateHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 

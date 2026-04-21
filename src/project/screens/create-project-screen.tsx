@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { ProjectForm, type ProjectFormValues } from '@/project/components/project-form';
+import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { createProjectThunk } from '@/project/state/projectSlice';
 import { useAppDispatch } from '@/sharedModules/state/hooks';
 

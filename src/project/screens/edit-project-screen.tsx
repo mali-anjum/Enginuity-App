@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { ProjectForm, type ProjectFormValues } from '@/project/components/project-form';
+import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { selectProjectById, updateProjectThunk } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 

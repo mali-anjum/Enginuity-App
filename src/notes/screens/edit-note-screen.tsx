@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { NoteForm, type NoteFormValues } from '@/notes/components/note-form';
+import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { selectNoteById, updateNoteThunk } from '@/notes/state/notesSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 

@@ -2,7 +2,7 @@ import { Link, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ExperimentStatusChip } from '@/experiment/components/experiment-status-chip';
+import { ExperimentStatusChip } from '@/experiment/molecules/experiment-status-chip';
 import { enqueueExperimentRemoteSync } from '@/experiment/services/experimentRemoteSync';
 import { cycleExperimentStatus, selectExperimentsByProject } from '@/experiment/state/experimentSlice';
 import { selectNotesByProject } from '@/notes/state/notesSlice';

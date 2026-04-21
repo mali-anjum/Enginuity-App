@@ -12,7 +12,7 @@ import { selectAllNotes } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
-import { AdvancedFilterSheet, type AdvancedFilters } from '../components/advanced-filter-sheet';
+import { AdvancedFilterSheet, type AdvancedFilters } from '../organisms/advanced-filter-sheet';
 import {
   aggregateGlobalSearchCounts,
   fetchGlobalSearchEntities,
