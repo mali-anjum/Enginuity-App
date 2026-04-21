@@ -11,7 +11,7 @@ const EXPERIMENT_ATTACHMENTS_BUCKET = 'experiment-attachments';
 function mapRowToExperiment(
   row: Database['public']['Tables']['experiments']['Row'],
   hardwareIds: string[],
-  attachmentUrls: string[],
+  attachments: Experiment['attachments'],
 ): Experiment {
   return {
     id: row.id,
@@ -22,7 +22,10 @@ function mapRowToExperiment(
     githubCommit: row.github_commit ?? '',
     status: row.status as ExperimentStatus,
     hardwareIds,
-    attachmentUrls,
+    attachmentUrls: attachments
+      .filter((item) => item.fileType?.startsWith('image/'))
+      .map((item) => item.url),
+    attachments,
     tags: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -32,6 +35,10 @@ function mapRowToExperiment(
 type ExperimentAttachmentRow = {
   experiment_id: string;
   storage_path: string;
+  file_name: string;
+  file_type: string | null;
+  file_size: number | null;
+  created_at: string;
 };
 
 async function fetchHardwareLinksForExperiments(
@@ -60,14 +67,14 @@ async function fetchHardwareLinksForExperiments(
 async function fetchAttachmentLinksForExperiments(
   client: SupabaseClient<Database>,
   experimentIds: string[],
-): Promise<Map<string, string[]>> {
+): Promise<Map<string, Experiment['attachments']>> {
   const sb = unwrapSupabaseClient(client);
-  const map = new Map<string, string[]>();
+  const map = new Map<string, Experiment['attachments']>();
   if (experimentIds.length === 0) return map;
 
   const { data, error } = await sb
     .from('experiment_attachments')
-    .select('experiment_id,storage_path')
+    .select('experiment_id,storage_path,file_name,file_type,file_size,created_at')
     .in('experiment_id', experimentIds);
   if (error) throw error;
 
@@ -76,7 +83,13 @@ async function fetchAttachmentLinksForExperiments(
       .from(EXPERIMENT_ATTACHMENTS_BUCKET)
       .getPublicUrl(row.storage_path);
     const list = map.get(row.experiment_id) ?? [];
-    list.push(publicData.publicUrl);
+    list.push({
+      url: publicData.publicUrl,
+      fileName: row.file_name,
+      fileType: row.file_type,
+      fileSize: row.file_size,
+      uploadedAt: row.created_at,
+    });
     map.set(row.experiment_id, list);
   }
 
@@ -121,7 +134,14 @@ type CreateExperimentInput = Pick<Experiment, 'title' | 'projectId'> &
   Partial<
     Pick<
       Experiment,
-      'objective' | 'observations' | 'githubCommit' | 'status' | 'hardwareIds' | 'attachmentUrls' | 'tags'
+      | 'objective'
+      | 'observations'
+      | 'githubCommit'
+      | 'status'
+      | 'hardwareIds'
+      | 'attachmentUrls'
+      | 'attachments'
+      | 'tags'
     >
   >;
 
@@ -204,7 +224,7 @@ export async function updateExperimentForUser(
 
   await syncExperimentHardware(client, experiment.id, experiment.hardwareIds);
 
-  return mapRowToExperiment(data, experiment.hardwareIds, experiment.attachmentUrls);
+  return mapRowToExperiment(data, experiment.hardwareIds, experiment.attachments);
 }
 
 export async function patchExperimentStatusForUser(
@@ -244,35 +264,53 @@ export async function uploadExperimentAttachmentForUser(
   client: SupabaseClient<Database>,
   userId: string,
   experimentId: string,
-  localUri: string,
-): Promise<string> {
+  input: {
+    localUri: string;
+    fileName?: string;
+    fileType?: string | null;
+    fileSize?: number | null;
+  },
+): Promise<Experiment['attachments'][number]> {
   const sb = unwrapSupabaseClient(client);
-  const response = await fetch(localUri);
+  const response = await fetch(input.localUri);
   const fileBlob = await response.blob();
-  const ext = fileExtensionFromUri(localUri);
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const ext = fileExtensionFromUri(input.localUri);
+  const baseName = input.fileName?.trim();
+  const fileName =
+    baseName && baseName.length > 0
+      ? `${Date.now()}-${baseName}`
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const storagePath = `${experimentId}/${fileName}`;
+  const contentType = input.fileType || fileBlob.type || `application/octet-stream`;
 
   const { error: uploadError } = await sb.storage
     .from(EXPERIMENT_ATTACHMENTS_BUCKET)
     .upload(storagePath, fileBlob, {
-      contentType: fileBlob.type || `image/${ext}`,
+      contentType,
       upsert: false,
     });
   if (uploadError) throw uploadError;
 
+  const uploadedAt = new Date().toISOString();
   const { error: dbError } = await sb.from('experiment_attachments').insert({
     experiment_id: experimentId,
     uploaded_by: userId,
     file_name: fileName,
-    file_type: fileBlob.type || `image/${ext}`,
+    file_type: contentType,
     storage_path: storagePath,
-    file_size: fileBlob.size,
+    file_size: input.fileSize ?? fileBlob.size,
+    created_at: uploadedAt,
   });
   if (dbError) throw dbError;
 
   const { data: publicData } = sb.storage
     .from(EXPERIMENT_ATTACHMENTS_BUCKET)
     .getPublicUrl(storagePath);
-  return publicData.publicUrl;
+  return {
+    url: publicData.publicUrl,
+    fileName,
+    fileType: contentType,
+    fileSize: input.fileSize ?? fileBlob.size,
+    uploadedAt,
+  };
 }
