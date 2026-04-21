@@ -44,6 +44,12 @@ function isCsvAttachment(fileType: string | null, fileName: string): boolean {
   return /\.csv$/i.test(fileName);
 }
 
+function isPdfAttachment(fileType: string | null, fileName: string): boolean {
+  const type = fileType?.toLowerCase() ?? '';
+  if (type.includes('pdf')) return true;
+  return /\.pdf$/i.test(fileName);
+}
+
 function formatFileSize(size: number | null): string {
   if (!size || size <= 0) return 'Unknown size';
   if (size < 1024) return `${size} B`;
@@ -217,7 +223,7 @@ export default function ExperimentDetailScreen() {
               {imageAttachments.map((attachment) => (
                 <Link
                   key={attachment.url}
-                  href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}` as Href}
+                  href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? 'image/*')}` as Href}
                   asChild>
                   <Pressable
                     style={[
@@ -256,8 +262,13 @@ export default function ExperimentDetailScreen() {
                 </ThemedText>
                 {isCsvAttachment(attachment.fileType, attachment.fileName) ? (
                   <Link
-                    href={`/experiment/csv-preview?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}` as Href}>
-                    <ThemedText style={{ color: themeColors.primary }}>Open CSV table view</ThemedText>
+                    href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? 'text/csv')}` as Href}>
+                    <ThemedText style={{ color: themeColors.primary }}>Open attachment</ThemedText>
+                  </Link>
+                ) : isPdfAttachment(attachment.fileType, attachment.fileName) ? (
+                  <Link
+                    href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? 'application/pdf')}` as Href}>
+                    <ThemedText style={{ color: themeColors.primary }}>Open attachment</ThemedText>
                   </Link>
                 ) : null}
               </View>

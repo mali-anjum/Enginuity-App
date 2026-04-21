@@ -1,1 +1,1 @@
-export { default } from '@/experiment/screens/csv-data-preview-screen';
+export { default } from '@/experiment/screens/attachment-viewer-screen';
