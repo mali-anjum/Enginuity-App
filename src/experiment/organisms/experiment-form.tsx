@@ -20,6 +20,7 @@ export type ExperimentFormValues = {
   githubCommit: string;
   status: ExperimentStatus;
   attachmentInput: string;
+  tagsInput: string;
 };
 
 export type SelectedHardwareChip = {
@@ -202,6 +203,17 @@ export function ExperimentForm({
             ))}
           </View>
         ) : null}
+      </View>
+
+      <View style={styles.group}>
+        <ThemedText type="defaultSemiBold">Tags (comma separated)</ThemedText>
+        <TextInput
+          value={values.tagsInput}
+          onChangeText={(text) => onChange({ tagsInput: text })}
+          placeholder="PID, ESP32, UART"
+          placeholderTextColor={themeColors.mutedText}
+          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
+        />
       </View>
 
       <View style={styles.group}>

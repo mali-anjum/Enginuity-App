@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { TagChip } from '../atoms/tag-chip';
+import { TagChip } from '@/common/atoms/tag-chip';
 
 const SAMPLE_TAGS = ['PID', 'MPU6050', 'Firmware'] as const;
 

@@ -19,6 +19,7 @@ const INITIAL_VALUES: ExperimentFormValues = {
   githubCommit: '',
   status: 'pending',
   attachmentInput: '',
+  tagsInput: '',
 };
 
 export default function CreateExperimentScreen() {
@@ -79,6 +80,10 @@ export default function CreateExperimentScreen() {
                   status: values.status,
                   hardwareIds: selectedHardwareIds,
                   attachmentUrls,
+                  tags: values.tagsInput
+                    .split(',')
+                    .map((tag) => tag.trim())
+                    .filter(Boolean),
                 }),
               ).unwrap();
               router.replace(`/experiment/${created.id}`);

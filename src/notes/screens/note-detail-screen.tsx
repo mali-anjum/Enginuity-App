@@ -1,9 +1,10 @@
-import { Link, useLocalSearchParams, type Href } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { NoteRichText } from '@/notes/molecules/note-rich-text';
@@ -14,6 +15,7 @@ export default function NoteDetailScreen() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const note = useAppSelector(selectNoteById(noteId ?? ''));
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -40,9 +42,19 @@ export default function NoteDetailScreen() {
 
         <View style={styles.metaBlock}>
           <ThemedText type="defaultSemiBold">Tags</ThemedText>
-          <ThemedText style={{ color: themeColors.mutedText }}>
-            {note.tags.length ? note.tags.join(', ') : 'No tags'}
-          </ThemedText>
+          {note.tags.length === 0 ? (
+            <ThemedText style={{ color: themeColors.mutedText }}>No tags</ThemedText>
+          ) : (
+            <View style={styles.tagRow}>
+              {note.tags.map((tag) => (
+                <TagChip
+                  key={tag}
+                  label={tag}
+                  onPress={() => router.push(`/notes/tags?tag=${encodeURIComponent(tag)}` as Href)}
+                />
+              ))}
+            </View>
+          )}
         </View>
 
         <View style={styles.metaBlock}>
@@ -99,6 +111,7 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   metaBlock: { gap: 4 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   deleteButton: {
     marginTop: 6,
     borderWidth: 1,

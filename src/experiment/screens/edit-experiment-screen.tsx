@@ -27,6 +27,7 @@ export default function EditExperimentScreen() {
       githubCommit: experiment?.githubCommit ?? '',
       status: experiment?.status ?? 'pending',
       attachmentInput: experiment?.attachmentUrls[0] ?? '',
+      tagsInput: experiment?.tags.join(', ') ?? '',
     }),
     [experiment],
   );
@@ -77,6 +78,10 @@ export default function EditExperimentScreen() {
                 status: values.status,
                 hardwareIds: selectedHardwareIds,
                 attachmentUrls,
+                tags: values.tagsInput
+                  .split(',')
+                  .map((tag) => tag.trim())
+                  .filter(Boolean),
               }),
             );
             router.replace(`/experiment/${experiment.id}`);

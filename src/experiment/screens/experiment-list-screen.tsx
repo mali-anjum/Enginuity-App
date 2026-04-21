@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { EXPERIMENT_STATUSES, experimentStatusLabel } from '@/experiment/constants';
@@ -81,6 +82,13 @@ export default function ExperimentListScreen() {
                   <ThemedText style={{ color: themeColors.mutedText }}>
                     {experimentStatusLabel(experiment.status)}
                   </ThemedText>
+                  {experiment.tags.length > 0 ? (
+                    <View style={styles.tagRow}>
+                      {experiment.tags.slice(0, 4).map((tag) => (
+                        <TagChip key={`${experiment.id}-${tag}`} label={tag} />
+                      ))}
+                    </View>
+                  ) : null}
                 </Pressable>
               </Link>
             ))
@@ -99,4 +107,5 @@ const styles = StyleSheet.create({
   filterChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
 });
