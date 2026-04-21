@@ -144,3 +144,17 @@ export const selectAllTags = (state: RootState) =>
   Array.from(new Set([...SEEDED_ENGINEERING_TAGS, ...state.notes.notes.flatMap((note) => note.tags)])).sort(
     (a, b) => a.localeCompare(b),
   );
+export const selectTagCounts = (state: RootState) => {
+  const counts = new Map<string, number>();
+  for (const tag of SEEDED_ENGINEERING_TAGS) {
+    counts.set(tag, 0);
+  }
+  for (const note of state.notes.notes) {
+    for (const tag of note.tags) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+};
