@@ -90,3 +90,39 @@ where not exists (
   where n.project_id = pr.project_id
     and n.title = 'Welcome note'
 );
+
+with first_workspace as (
+  select w.id as workspace_id
+  from public.workspaces w
+  order by w.created_at asc
+  limit 1
+)
+insert into public.tags (workspace_id, name, color)
+select
+  fw.workspace_id,
+  seeded.name,
+  seeded.color
+from first_workspace fw
+cross join (
+  values
+    ('PID', '#0EA5E9'),
+    ('I2C', '#14B8A6'),
+    ('SPI', '#6366F1'),
+    ('UART', '#EC4899'),
+    ('PWM', '#F97316'),
+    ('Kalman Filter', '#22C55E'),
+    ('Arduino', '#A855F7'),
+    ('ESP32', '#EAB308'),
+    ('MPU6050', '#06B6D4'),
+    ('STM32', '#3B82F6'),
+    ('ROS', '#0EA5E9'),
+    ('MATLAB', '#14B8A6'),
+    ('Python', '#6366F1'),
+    ('C++', '#EC4899'),
+    ('Bluetooth', '#F97316'),
+    ('WiFi', '#22C55E'),
+    ('LoRa', '#A855F7')
+) as seeded(name, color)
+where fw.workspace_id is not null
+on conflict (workspace_id, name) do update
+set color = excluded.color;
