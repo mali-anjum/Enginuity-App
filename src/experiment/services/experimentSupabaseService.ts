@@ -84,7 +84,7 @@ type CreateExperimentInput = Pick<Experiment, 'title' | 'projectId'> &
   Partial<
     Pick<
       Experiment,
-      'objective' | 'observations' | 'githubCommit' | 'status' | 'hardwareIds' | 'attachmentUrls'
+      'objective' | 'observations' | 'githubCommit' | 'status' | 'hardwareIds' | 'attachmentUrls' | 'tags'
     >
   >;
 
