@@ -38,7 +38,9 @@ type ExperimentFormProps = {
   onChange: (patch: Partial<ExperimentFormValues>) => void;
   onOpenHardwarePicker: () => void;
   onAddPhoto: () => void;
+  onAttachFile: () => void;
   attachmentPreviewUrls: string[];
+  fileAttachmentCount: number;
   submitLabel: string;
   onSubmit: () => void;
 };
@@ -52,7 +54,9 @@ export function ExperimentForm({
   onChange,
   onOpenHardwarePicker,
   onAddPhoto,
+  onAttachFile,
   attachmentPreviewUrls,
+  fileAttachmentCount,
   submitLabel,
   onSubmit,
 }: ExperimentFormProps) {
@@ -226,9 +230,19 @@ export function ExperimentForm({
           style={[styles.input, styles.pickerButton, { borderColor: themeColors.border }]}>
           <ThemedText>Add Photo</ThemedText>
         </Pressable>
+        <Pressable
+          onPress={onAttachFile}
+          style={[styles.input, styles.pickerButton, { borderColor: themeColors.border }]}>
+          <ThemedText>Attach File (CSV/PDF)</ThemedText>
+        </Pressable>
         {attachmentPreviewUrls.length > 0 ? (
           <ThemedText style={{ color: themeColors.mutedText }}>
             {attachmentPreviewUrls.length} photo{attachmentPreviewUrls.length === 1 ? '' : 's'} selected/uploaded.
+          </ThemedText>
+        ) : null}
+        {fileAttachmentCount > 0 ? (
+          <ThemedText style={{ color: themeColors.mutedText }}>
+            {fileAttachmentCount} file attachment{fileAttachmentCount === 1 ? '' : 's'} selected/uploaded.
           </ThemedText>
         ) : null}
       </View>

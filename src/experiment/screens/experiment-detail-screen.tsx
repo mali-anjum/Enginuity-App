@@ -32,6 +32,25 @@ function statusChipColors(
   }
 }
 
+function isImageAttachment(fileType: string | null, fileName: string): boolean {
+  const type = fileType?.toLowerCase() ?? '';
+  if (type.startsWith('image/')) return true;
+  return /\.(png|jpe?g|webp|gif|bmp)$/i.test(fileName);
+}
+
+function isCsvAttachment(fileType: string | null, fileName: string): boolean {
+  const type = fileType?.toLowerCase() ?? '';
+  if (type.includes('csv') || type.includes('comma-separated-values')) return true;
+  return /\.csv$/i.test(fileName);
+}
+
+function formatFileSize(size: number | null): string {
+  if (!size || size <= 0) return 'Unknown size';
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function ExperimentDetailScreen() {
   const { experimentId } = useLocalSearchParams<{ experimentId: string }>();
   const experiment = useAppSelector(selectExperimentById(experimentId ?? ''));
@@ -51,6 +70,13 @@ export default function ExperimentDetailScreen() {
 
   const linkedHardware = hardwareItems.filter((item) => experiment.hardwareIds.includes(item.id));
   const chipColors = statusChipColors(themeColors, experiment.status);
+  const attachments = experiment.attachments ?? [];
+  const imageAttachments = attachments.filter((item) =>
+    isImageAttachment(item.fileType, item.fileName),
+  );
+  const fileAttachments = attachments.filter(
+    (item) => !isImageAttachment(item.fileType, item.fileName),
+  );
 
   return (
     <ThemedView style={styles.screen}>
@@ -183,15 +209,15 @@ export default function ExperimentDetailScreen() {
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">Attachments</ThemedText>
-          {experiment.attachmentUrls.length === 0 ? (
+          <ThemedText type="defaultSemiBold">Photos</ThemedText>
+          {imageAttachments.length === 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>No attachments uploaded.</ThemedText>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoStrip}>
-              {experiment.attachmentUrls.map((url) => (
+              {imageAttachments.map((attachment) => (
                 <Link
-                  key={url}
-                  href={`/experiment/attachment-viewer?url=${encodeURIComponent(url)}` as Href}
+                  key={attachment.url}
+                  href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}` as Href}
                   asChild>
                   <Pressable
                     style={[
@@ -201,11 +227,41 @@ export default function ExperimentDetailScreen() {
                         backgroundColor: themeColors.surfaceElevated,
                       },
                     ]}>
-                    <Image source={{ uri: url }} style={styles.photoThumb} contentFit="cover" />
+                    <Image source={{ uri: attachment.url }} style={styles.photoThumb} contentFit="cover" />
                   </Pressable>
                 </Link>
               ))}
             </ScrollView>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">Attached files</ThemedText>
+          {fileAttachments.length === 0 ? (
+            <ThemedText style={{ color: themeColors.mutedText }}>No CSV/PDF files attached.</ThemedText>
+          ) : (
+            fileAttachments.map((attachment) => (
+              <View
+                key={attachment.url}
+                style={[
+                  styles.fileCard,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                  {attachment.fileName}
+                </ThemedText>
+                <ThemedText style={{ color: themeColors.mutedText }}>
+                  {formatFileSize(attachment.fileSize)} · Uploaded{' '}
+                  {new Date(attachment.uploadedAt).toLocaleDateString()}
+                </ThemedText>
+                {isCsvAttachment(attachment.fileType, attachment.fileName) ? (
+                  <Link
+                    href={`/experiment/csv-preview?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}` as Href}>
+                    <ThemedText style={{ color: themeColors.primary }}>Open CSV table view</ThemedText>
+                  </Link>
+                ) : null}
+              </View>
+            ))
           )}
         </View>
 
@@ -264,6 +320,13 @@ const styles = StyleSheet.create({
   photoStrip: { gap: 10, paddingRight: 8 },
   photoCard: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   photoThumb: { width: 128, height: 96 },
+  fileCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 6,
+  },
   quickActionButton: {
     borderRadius: 12,
     paddingVertical: 12,

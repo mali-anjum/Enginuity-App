@@ -26,6 +26,13 @@ export type Experiment = {
   status: ExperimentStatus;
   hardwareIds: string[];
   attachmentUrls: string[];
+  attachments: {
+    url: string;
+    fileName: string;
+    fileType: string | null;
+    fileSize: number | null;
+    uploadedAt: string;
+  }[];
   tags: string[];
   /** Set once when the experiment is created. */
   createdAt: string;
@@ -75,6 +82,7 @@ export const createExperimentThunk = createAsyncThunk<
         | 'status'
         | 'hardwareIds'
         | 'attachmentUrls'
+    | 'attachments'
         | 'tags'
       >
     >,
@@ -91,6 +99,7 @@ export const createExperimentThunk = createAsyncThunk<
     status = 'pending',
     hardwareIds = [],
     attachmentUrls = [],
+    attachments = [],
     tags = [],
   } = payload;
 
@@ -106,6 +115,7 @@ export const createExperimentThunk = createAsyncThunk<
       status,
       hardwareIds,
       attachmentUrls,
+      attachments,
       tags,
     });
   }
@@ -121,6 +131,7 @@ export const createExperimentThunk = createAsyncThunk<
     status,
     hardwareIds,
     attachmentUrls,
+    attachments,
     tags,
     createdAt: now,
     updatedAt: now,
@@ -154,17 +165,39 @@ export const deleteExperimentThunk = createAsyncThunk<string, string, { state: R
   },
 );
 export const uploadAttachmentThunk = createAsyncThunk<
-  { experimentId: string; url: string },
-  { experimentId: string; localUri: string },
+  {
+    experimentId: string;
+    attachment: {
+      url: string;
+      fileName: string;
+      fileType: string | null;
+      fileSize: number | null;
+      uploadedAt: string;
+    };
+  },
+  {
+    experimentId: string;
+    localUri: string;
+    fileName?: string;
+    fileType?: string | null;
+    fileSize?: number | null;
+  },
   { state: RootState }
->('experiment/uploadAttachmentThunk', async ({ experimentId, localUri }, { getState }) => {
+>(
+  'experiment/uploadAttachmentThunk',
+  async ({ experimentId, localUri, fileName, fileType, fileSize }, { getState }) => {
   const user = getState().auth.user;
   const client = getSupabaseClientOrNull();
   if (!user || !client || !isUuid(experimentId)) {
     throw new Error('Upload unavailable');
   }
-  const url = await uploadExperimentAttachmentForUser(client, user.id, experimentId, localUri);
-  return { experimentId, url };
+  const attachment = await uploadExperimentAttachmentForUser(client, user.id, experimentId, {
+    localUri,
+    fileName,
+    fileType,
+    fileSize,
+  });
+  return { experimentId, attachment };
 });
 
 const experimentSlice = createSlice({
@@ -229,7 +262,13 @@ const experimentSlice = createSlice({
       .addCase(uploadAttachmentThunk.fulfilled, (state, action) => {
         const experiment = state.experiments.find((item) => item.id === action.payload.experimentId);
         if (experiment) {
-          experiment.attachmentUrls.push(action.payload.url);
+          if (!experiment.attachments) {
+            experiment.attachments = [];
+          }
+          experiment.attachments.push(action.payload.attachment);
+          if (action.payload.attachment.fileType?.startsWith('image/')) {
+            experiment.attachmentUrls.push(action.payload.attachment.url);
+          }
           experiment.updatedAt = new Date().toISOString();
         }
       });
