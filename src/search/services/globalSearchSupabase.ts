@@ -16,7 +16,7 @@ export async function fetchGlobalSearchEntities(params: {
   filterProjectId?: string;
   filterStatus?: string;
   filterHardwareId?: string;
-  filterTag?: string;
+  filterTags?: string[];
   dateFrom?: string;
   dateTo?: string;
   resultLimit?: number;
@@ -33,7 +33,7 @@ export async function fetchGlobalSearchEntities(params: {
         filter_project_id: params.filterProjectId ?? null,
         filter_status: params.filterStatus ?? null,
         filter_hardware_id: params.filterHardwareId ?? null,
-        filter_tag: params.filterTag ?? null,
+        filter_tags: params.filterTags?.length ? params.filterTags : null,
         date_from: params.dateFrom ?? null,
         date_to: params.dateTo ?? null,
         result_limit: params.resultLimit ?? null,

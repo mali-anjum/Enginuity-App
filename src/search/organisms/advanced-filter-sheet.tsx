@@ -4,15 +4,16 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import type { ExperimentStatus } from '@/experiment/constants';
 import type { HardwareItem } from '@/hardware/state/hardwareSlice';
-import type { ProjectStatus } from '@/project/state/projectSlice';
+import { TagChip } from '@/common/atoms/tag-chip';
 
 export type AdvancedFilters = {
   dateFrom: string;
   dateTo: string;
   hardwareId: string;
-  tag: string;
-  status: ProjectStatus | '';
+  tagNames: string[];
+  status: ExperimentStatus | '';
   projectId: string;
 };
 
@@ -21,17 +22,19 @@ type AdvancedFilterSheetProps = {
   values: AdvancedFilters;
   hardwareOptions: HardwareItem[];
   projectOptions: { id: string; title: string }[];
+  tagOptions: string[];
   onChange: (patch: Partial<AdvancedFilters>) => void;
   onClose: () => void;
 };
 
-const STATUS_OPTIONS: (ProjectStatus | '')[] = ['', 'active', 'completed', 'archived'];
+const STATUS_OPTIONS: (ExperimentStatus | '')[] = ['', 'pending', 'in_progress', 'completed', 'failed'];
 
 export function AdvancedFilterSheet({
   isOpen,
   values,
   hardwareOptions,
   projectOptions,
+  tagOptions,
   onChange,
   onClose,
 }: AdvancedFilterSheetProps) {
@@ -49,6 +52,9 @@ export function AdvancedFilterSheet({
           { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
         ]}>
         <ThemedText type="subtitle">Advanced Filter</ThemedText>
+        <ThemedText style={{ color: themeColors.mutedText }}>
+          Combine date range, project, hardware, status, and tags.
+        </ThemedText>
 
         <View style={styles.row}>
           <TextInput
@@ -67,14 +73,6 @@ export function AdvancedFilterSheet({
           />
         </View>
 
-        <TextInput
-          value={values.tag}
-          onChangeText={(text) => onChange({ tag: text })}
-          placeholder="Tag"
-          placeholderTextColor={themeColors.mutedText}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
-        />
-
         <View style={styles.choiceWrap}>
           {STATUS_OPTIONS.map((status) => {
             const active = values.status === status;
@@ -89,8 +87,27 @@ export function AdvancedFilterSheet({
                     backgroundColor: active ? themeColors.heroTint : themeColors.background,
                   },
                 ]}>
-                <ThemedText>{status || 'all status'}</ThemedText>
+                <ThemedText>{status ? status.replace('_', ' ') : 'all status'}</ThemedText>
               </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.choiceWrap}>
+          {tagOptions.map((tag) => {
+            const active = values.tagNames.includes(tag);
+            return (
+              <TagChip
+                key={tag}
+                label={tag}
+                onPress={() => {
+                  if (active) {
+                    onChange({ tagNames: values.tagNames.filter((item) => item !== tag) });
+                    return;
+                  }
+                  onChange({ tagNames: [...values.tagNames, tag] });
+                }}
+              />
             );
           })}
         </View>

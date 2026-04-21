@@ -351,7 +351,7 @@ export type Database = {
           filter_project_id: string | null;
           filter_status: string | null;
           filter_hardware_id: string | null;
-          filter_tag: string | null;
+          filter_tags: string[] | null;
           date_from: string | null;
           date_to: string | null;
           result_limit: number | null;
