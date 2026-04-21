@@ -6,6 +6,7 @@ import {
   deleteExperimentForUser,
   fetchExperimentsForUser,
   insertExperimentForUser,
+  uploadExperimentAttachmentForUser,
   updateExperimentForUser,
 } from '@/experiment/services/experimentSupabaseService';
 import { upsertWorkspaceTags } from '@/sharedModules/services/supabase/tagSupabaseService';
@@ -154,8 +155,17 @@ export const deleteExperimentThunk = createAsyncThunk<string, string, { state: R
 );
 export const uploadAttachmentThunk = createAsyncThunk<
   { experimentId: string; url: string },
-  { experimentId: string; url: string }
->('experiment/uploadAttachmentThunk', async (payload) => payload);
+  { experimentId: string; localUri: string },
+  { state: RootState }
+>('experiment/uploadAttachmentThunk', async ({ experimentId, localUri }, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  if (!user || !client || !isUuid(experimentId)) {
+    throw new Error('Upload unavailable');
+  }
+  const url = await uploadExperimentAttachmentForUser(client, user.id, experimentId, localUri);
+  return { experimentId, url };
+});
 
 const experimentSlice = createSlice({
   name: 'experiment',

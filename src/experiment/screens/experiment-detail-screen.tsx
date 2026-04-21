@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Link, useLocalSearchParams, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -186,22 +187,25 @@ export default function ExperimentDetailScreen() {
           {experiment.attachmentUrls.length === 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>No attachments uploaded.</ThemedText>
           ) : (
-            experiment.attachmentUrls.map((url) => (
-              <View key={url} style={styles.topRow}>
-                <Link href={`/experiment/attachment-viewer?url=${encodeURIComponent(url)}` as Href}>
-                  <ThemedText style={{ color: themeColors.primary }}>{url}</ThemedText>
-                </Link>
-                {url.toLowerCase().includes('.csv') ? (
-                  <Link href={`/experiment/csv-preview?url=${encodeURIComponent(url)}` as Href}>
-                    <ThemedText style={{ color: themeColors.primary }}>Preview CSV</ThemedText>
-                  </Link>
-                ) : (
-                  <Pressable disabled>
-                    <ThemedText style={{ color: themeColors.mutedText }}>Image/PDF</ThemedText>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoStrip}>
+              {experiment.attachmentUrls.map((url) => (
+                <Link
+                  key={url}
+                  href={`/experiment/attachment-viewer?url=${encodeURIComponent(url)}` as Href}
+                  asChild>
+                  <Pressable
+                    style={[
+                      styles.photoCard,
+                      {
+                        borderColor: themeColors.border,
+                        backgroundColor: themeColors.surfaceElevated,
+                      },
+                    ]}>
+                    <Image source={{ uri: url }} style={styles.photoThumb} contentFit="cover" />
                   </Pressable>
-                )}
-              </View>
-            ))
+                </Link>
+              ))}
+            </ScrollView>
           )}
         </View>
 
@@ -257,6 +261,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 4,
   },
+  photoStrip: { gap: 10, paddingRight: 8 },
+  photoCard: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
+  photoThumb: { width: 128, height: 96 },
   quickActionButton: {
     borderRadius: 12,
     paddingVertical: 12,

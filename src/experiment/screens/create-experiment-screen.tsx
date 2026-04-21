@@ -1,3 +1,4 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
@@ -6,7 +7,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { ExperimentForm, type ExperimentFormValues } from '@/experiment/organisms/experiment-form';
 import { HardwarePickerSheet } from '@/experiment/organisms/hardware-picker-sheet';
-import { createExperimentThunk } from '@/experiment/state/experimentSlice';
+import { createExperimentThunk, uploadAttachmentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
@@ -18,7 +19,6 @@ const INITIAL_VALUES: ExperimentFormValues = {
   observations: '',
   githubCommit: '',
   status: 'pending',
-  attachmentInput: '',
   tagsInput: '',
 };
 
@@ -35,6 +35,7 @@ export default function CreateExperimentScreen() {
     projectId: initialProjectId,
   });
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>([]);
+  const [pendingPhotoUris, setPendingPhotoUris] = useState<string[]>([]);
   const [isHardwarePickerOpen, setIsHardwarePickerOpen] = useState(false);
   const hardwareItems = useAppSelector(selectAllHardware);
   const lockedProject = useAppSelector(selectProjectById(initialProjectId));
@@ -65,10 +66,22 @@ export default function CreateExperimentScreen() {
           }
           onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
           onOpenHardwarePicker={() => setIsHardwarePickerOpen(true)}
+          onAddPhoto={() => {
+            void (async () => {
+              const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (!permission.granted) return;
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 0.85,
+              });
+              if (result.canceled || !result.assets[0]?.uri) return;
+              setPendingPhotoUris((prev) => [...prev, result.assets[0].uri]);
+            })();
+          }}
+          attachmentPreviewUrls={pendingPhotoUris}
           submitLabel="Save Experiment"
           onSubmit={() => {
             if (!values.title.trim() || !values.projectId) return;
-            const attachmentUrls = values.attachmentInput.trim() ? [values.attachmentInput.trim()] : [];
             void (async () => {
               const created = await dispatch(
                 createExperimentThunk({
@@ -79,13 +92,16 @@ export default function CreateExperimentScreen() {
                   githubCommit: values.githubCommit.trim(),
                   status: values.status,
                   hardwareIds: selectedHardwareIds,
-                  attachmentUrls,
+                  attachmentUrls: [],
                   tags: values.tagsInput
                     .split(',')
                     .map((tag) => tag.trim())
                     .filter(Boolean),
                 }),
               ).unwrap();
+              for (const uri of pendingPhotoUris) {
+                await dispatch(uploadAttachmentThunk({ experimentId: created.id, localUri: uri })).unwrap();
+              }
               router.replace(`/experiment/${created.id}`);
             })();
           }}

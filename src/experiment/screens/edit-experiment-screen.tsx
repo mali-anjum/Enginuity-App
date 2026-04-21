@@ -1,3 +1,4 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
@@ -6,7 +7,11 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { ExperimentForm, type ExperimentFormValues } from '@/experiment/organisms/experiment-form';
 import { HardwarePickerSheet } from '@/experiment/organisms/hardware-picker-sheet';
-import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
+import {
+  selectExperimentById,
+  updateExperimentThunk,
+  uploadAttachmentThunk,
+} from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -26,13 +31,13 @@ export default function EditExperimentScreen() {
       observations: experiment?.observations ?? '',
       githubCommit: experiment?.githubCommit ?? '',
       status: experiment?.status ?? 'pending',
-      attachmentInput: experiment?.attachmentUrls[0] ?? '',
       tagsInput: experiment?.tags.join(', ') ?? '',
     }),
     [experiment],
   );
   const [values, setValues] = useState<ExperimentFormValues>(initialValues);
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>(experiment?.hardwareIds ?? []);
+  const [pendingPhotoUris, setPendingPhotoUris] = useState<string[]>([]);
 
   const selectedHardwareChips = useMemo(() => {
     const map = new Map(hardwareItems.map((h) => [h.id, h]));
@@ -63,28 +68,45 @@ export default function EditExperimentScreen() {
           }
           onChange={(patch) => setValues((prev) => ({ ...prev, ...patch }))}
           onOpenHardwarePicker={() => setIsHardwarePickerOpen(true)}
+          onAddPhoto={() => {
+            void (async () => {
+              const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (!permission.granted) return;
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 0.85,
+              });
+              if (result.canceled || !result.assets[0]?.uri) return;
+              setPendingPhotoUris((prev) => [...prev, result.assets[0].uri]);
+            })();
+          }}
+          attachmentPreviewUrls={[...experiment.attachmentUrls, ...pendingPhotoUris]}
           submitLabel="Update Experiment"
           onSubmit={() => {
             if (!values.title.trim() || !values.projectId) return;
-            const attachmentUrls = values.attachmentInput.trim() ? [values.attachmentInput.trim()] : [];
-            void dispatch(
-              updateExperimentThunk({
-                ...experiment,
-                title: values.title.trim(),
-                projectId: values.projectId,
-                objective: values.objective.trim(),
-                observations: values.observations.trim(),
-                githubCommit: values.githubCommit.trim(),
-                status: values.status,
-                hardwareIds: selectedHardwareIds,
-                attachmentUrls,
-                tags: values.tagsInput
-                  .split(',')
-                  .map((tag) => tag.trim())
-                  .filter(Boolean),
-              }),
-            );
-            router.replace(`/experiment/${experiment.id}`);
+            void (async () => {
+              await dispatch(
+                updateExperimentThunk({
+                  ...experiment,
+                  title: values.title.trim(),
+                  projectId: values.projectId,
+                  objective: values.objective.trim(),
+                  observations: values.observations.trim(),
+                  githubCommit: values.githubCommit.trim(),
+                  status: values.status,
+                  hardwareIds: selectedHardwareIds,
+                  attachmentUrls: experiment.attachmentUrls,
+                  tags: values.tagsInput
+                    .split(',')
+                    .map((tag) => tag.trim())
+                    .filter(Boolean),
+                }),
+              ).unwrap();
+              for (const uri of pendingPhotoUris) {
+                await dispatch(uploadAttachmentThunk({ experimentId: experiment.id, localUri: uri })).unwrap();
+              }
+              router.replace(`/experiment/${experiment.id}`);
+            })();
           }}
         />
       </ScrollView>
