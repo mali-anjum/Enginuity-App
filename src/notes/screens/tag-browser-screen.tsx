@@ -7,6 +7,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { selectExperimentsByTag } from '@/experiment/state/experimentSlice';
 import { selectNotesByTag, selectTagCounts } from '@/notes/state/notesSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -17,6 +18,7 @@ export default function TagBrowserScreen() {
   const tags = useAppSelector(selectTagCounts);
   const { tag: activeTag = '' } = useLocalSearchParams<{ tag?: string }>();
   const filteredNotes = useAppSelector(selectNotesByTag(activeTag));
+  const filteredExperiments = useAppSelector(selectExperimentsByTag(activeTag));
 
   const grouped = useMemo(() => {
     return {
@@ -66,14 +68,23 @@ export default function TagBrowserScreen() {
               </Pressable>
             </View>
             <TagChip label={activeTag} />
-            {filteredNotes.length === 0 ? (
+            {filteredNotes.length === 0 && filteredExperiments.length === 0 ? (
               <ThemedText style={{ color: themeColors.mutedText }}>No notes matched this tag.</ThemedText>
             ) : (
-              filteredNotes.map((note) => (
-                <Link key={note.id} href={`/notes/${note.id}` as Href}>
-                  <ThemedText style={{ color: themeColors.primary }}>{note.title}</ThemedText>
-                </Link>
-              ))
+              <>
+                {filteredNotes.map((note) => (
+                  <Link key={note.id} href={`/notes/${note.id}` as Href}>
+                    <ThemedText style={{ color: themeColors.primary }}>Note: {note.title}</ThemedText>
+                  </Link>
+                ))}
+                {filteredExperiments.map((experiment) => (
+                  <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href}>
+                    <ThemedText style={{ color: themeColors.primary }}>
+                      Experiment: {experiment.title}
+                    </ThemedText>
+                  </Link>
+                ))}
+              </>
             )}
           </View>
         ) : null}
