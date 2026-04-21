@@ -247,31 +247,25 @@ export default function ExperimentDetailScreen() {
             <ThemedText style={{ color: themeColors.mutedText }}>No CSV/PDF files attached.</ThemedText>
           ) : (
             fileAttachments.map((attachment) => (
-              <View
+              <Link
                 key={attachment.url}
-                style={[
-                  styles.fileCard,
-                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
-                ]}>
-                <ThemedText type="defaultSemiBold" numberOfLines={1}>
-                  {attachment.fileName}
-                </ThemedText>
-                <ThemedText style={{ color: themeColors.mutedText }}>
-                  {formatFileSize(attachment.fileSize)} · Uploaded{' '}
-                  {new Date(attachment.uploadedAt).toLocaleDateString()}
-                </ThemedText>
-                {isCsvAttachment(attachment.fileType, attachment.fileName) ? (
-                  <Link
-                    href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? 'text/csv')}` as Href}>
-                    <ThemedText style={{ color: themeColors.primary }}>Open attachment</ThemedText>
-                  </Link>
-                ) : isPdfAttachment(attachment.fileType, attachment.fileName) ? (
-                  <Link
-                    href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? 'application/pdf')}` as Href}>
-                    <ThemedText style={{ color: themeColors.primary }}>Open attachment</ThemedText>
-                  </Link>
-                ) : null}
-              </View>
+                href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? (isCsvAttachment(attachment.fileType, attachment.fileName) ? 'text/csv' : 'application/pdf'))}` as Href}
+                asChild>
+                <Pressable
+                  style={[
+                    styles.fileCard,
+                    { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                  ]}>
+                  <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                    {attachment.fileName}
+                  </ThemedText>
+                  <ThemedText style={{ color: themeColors.mutedText }}>
+                    {formatFileSize(attachment.fileSize)} · Uploaded{' '}
+                    {new Date(attachment.uploadedAt).toLocaleDateString()}
+                  </ThemedText>
+                  <ThemedText style={{ color: themeColors.primary }}>Open attachment</ThemedText>
+                </Pressable>
+              </Link>
             ))
           )}
         </View>
