@@ -6,9 +6,12 @@ import type { Database } from '@/sharedModules/services/supabase/database.types'
 import { unwrapSupabaseClient } from '@/sharedModules/services/supabase/supabaseUntypedClient';
 import { fetchAccessibleWorkspaceIds } from '@/sharedModules/services/supabase/workspaceService';
 
+const EXPERIMENT_ATTACHMENTS_BUCKET = 'experiment-attachments';
+
 function mapRowToExperiment(
   row: Database['public']['Tables']['experiments']['Row'],
   hardwareIds: string[],
+  attachmentUrls: string[],
 ): Experiment {
   return {
     id: row.id,
@@ -19,12 +22,17 @@ function mapRowToExperiment(
     githubCommit: row.github_commit ?? '',
     status: row.status as ExperimentStatus,
     hardwareIds,
-    attachmentUrls: [],
+    attachmentUrls,
     tags: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
+
+type ExperimentAttachmentRow = {
+  experiment_id: string;
+  storage_path: string;
+};
 
 async function fetchHardwareLinksForExperiments(
   client: SupabaseClient<Database>,
@@ -46,6 +54,32 @@ async function fetchHardwareLinksForExperiments(
     list.push(row.hardware_id);
     map.set(row.experiment_id, list);
   }
+  return map;
+}
+
+async function fetchAttachmentLinksForExperiments(
+  client: SupabaseClient<Database>,
+  experimentIds: string[],
+): Promise<Map<string, string[]>> {
+  const sb = unwrapSupabaseClient(client);
+  const map = new Map<string, string[]>();
+  if (experimentIds.length === 0) return map;
+
+  const { data, error } = await sb
+    .from('experiment_attachments')
+    .select('experiment_id,storage_path')
+    .in('experiment_id', experimentIds);
+  if (error) throw error;
+
+  for (const row of (data ?? []) as ExperimentAttachmentRow[]) {
+    const { data: publicData } = sb.storage
+      .from(EXPERIMENT_ATTACHMENTS_BUCKET)
+      .getPublicUrl(row.storage_path);
+    const list = map.get(row.experiment_id) ?? [];
+    list.push(publicData.publicUrl);
+    map.set(row.experiment_id, list);
+  }
+
   return map;
 }
 
@@ -76,8 +110,11 @@ export async function fetchExperimentsForUser(
 
   const expIds = (experiments ?? []).map((e) => e.id);
   const hwMap = await fetchHardwareLinksForExperiments(client, expIds);
+  const attachmentMap = await fetchAttachmentLinksForExperiments(client, expIds);
 
-  return (experiments ?? []).map((row) => mapRowToExperiment(row, hwMap.get(row.id) ?? []));
+  return (experiments ?? []).map((row) =>
+    mapRowToExperiment(row, hwMap.get(row.id) ?? [], attachmentMap.get(row.id) ?? []),
+  );
 }
 
 type CreateExperimentInput = Pick<Experiment, 'title' | 'projectId'> &
@@ -120,7 +157,7 @@ export async function insertExperimentForUser(
     if (linkError) throw linkError;
   }
 
-  return mapRowToExperiment(data, hardwareIds);
+  return mapRowToExperiment(data, hardwareIds, []);
 }
 
 async function syncExperimentHardware(
@@ -167,7 +204,7 @@ export async function updateExperimentForUser(
 
   await syncExperimentHardware(client, experiment.id, experiment.hardwareIds);
 
-  return mapRowToExperiment(data, experiment.hardwareIds);
+  return mapRowToExperiment(data, experiment.hardwareIds, experiment.attachmentUrls);
 }
 
 export async function patchExperimentStatusForUser(
@@ -194,4 +231,48 @@ export async function deleteExperimentForUser(
   const sb = unwrapSupabaseClient(client);
   const { error } = await sb.from('experiments').delete().eq('id', experimentId);
   if (error) throw error;
+}
+
+function fileExtensionFromUri(uri: string): string {
+  const clean = uri.split('?')[0] ?? uri;
+  const part = clean.split('.').pop()?.toLowerCase();
+  if (!part || part.length > 10) return 'jpg';
+  return part;
+}
+
+export async function uploadExperimentAttachmentForUser(
+  client: SupabaseClient<Database>,
+  userId: string,
+  experimentId: string,
+  localUri: string,
+): Promise<string> {
+  const sb = unwrapSupabaseClient(client);
+  const response = await fetch(localUri);
+  const fileBlob = await response.blob();
+  const ext = fileExtensionFromUri(localUri);
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const storagePath = `${experimentId}/${fileName}`;
+
+  const { error: uploadError } = await sb.storage
+    .from(EXPERIMENT_ATTACHMENTS_BUCKET)
+    .upload(storagePath, fileBlob, {
+      contentType: fileBlob.type || `image/${ext}`,
+      upsert: false,
+    });
+  if (uploadError) throw uploadError;
+
+  const { error: dbError } = await sb.from('experiment_attachments').insert({
+    experiment_id: experimentId,
+    uploaded_by: userId,
+    file_name: fileName,
+    file_type: fileBlob.type || `image/${ext}`,
+    storage_path: storagePath,
+    file_size: fileBlob.size,
+  });
+  if (dbError) throw dbError;
+
+  const { data: publicData } = sb.storage
+    .from(EXPERIMENT_ATTACHMENTS_BUCKET)
+    .getPublicUrl(storagePath);
+  return publicData.publicUrl;
 }
