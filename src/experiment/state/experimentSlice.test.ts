@@ -18,6 +18,7 @@ function experimentFixture(overrides: Partial<Experiment> = {}): Experiment {
     status: 'pending',
     hardwareIds: [],
     attachmentUrls: [],
+    tags: [],
     createdAt: '2024-06-01T12:00:00.000Z',
     updatedAt: '2024-06-01T12:00:00.000Z',
   };
