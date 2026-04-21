@@ -19,7 +19,6 @@ export type ExperimentFormValues = {
   observations: string;
   githubCommit: string;
   status: ExperimentStatus;
-  attachmentInput: string;
   tagsInput: string;
 };
 
@@ -38,6 +37,8 @@ type ExperimentFormProps = {
   onRemoveHardware?: (hardwareId: string) => void;
   onChange: (patch: Partial<ExperimentFormValues>) => void;
   onOpenHardwarePicker: () => void;
+  onAddPhoto: () => void;
+  attachmentPreviewUrls: string[];
   submitLabel: string;
   onSubmit: () => void;
 };
@@ -50,6 +51,8 @@ export function ExperimentForm({
   onRemoveHardware,
   onChange,
   onOpenHardwarePicker,
+  onAddPhoto,
+  attachmentPreviewUrls,
   submitLabel,
   onSubmit,
 }: ExperimentFormProps) {
@@ -217,14 +220,17 @@ export function ExperimentForm({
       </View>
 
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Attachment URL</ThemedText>
-        <TextInput
-          value={values.attachmentInput}
-          onChangeText={(text) => onChange({ attachmentInput: text })}
-          placeholder="https://... or file-name.csv"
-          placeholderTextColor={themeColors.mutedText}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
-        />
+        <ThemedText type="defaultSemiBold">Photos</ThemedText>
+        <Pressable
+          onPress={onAddPhoto}
+          style={[styles.input, styles.pickerButton, { borderColor: themeColors.border }]}>
+          <ThemedText>Add Photo</ThemedText>
+        </Pressable>
+        {attachmentPreviewUrls.length > 0 ? (
+          <ThemedText style={{ color: themeColors.mutedText }}>
+            {attachmentPreviewUrls.length} photo{attachmentPreviewUrls.length === 1 ? '' : 's'} selected/uploaded.
+          </ThemedText>
+        ) : null}
       </View>
 
       <Pressable style={[styles.submitButton, { backgroundColor: themeColors.primary }]} onPress={onSubmit}>
