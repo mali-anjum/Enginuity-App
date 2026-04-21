@@ -1,17 +1,20 @@
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { TagChip } from '@/common/atoms/tag-chip';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
+import { selectAllTags } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
 export type NoteFormValues = {
   title: string;
   body: string;
-  tagsInput: string;
+  tags: string[];
   projectId: string;
   experimentId: string;
 };
@@ -19,15 +22,30 @@ export type NoteFormValues = {
 type NoteFormProps = {
   values: NoteFormValues;
   onChange: (patch: Partial<NoteFormValues>) => void;
+  onAddCustomTag: (tag: string) => void;
   submitLabel: string;
   onSubmit: () => void;
 };
 
-export function NoteForm({ values, onChange, submitLabel, onSubmit }: NoteFormProps) {
+export function NoteForm({ values, onChange, onAddCustomTag, submitLabel, onSubmit }: NoteFormProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const projects = useAppSelector(selectAllProjects);
   const experiments = useAppSelector(selectAllExperiments);
+  const allTags = useAppSelector(selectAllTags);
+  const [customTagInput, setCustomTagInput] = useState('');
+  const orderedTags = useMemo(
+    () => [...new Set([...values.tags, ...allTags])].sort((a, b) => a.localeCompare(b)),
+    [allTags, values.tags],
+  );
+
+  const toggleTag = (tag: string) => {
+    if (values.tags.includes(tag)) {
+      onChange({ tags: values.tags.filter((item) => item !== tag) });
+      return;
+    }
+    onChange({ tags: [...values.tags, tag] });
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -55,14 +73,34 @@ export function NoteForm({ values, onChange, submitLabel, onSubmit }: NoteFormPr
       </View>
 
       <View style={styles.group}>
-        <ThemedText type="defaultSemiBold">Tags (comma separated)</ThemedText>
-        <TextInput
-          value={values.tagsInput}
-          onChangeText={(text) => onChange({ tagsInput: text })}
-          placeholder="electronics, testing, firmware"
-          placeholderTextColor={themeColors.mutedText}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
-        />
+        <ThemedText type="defaultSemiBold">Tags</ThemedText>
+        <View style={styles.choiceWrap}>
+          {orderedTags.map((tag) => (
+            <TagChip key={tag} label={tag} onPress={() => toggleTag(tag)} />
+          ))}
+        </View>
+        <View style={styles.customTagRow}>
+          <TextInput
+            value={customTagInput}
+            onChangeText={setCustomTagInput}
+            placeholder="Add custom tag"
+            placeholderTextColor={themeColors.mutedText}
+            style={[styles.input, styles.customTagInput, { borderColor: themeColors.border, color: themeColors.text }]}
+          />
+          <Pressable
+            style={[styles.addTagButton, { borderColor: themeColors.primary }]}
+            onPress={() => {
+              const trimmed = customTagInput.trim();
+              if (!trimmed) return;
+              onAddCustomTag(trimmed);
+              if (!values.tags.includes(trimmed)) {
+                onChange({ tags: [...values.tags, trimmed] });
+              }
+              setCustomTagInput('');
+            }}>
+            <ThemedText style={{ color: themeColors.primary }}>+ Tag</ThemedText>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.group}>
@@ -153,6 +191,9 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   choiceWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  customTagRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  customTagInput: { flex: 1 },
+  addTagButton: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
   choiceChip: {
     borderWidth: 1,
     borderRadius: 16,
