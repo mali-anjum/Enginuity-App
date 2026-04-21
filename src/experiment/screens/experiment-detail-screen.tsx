@@ -204,6 +204,19 @@ export default function ExperimentDetailScreen() {
             ))
           )}
         </View>
+
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">Quick Actions</ThemedText>
+          <Link
+            href={`/notes/create?experimentId=${encodeURIComponent(experiment.id)}&title=${encodeURIComponent(`Notes on: ${experiment.title}`)}` as Href}
+            asChild>
+            <Pressable style={[styles.quickActionButton, { backgroundColor: themeColors.primary }]}>
+              <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
+                Add Note
+              </ThemedText>
+            </Pressable>
+          </Link>
+        </View>
       </ScrollView>
     </ThemedView>
   );
@@ -243,5 +256,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 4,
+  },
+  quickActionButton: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
 });
