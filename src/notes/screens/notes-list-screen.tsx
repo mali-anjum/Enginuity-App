@@ -7,22 +7,34 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { searchNotesThunk, selectAllNotes } from '@/notes/state/notesSlice';
+import { selectAllExperiments } from '@/experiment/state/experimentSlice';
+import {
+  searchNotesThunk,
+  selectAllNotes,
+  selectAllTags,
+  toggleNoteFavoriteThunk,
+} from '@/notes/state/notesSlice';
+import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
-type SortBy = 'recent' | 'title';
+type NoteFilter = 'all' | 'project' | 'tag' | 'favourites';
 
 export default function NotesListScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
   const notes = useAppSelector(selectAllNotes);
+  const projects = useAppSelector(selectAllProjects);
+  const experiments = useAppSelector(selectAllExperiments);
+  const tags = useAppSelector(selectAllTags);
   const [query, setQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortBy>('recent');
+  const [activeFilter, setActiveFilter] = useState<NoteFilter>('all');
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
 
   const filteredNotes = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = q
+    const searched = q
       ? notes.filter(
           (note) =>
             note.title.toLowerCase().includes(q) ||
@@ -31,11 +43,23 @@ export default function NotesListScreen() {
         )
       : notes;
 
-    if (sortBy === 'title') {
-      return [...list].sort((a, b) => a.title.localeCompare(b.title));
+    let filtered = searched;
+    if (activeFilter === 'project') {
+      filtered = selectedProjectId ? searched.filter((note) => note.projectId === selectedProjectId) : [];
+    } else if (activeFilter === 'tag') {
+      filtered = selectedTag ? searched.filter((note) => note.tags.includes(selectedTag)) : [];
+    } else if (activeFilter === 'favourites') {
+      filtered = searched.filter((note) => Boolean(note.isFavorite));
     }
-    return [...list].sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
-  }, [notes, query, sortBy]);
+
+    return [...filtered].sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  }, [activeFilter, notes, query, selectedProjectId, selectedTag]);
+
+  const projectMap = useMemo(() => new Map(projects.map((project) => [project.id, project.title])), [projects]);
+  const experimentMap = useMemo(
+    () => new Map(experiments.map((experiment) => [experiment.id, experiment.title])),
+    [experiments],
+  );
 
   return (
     <ThemedView style={styles.screen}>
@@ -58,12 +82,12 @@ export default function NotesListScreen() {
         />
 
         <View style={styles.sortRow}>
-          {(['recent', 'title'] as SortBy[]).map((option) => {
-            const active = sortBy === option;
+          {(['all', 'project', 'tag', 'favourites'] as NoteFilter[]).map((option) => {
+            const active = activeFilter === option;
             return (
               <Pressable
                 key={option}
-                onPress={() => setSortBy(option)}
+                onPress={() => setActiveFilter(option)}
                 style={[
                   styles.sortChip,
                   {
@@ -71,7 +95,7 @@ export default function NotesListScreen() {
                     backgroundColor: active ? themeColors.heroTint : themeColors.background,
                   },
                 ]}>
-                <ThemedText>{option}</ThemedText>
+                <ThemedText>{option === 'favourites' ? 'Favourites' : option === 'all' ? 'All' : `By ${option[0].toUpperCase()}${option.slice(1)}`}</ThemedText>
               </Pressable>
             );
           })}
@@ -79,6 +103,43 @@ export default function NotesListScreen() {
             <ThemedText style={{ color: themeColors.primary }}>Browse Tags</ThemedText>
           </Link>
         </View>
+        {activeFilter === 'project' ? (
+          <View style={styles.sortRow}>
+            {projects.map((project) => (
+              <Pressable
+                key={project.id}
+                onPress={() => setSelectedProjectId(project.id)}
+                style={[
+                  styles.sortChip,
+                  {
+                    borderColor: selectedProjectId === project.id ? themeColors.primary : themeColors.border,
+                    backgroundColor:
+                      selectedProjectId === project.id ? themeColors.heroTint : themeColors.background,
+                  },
+                ]}>
+                <ThemedText>{project.title}</ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+        {activeFilter === 'tag' ? (
+          <View style={styles.sortRow}>
+            {tags.map((tag) => (
+              <Pressable
+                key={tag}
+                onPress={() => setSelectedTag(tag)}
+                style={[
+                  styles.sortChip,
+                  {
+                    borderColor: selectedTag === tag ? themeColors.primary : themeColors.border,
+                    backgroundColor: selectedTag === tag ? themeColors.heroTint : themeColors.background,
+                  },
+                ]}>
+                <ThemedText>{tag}</ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.list}>
           {filteredNotes.length === 0 ? (
@@ -91,7 +152,14 @@ export default function NotesListScreen() {
                     styles.card,
                     { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
                   ]}>
-                  <ThemedText type="defaultSemiBold">{note.title}</ThemedText>
+                  <View style={styles.cardHeader}>
+                    <ThemedText type="defaultSemiBold">{note.title}</ThemedText>
+                    <Pressable onPress={() => void dispatch(toggleNoteFavoriteThunk(note.id))}>
+                      <ThemedText style={{ color: themeColors.primary }}>
+                        {note.isFavorite ? '★' : '☆'}
+                      </ThemedText>
+                    </Pressable>
+                  </View>
                   <ThemedText numberOfLines={2} style={{ color: themeColors.mutedText }}>
                     {note.body}
                   </ThemedText>
@@ -104,6 +172,10 @@ export default function NotesListScreen() {
                   ) : (
                     <ThemedText style={{ color: themeColors.subtleText }}>No tags</ThemedText>
                   )}
+                  <ThemedText style={{ color: themeColors.subtleText }}>
+                    Project: {note.projectId ? (projectMap.get(note.projectId) ?? note.projectId) : '—'} | Experiment:{' '}
+                    {note.experimentId ? (experimentMap.get(note.experimentId) ?? note.experimentId) : '—'}
+                  </ThemedText>
                 </Pressable>
               </Link>
             ))
@@ -123,5 +195,6 @@ const styles = StyleSheet.create({
   sortChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
 });

@@ -9,4 +9,9 @@ export const TAB_ROUTES = [
     title: 'Explore',
     icon: 'paperplane.fill',
   },
+  {
+    name: 'notes',
+    title: 'Notes',
+    icon: 'note.text',
+  },
 ] as const;

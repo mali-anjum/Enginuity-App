@@ -12,6 +12,7 @@ export type Note = {
   projectId: string | null;
   experimentId: string | null;
   tags: string[];
+  isFavorite: boolean;
   linkedNoteIds: string[];
   updatedAt: string;
 };
@@ -59,6 +60,7 @@ export const createNoteThunk = createAsyncThunk<
       projectId,
       experimentId,
       tags,
+      isFavorite: false,
       linkedNoteIds: [],
       updatedAt: new Date().toISOString(),
     };
@@ -77,6 +79,14 @@ export const updateNoteThunk = createAsyncThunk<Note, Note, { state: RootState }
   },
 );
 export const deleteNoteThunk = createAsyncThunk<string, string>('notes/deleteNoteThunk', async (noteId) => noteId);
+export const toggleNoteFavoriteThunk = createAsyncThunk<Note, string, { state: RootState }>(
+  'notes/toggleNoteFavoriteThunk',
+  async (noteId, { getState }) => {
+    const note = getState().notes.notes.find((item) => item.id === noteId);
+    if (!note) throw new Error('Note not found');
+    return { ...note, isFavorite: !note.isFavorite, updatedAt: new Date().toISOString() };
+  },
+);
 export const searchNotesThunk = createAsyncThunk<string, string>(
   'notes/searchNotesThunk',
   async (query) => query.trim(),
@@ -116,6 +126,10 @@ const notesSlice = createSlice({
       })
       .addCase(deleteNoteThunk.fulfilled, (state, action) => {
         state.notes = state.notes.filter((item) => item.id !== action.payload);
+      })
+      .addCase(toggleNoteFavoriteThunk.fulfilled, (state, action) => {
+        const index = state.notes.findIndex((item) => item.id === action.payload.id);
+        if (index >= 0) state.notes[index] = action.payload;
       })
       .addCase(searchNotesThunk.fulfilled, (state, action) => {
         state.searchQuery = action.payload;
