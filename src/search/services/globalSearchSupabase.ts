@@ -5,6 +5,9 @@ export type GlobalSearchEntityRow = {
   entity_type: string;
   entity_id: string;
   title: string;
+  project_id: string | null;
+  project_title: string | null;
+  snippet: string | null;
   rank: number;
 };
 
@@ -48,17 +51,17 @@ export async function fetchGlobalSearchEntities(params: {
 }
 
 export function aggregateGlobalSearchCounts(rows: GlobalSearchEntityRow[]) {
-  let projects = 0;
   let experiments = 0;
   let notes = 0;
+  let hardware = 0;
   for (const row of rows) {
-    if (row.entity_type === 'project') {
-      projects += 1;
-    } else if (row.entity_type === 'experiment') {
+    if (row.entity_type === 'experiment') {
       experiments += 1;
     } else if (row.entity_type === 'note') {
       notes += 1;
+    } else if (row.entity_type === 'hardware') {
+      hardware += 1;
     }
   }
-  return { projects, experiments, notes };
+  return { experiments, notes, hardware };
 }
