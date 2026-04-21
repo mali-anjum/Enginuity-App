@@ -20,6 +20,7 @@ function mapRowToExperiment(
     status: row.status as ExperimentStatus,
     hardwareIds,
     attachmentUrls: [],
+    tags: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

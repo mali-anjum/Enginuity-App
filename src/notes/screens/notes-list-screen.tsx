@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { searchNotesThunk, selectAllNotes } from '@/notes/state/notesSlice';
@@ -94,9 +95,15 @@ export default function NotesListScreen() {
                   <ThemedText numberOfLines={2} style={{ color: themeColors.mutedText }}>
                     {note.body}
                   </ThemedText>
-                  <ThemedText style={{ color: themeColors.subtleText }}>
-                    {note.tags.length > 0 ? note.tags.join(', ') : 'No tags'}
-                  </ThemedText>
+                  {note.tags.length > 0 ? (
+                    <View style={styles.tagRow}>
+                      {note.tags.slice(0, 4).map((tag) => (
+                        <TagChip key={`${note.id}-${tag}`} label={tag} />
+                      ))}
+                    </View>
+                  ) : (
+                    <ThemedText style={{ color: themeColors.subtleText }}>No tags</ThemedText>
+                  )}
                 </Pressable>
               </Link>
             ))
@@ -116,4 +123,5 @@ const styles = StyleSheet.create({
   sortChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
 });

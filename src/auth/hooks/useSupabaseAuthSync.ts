@@ -10,6 +10,8 @@ import { clearExperimentData, fetchExperimentsThunk } from '@/experiment/state/e
 import { clearHardwareData, fetchHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { resetOnboarding, setOnboardingCompleted } from '@/onboarding/state/onboardingSlice';
 import { clearProjectData, fetchProjectsThunk } from '@/project/state/projectSlice';
+import { seedEngineeringTagsForWorkspace } from '@/sharedModules/services/supabase/tagSupabaseService';
+import { getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
 import {
   SupabaseNotInitializedError,
   getSupabaseClientOrNull,
@@ -72,6 +74,12 @@ export function SupabaseAuthSync() {
       const profile = data as { onboarding_completed?: boolean } | null;
       dispatch(setOnboardingCompleted(Boolean(profile?.onboarding_completed)));
     };
+    const seedEngineeringTags = async (userId: string) => {
+      await withSupabaseClient(async (client) => {
+        const workspaceId = await getPersonalWorkspaceId(client, userId);
+        await seedEngineeringTagsForWorkspace(client, workspaceId);
+      });
+    };
 
     if (!getSupabaseClientOrNull()) {
       dispatch(authStateChanged({ user: null, session: null }));
@@ -97,6 +105,7 @@ export function SupabaseAuthSync() {
           void dispatch(fetchProjectsThunk());
           void dispatch(fetchHardwareThunk());
           void dispatch(fetchExperimentsThunk());
+          void seedEngineeringTags(data.session.user.id);
           return;
         }
         dispatch(resetOnboarding());
@@ -124,18 +133,19 @@ export function SupabaseAuthSync() {
         };
       }
       ({ data } = client.auth.onAuthStateChange((event, session) => {
-      void event;
-      dispatch(authStateChanged(mapSessionToAuthState(session)));
-      if (session?.user?.id) {
-        void dispatch(fetchProfileThunk());
-        void syncOnboardingStatus(session.user.id);
-        void dispatch(fetchProjectsThunk());
-        void dispatch(fetchHardwareThunk());
-        void dispatch(fetchExperimentsThunk());
-        return;
-      }
-      dispatch(resetOnboarding());
-      clearWorkspaceDomain();
+        void event;
+        dispatch(authStateChanged(mapSessionToAuthState(session)));
+        if (session?.user?.id) {
+          void dispatch(fetchProfileThunk());
+          void syncOnboardingStatus(session.user.id);
+          void dispatch(fetchProjectsThunk());
+          void dispatch(fetchHardwareThunk());
+          void dispatch(fetchExperimentsThunk());
+          void seedEngineeringTags(session.user.id);
+          return;
+        }
+        dispatch(resetOnboarding());
+        clearWorkspaceDomain();
       }));
     } catch (error) {
       if (error instanceof SupabaseNotInitializedError) {

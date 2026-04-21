@@ -1,4 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { SEEDED_ENGINEERING_TAGS } from '@/sharedModules/constants/engineering-tags';
+import { getSupabaseClientOrNull } from '@/sharedModules/services/supabase/supabaseClient';
+import { upsertWorkspaceTags } from '@/sharedModules/services/supabase/tagSupabaseService';
+import { getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type Note = {
@@ -37,23 +41,40 @@ export const createNoteThunk = createAsyncThunk<
     projectId?: string | null;
     experimentId?: string | null;
     tags?: string[];
-  }
+  },
+  { state: RootState }
 >(
   'notes/createNoteThunk',
-  async ({ title, body, projectId = null, experimentId = null, tags = [] }) => ({
-    id: `note-${Date.now()}`,
-    title,
-    body,
-    projectId,
-    experimentId,
-    tags,
-    linkedNoteIds: [],
-    updatedAt: new Date().toISOString(),
-  }),
+  async ({ title, body, projectId = null, experimentId = null, tags = [] }, { getState }) => {
+    const client = getSupabaseClientOrNull();
+    const userId = getState().auth.user?.id;
+    if (client && userId) {
+      const workspaceId = await getPersonalWorkspaceId(client, userId);
+      await upsertWorkspaceTags(client, workspaceId, tags);
+    }
+    return {
+      id: `note-${Date.now()}`,
+      title,
+      body,
+      projectId,
+      experimentId,
+      tags,
+      linkedNoteIds: [],
+      updatedAt: new Date().toISOString(),
+    };
+  },
 );
-export const updateNoteThunk = createAsyncThunk<Note, Note>(
+export const updateNoteThunk = createAsyncThunk<Note, Note, { state: RootState }>(
   'notes/updateNoteThunk',
-  async (note) => ({ ...note, updatedAt: new Date().toISOString() }),
+  async (note, { getState }) => {
+    const client = getSupabaseClientOrNull();
+    const userId = getState().auth.user?.id;
+    if (client && userId) {
+      const workspaceId = await getPersonalWorkspaceId(client, userId);
+      await upsertWorkspaceTags(client, workspaceId, note.tags);
+    }
+    return { ...note, updatedAt: new Date().toISOString() };
+  },
 );
 export const deleteNoteThunk = createAsyncThunk<string, string>('notes/deleteNoteThunk', async (noteId) => noteId);
 export const searchNotesThunk = createAsyncThunk<string, string>(
@@ -120,6 +141,6 @@ export const selectNotesByExperiment = (experimentId: string) => (state: RootSta
   state.notes.notes.filter((note) => note.experimentId === experimentId);
 export const selectAllNotes = (state: RootState) => state.notes.notes;
 export const selectAllTags = (state: RootState) =>
-  Array.from(new Set(state.notes.notes.flatMap((note) => note.tags))).sort((a, b) =>
-    a.localeCompare(b),
+  Array.from(new Set([...SEEDED_ENGINEERING_TAGS, ...state.notes.notes.flatMap((note) => note.tags)])).sort(
+    (a, b) => a.localeCompare(b),
   );

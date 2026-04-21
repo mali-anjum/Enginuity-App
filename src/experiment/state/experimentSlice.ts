@@ -8,6 +8,8 @@ import {
   insertExperimentForUser,
   updateExperimentForUser,
 } from '@/experiment/services/experimentSupabaseService';
+import { upsertWorkspaceTags } from '@/sharedModules/services/supabase/tagSupabaseService';
+import { getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
 import type { RootState } from '@/sharedModules/state/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { isUuid } from '@/sharedModules/utils/uuid';
@@ -23,6 +25,7 @@ export type Experiment = {
   status: ExperimentStatus;
   hardwareIds: string[];
   attachmentUrls: string[];
+  tags: string[];
   /** Set once when the experiment is created. */
   createdAt: string;
   updatedAt: string;
@@ -71,6 +74,7 @@ export const createExperimentThunk = createAsyncThunk<
         | 'status'
         | 'hardwareIds'
         | 'attachmentUrls'
+        | 'tags'
       >
     >,
   { state: RootState }
@@ -86,9 +90,12 @@ export const createExperimentThunk = createAsyncThunk<
     status = 'pending',
     hardwareIds = [],
     attachmentUrls = [],
+    tags = [],
   } = payload;
 
   if (user && client && isUuid(projectId)) {
+    const workspaceId = await getPersonalWorkspaceId(client, user.id);
+    await upsertWorkspaceTags(client, workspaceId, tags);
     return insertExperimentForUser(client, user.id, {
       title,
       projectId,
@@ -98,6 +105,7 @@ export const createExperimentThunk = createAsyncThunk<
       status,
       hardwareIds,
       attachmentUrls,
+      tags,
     });
   }
 
@@ -112,6 +120,7 @@ export const createExperimentThunk = createAsyncThunk<
     status,
     hardwareIds,
     attachmentUrls,
+    tags,
     createdAt: now,
     updatedAt: now,
   };
@@ -124,6 +133,8 @@ export const updateExperimentThunk = createAsyncThunk<Experiment, Experiment, { 
     const user = getState().auth.user;
     const client = getSupabaseClientOrNull();
     if (user && client && isUuid(experiment.id)) {
+      const workspaceId = await getPersonalWorkspaceId(client, user.id);
+      await upsertWorkspaceTags(client, workspaceId, experiment.tags);
       return updateExperimentForUser(client, next);
     }
     return next;
@@ -234,3 +245,5 @@ export const selectRecentExperiments = (state: RootState) =>
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
     .slice(0, 5);
 export const selectAllExperiments = (state: RootState) => state.experiment.experiments;
+export const selectExperimentsByTag = (tag: string) => (state: RootState) =>
+  state.experiment.experiments.filter((item) => item.tags.includes(tag));

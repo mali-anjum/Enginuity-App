@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { experimentStatusLabel, nextExperimentStatus } from '@/experiment/constants';
@@ -91,6 +92,19 @@ export default function ExperimentDetailScreen() {
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">Objective</ThemedText>
           <ThemedText>{experiment.objective.trim() ? experiment.objective : '—'}</ThemedText>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">Tags</ThemedText>
+          {experiment.tags.length === 0 ? (
+            <ThemedText style={{ color: themeColors.mutedText }}>No tags.</ThemedText>
+          ) : (
+            <View style={styles.chipWrap}>
+              {experiment.tags.map((tag) => (
+                <TagChip key={tag} label={tag} />
+              ))}
+            </View>
+          )}
         </View>
 
         <View style={styles.section}>
