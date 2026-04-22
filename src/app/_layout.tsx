@@ -9,6 +9,7 @@ import {
   selectHasInitializedAuth,
   selectIsAuthenticated,
 } from '@/auth/state/authSlice';
+import { ToastManager } from '@/common/organisms/toast-manager';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { NavigationThemes } from '@/common/constants/theme';
@@ -302,6 +303,7 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.modal.options}
         />
       </Stack>
+      <ToastManager />
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
   );

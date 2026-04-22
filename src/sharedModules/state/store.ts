@@ -10,7 +10,7 @@ import notesReducer from '@/notes/state/notesSlice';
 import onboardingReducer from '@/onboarding/state/onboardingSlice';
 import projectReducer from '@/project/state/projectSlice';
 import settingsReducer from '@/settings/state/settingsSlice';
-import uiReducer from '@/ui/state/uiSlice';
+import uiReducer, { addToast } from '@/ui/state/uiSlice';
 
 const createNoopStorage = () => ({
   getItem: async (_key: string) => null,
@@ -70,6 +70,28 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
+    }).concat((api) => (next) => (action) => {
+      const result = next(action);
+
+      if (typeof action.type === 'string' && action.type.endsWith('/rejected')) {
+        const payload = action.payload;
+        const fallback = action.error?.message;
+        const message =
+          typeof payload === 'string'
+            ? payload
+            : typeof fallback === 'string'
+              ? fallback
+              : 'Something went wrong.';
+        api.dispatch(addToast({ message, variant: 'error' }));
+      } else if (
+        typeof action.type === 'string' &&
+        (action.type === 'settings/manualSync/fulfilled' ||
+          action.type === 'settings/processLocalSyncQueue/fulfilled')
+      ) {
+        api.dispatch(addToast({ message: 'Sync completed successfully.', variant: 'success' }));
+      }
+
+      return result;
     }),
 });
 
