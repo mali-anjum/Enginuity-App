@@ -4,6 +4,7 @@ import { persistReducer } from 'redux-persist';
 import { Platform } from 'react-native';
 
 import authReducer from '@/auth/state/authSlice';
+import activityFeedReducer from '@/dashboard/state/activityFeedSlice';
 import experimentReducer from '@/experiment/state/experimentSlice';
 import hardwareReducer from '@/hardware/state/hardwareSlice';
 import notesReducer from '@/notes/state/notesSlice';
@@ -61,6 +62,7 @@ export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
     onboarding: persistedOnboardingReducer,
+    activityFeed: activityFeedReducer,
     project: projectReducer,
     experiment: experimentReducer,
     notes: notesReducer,
