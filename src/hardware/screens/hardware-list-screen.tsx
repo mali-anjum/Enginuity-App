@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { SkeletonShimmer } from '@/common/atoms/skeleton-shimmer';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ListEmptyState } from '@/common/organisms/list-empty-state';
@@ -24,6 +25,7 @@ export default function HardwareListScreen() {
   const dispatch = useAppDispatch();
   const filterByCategory = useAppSelector(selectHardwareCategoryFilter);
   const hardwareItems = useAppSelector(selectAllHardware);
+  const isLoading = useAppSelector((state) => state.hardware.isLoading);
   const filteredItems = filterByCategory
     ? hardwareItems.filter((item) => item.category === filterByCategory)
     : hardwareItems;
@@ -64,7 +66,21 @@ export default function HardwareListScreen() {
         </View>
 
         <View style={styles.list}>
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, index) => (
+              <View
+                key={`hardware-skeleton-${index}`}
+                style={[
+                  styles.card,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <SkeletonShimmer style={styles.hardwareTitleSkeleton} />
+                <SkeletonShimmer style={styles.hardwareCategorySkeleton} />
+                <SkeletonShimmer style={styles.hardwareLineSkeleton} />
+                <SkeletonShimmer style={styles.hardwareLineShortSkeleton} />
+              </View>
+            ))
+          ) : filteredItems.length === 0 ? (
             <ListEmptyState
               icon="cpu.fill"
               headline="Build your hardware library"
@@ -105,4 +121,8 @@ const styles = StyleSheet.create({
   filterChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  hardwareTitleSkeleton: { height: 16, borderRadius: 6, width: '57%' },
+  hardwareCategorySkeleton: { height: 12, borderRadius: 6, width: '32%', marginTop: 2 },
+  hardwareLineSkeleton: { height: 12, borderRadius: 6, width: '94%', marginTop: 6 },
+  hardwareLineShortSkeleton: { height: 12, borderRadius: 6, width: '69%', marginTop: 4 },
 });
