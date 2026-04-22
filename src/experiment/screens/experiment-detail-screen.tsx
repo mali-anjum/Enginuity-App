@@ -9,6 +9,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { experimentStatusLabel, nextExperimentStatus } from '@/experiment/constants';
 import type { ExperimentStatus } from '@/experiment/constants';
+import { CsvPreviewChartSection } from '@/experiment/organisms/csv-preview-chart-section';
 import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectNotesByExperiment } from '@/notes/state/notesSlice';
@@ -44,12 +45,6 @@ function isCsvAttachment(fileType: string | null, fileName: string): boolean {
   return /\.csv$/i.test(fileName);
 }
 
-function isPdfAttachment(fileType: string | null, fileName: string): boolean {
-  const type = fileType?.toLowerCase() ?? '';
-  if (type.includes('pdf')) return true;
-  return /\.pdf$/i.test(fileName);
-}
-
 function formatFileSize(size: number | null): string {
   if (!size || size <= 0) return 'Unknown size';
   if (size < 1024) return `${size} B`;
@@ -82,6 +77,9 @@ export default function ExperimentDetailScreen() {
   );
   const fileAttachments = attachments.filter(
     (item) => !isImageAttachment(item.fileType, item.fileName),
+  );
+  const firstCsvAttachment = fileAttachments.find((item) =>
+    isCsvAttachment(item.fileType, item.fileName),
   );
 
   return (
@@ -269,6 +267,15 @@ export default function ExperimentDetailScreen() {
             ))
           )}
         </View>
+
+        {firstCsvAttachment ? (
+          <View style={styles.section}>
+            <CsvPreviewChartSection
+              csvUrl={firstCsvAttachment.url}
+              csvName={firstCsvAttachment.fileName}
+            />
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">Quick Actions</ThemedText>
