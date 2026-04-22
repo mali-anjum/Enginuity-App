@@ -8,6 +8,13 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
+import {
+  openCheckoutThunk,
+  selectCanCreateExperiment,
+  selectCanUseStorage,
+  selectIsCheckoutLoading,
+} from '@/monetization/state/monetizationSlice';
 import { ExperimentForm, type ExperimentFormValues } from '@/experiment/organisms/experiment-form';
 import { HardwarePickerSheet } from '@/experiment/organisms/hardware-picker-sheet';
 import { createExperimentThunk, uploadAttachmentThunk } from '@/experiment/state/experimentSlice';
@@ -52,6 +59,14 @@ export default function CreateExperimentScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallTitle, setPaywallTitle] = useState("You've reached the free tier limit.");
+  const [paywallDescription, setPaywallDescription] = useState(
+    'Upgrade to Pro for unlimited access.',
+  );
+  const canCreateExperiment = useAppSelector(selectCanCreateExperiment);
+  const canUseStorage = useAppSelector(selectCanUseStorage);
+  const isCheckoutLoading = useAppSelector(selectIsCheckoutLoading);
 
   const lockedProjectTitle = initialProjectId ? lockedProject?.title : undefined;
 
@@ -164,6 +179,18 @@ export default function CreateExperimentScreen() {
           submitLabel="Save Experiment"
           onSubmit={() => {
             if (!values.title.trim() || !values.projectId) return;
+            if (!canCreateExperiment) {
+              setPaywallTitle("You've reached 20 experiments.");
+              setPaywallDescription('Upgrade to Pro for unlimited experiments.');
+              setShowPaywall(true);
+              return;
+            }
+            if (!canUseStorage) {
+              setPaywallTitle("You've reached 100MB storage.");
+              setPaywallDescription('Upgrade to Pro for unlimited storage.');
+              setShowPaywall(true);
+              return;
+            }
             void (async () => {
               const created = await dispatch(
                 createExperimentThunk({
@@ -218,6 +245,16 @@ export default function CreateExperimentScreen() {
           );
         }}
         onClose={() => setIsHardwarePickerOpen(false)}
+      />
+      <ProPaywallModal
+        visible={showPaywall}
+        title={paywallTitle}
+        description={paywallDescription}
+        isUpgradeLoading={isCheckoutLoading}
+        onClose={() => setShowPaywall(false)}
+        onUpgrade={() => {
+          void dispatch(openCheckoutThunk());
+        }}
       />
     </ThemedView>
   );

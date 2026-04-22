@@ -6,7 +6,13 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hardware-form';
 import { addHardwareThunk } from '@/hardware/state/hardwareSlice';
-import { useAppDispatch } from '@/sharedModules/state/hooks';
+import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
+import {
+  openCheckoutThunk,
+  selectCanCreateHardware,
+  selectIsCheckoutLoading,
+} from '@/monetization/state/monetizationSlice';
+import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: HardwareFormValues = {
   name: '',
@@ -17,7 +23,10 @@ const INITIAL_VALUES: HardwareFormValues = {
 
 export default function AddHardwareScreen() {
   const [values, setValues] = useState<HardwareFormValues>(INITIAL_VALUES);
+  const [showPaywall, setShowPaywall] = useState(false);
   const dispatch = useAppDispatch();
+  const canCreateHardware = useAppSelector(selectCanCreateHardware);
+  const isCheckoutLoading = useAppSelector(selectIsCheckoutLoading);
   const router = useRouter();
 
   return (
@@ -30,6 +39,10 @@ export default function AddHardwareScreen() {
           submitLabel="Save Hardware"
           onSubmit={() => {
             if (!values.name.trim()) return;
+            if (!canCreateHardware) {
+              setShowPaywall(true);
+              return;
+            }
             void dispatch(
               addHardwareThunk({
                 name: values.name.trim(),
@@ -42,6 +55,16 @@ export default function AddHardwareScreen() {
           }}
         />
       </ScrollView>
+      <ProPaywallModal
+        visible={showPaywall}
+        title="You've reached 5 hardware components."
+        description="Upgrade to Pro for unlimited hardware."
+        isUpgradeLoading={isCheckoutLoading}
+        onClose={() => setShowPaywall(false)}
+        onUpgrade={() => {
+          void dispatch(openCheckoutThunk());
+        }}
+      />
     </ThemedView>
   );
 }

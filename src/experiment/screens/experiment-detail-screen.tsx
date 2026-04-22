@@ -18,6 +18,13 @@ import {
 } from '@/experiment/services/experimentPdfExportService';
 import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
+import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
+import {
+  openCheckoutThunk,
+  selectCanUseCsvCharts,
+  selectCanUsePdfExport,
+  selectIsCheckoutLoading,
+} from '@/monetization/state/monetizationSlice';
 import { selectNotesByExperiment } from '@/notes/state/notesSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
@@ -69,6 +76,12 @@ export default function ExperimentDetailScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallTitle, setPaywallTitle] = useState('Upgrade to Pro');
+  const [paywallDescription, setPaywallDescription] = useState('');
+  const canUsePdfExport = useAppSelector(selectCanUsePdfExport);
+  const canUseCsvCharts = useAppSelector(selectCanUseCsvCharts);
+  const isCheckoutLoading = useAppSelector(selectIsCheckoutLoading);
 
   if (!experiment) {
     return (
@@ -94,6 +107,12 @@ export default function ExperimentDetailScreen() {
 
   const onSharePdf = async () => {
     if (isExportingPdf) return;
+    if (!canUsePdfExport) {
+      setPaywallTitle('PDF export is a Pro feature.');
+      setPaywallDescription('Upgrade to Pro to export experiment reports as PDF.');
+      setShowPaywall(true);
+      return;
+    }
     setIsExportingPdf(true);
     try {
       const pdfPath = await exportExperimentAsPdf({
@@ -308,10 +327,31 @@ export default function ExperimentDetailScreen() {
 
         {firstCsvAttachment ? (
           <View style={styles.section}>
-            <CsvPreviewChartSection
-              csvUrl={firstCsvAttachment.url}
-              csvName={firstCsvAttachment.fileName}
-            />
+            {canUseCsvCharts ? (
+              <CsvPreviewChartSection
+                csvUrl={firstCsvAttachment.url}
+                csvName={firstCsvAttachment.fileName}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.fileCard,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <ThemedText type="defaultSemiBold">CSV charts are a Pro feature.</ThemedText>
+                <ThemedText style={{ color: themeColors.mutedText }}>
+                  Upgrade to Pro to visualize attached CSV data with interactive charts.
+                </ThemedText>
+                <Pressable
+                  onPress={() => {
+                    setPaywallTitle('CSV charts are a Pro feature.');
+                    setPaywallDescription('Upgrade to Pro for full chart visualization tools.');
+                    setShowPaywall(true);
+                  }}>
+                  <ThemedText style={{ color: themeColors.primary }}>Upgrade to Pro</ThemedText>
+                </Pressable>
+              </View>
+            )}
           </View>
         ) : null}
 
@@ -328,6 +368,16 @@ export default function ExperimentDetailScreen() {
           </Link>
         </View>
       </ScrollView>
+      <ProPaywallModal
+        visible={showPaywall}
+        title={paywallTitle}
+        description={paywallDescription}
+        isUpgradeLoading={isCheckoutLoading}
+        onClose={() => setShowPaywall(false)}
+        onUpgrade={() => {
+          void dispatch(openCheckoutThunk());
+        }}
+      />
     </ThemedView>
   );
 }
