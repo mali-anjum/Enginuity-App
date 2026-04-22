@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { SkeletonShimmer } from '@/common/atoms/skeleton-shimmer';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ListEmptyState } from '@/common/organisms/list-empty-state';
@@ -22,6 +23,7 @@ export default function ProjectListScreen() {
   const dispatch = useAppDispatch();
   const projects = useAppSelector(selectFilteredProjects);
   const activeFilter = useAppSelector(selectProjectFilter);
+  const isLoading = useAppSelector((state) => state.project.isLoading);
 
   return (
     <ThemedView style={styles.screen}>
@@ -52,7 +54,20 @@ export default function ProjectListScreen() {
           })}
         </View>
         <View style={styles.list}>
-          {projects.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, index) => (
+              <View
+                key={`project-skeleton-${index}`}
+                style={[
+                  styles.card,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <SkeletonShimmer style={styles.projectTitleSkeleton} />
+                <SkeletonShimmer style={styles.projectLineSkeleton} />
+                <SkeletonShimmer style={styles.projectLineShortSkeleton} />
+              </View>
+            ))
+          ) : projects.length === 0 ? (
             <ListEmptyState
               icon="folder.badge.plus"
               headline="Your first project is one tap away"
@@ -93,4 +108,7 @@ const styles = StyleSheet.create({
   filterChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  projectTitleSkeleton: { height: 16, borderRadius: 6, width: '62%', marginBottom: 4 },
+  projectLineSkeleton: { height: 12, borderRadius: 6, width: '95%' },
+  projectLineShortSkeleton: { height: 12, borderRadius: 6, width: '74%', marginTop: 4 },
 });

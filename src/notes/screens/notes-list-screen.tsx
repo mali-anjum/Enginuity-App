@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { SkeletonShimmer } from '@/common/atoms/skeleton-shimmer';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
@@ -34,6 +35,7 @@ export default function NotesListScreen() {
   const [activeFilter, setActiveFilter] = useState<NoteFilter>('all');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
+  const isLoading = useAppSelector((state) => state.notes.isLoading);
 
   const filteredNotes = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -148,7 +150,27 @@ export default function NotesListScreen() {
         ) : null}
 
         <View style={styles.list}>
-          {filteredNotes.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, index) => (
+              <View
+                key={`note-skeleton-${index}`}
+                style={[
+                  styles.card,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <View style={styles.cardHeader}>
+                  <SkeletonShimmer style={styles.noteTitleSkeleton} />
+                  <SkeletonShimmer style={styles.starSkeleton} />
+                </View>
+                <SkeletonShimmer style={styles.noteLineSkeleton} />
+                <SkeletonShimmer style={styles.noteLineShortSkeleton} />
+                <View style={styles.tagRow}>
+                  <SkeletonShimmer style={styles.noteTagSkeleton} />
+                  <SkeletonShimmer style={styles.noteTagSkeleton} />
+                </View>
+              </View>
+            ))
+          ) : filteredNotes.length === 0 ? (
             <ListEmptyState
               icon="doc.text.fill"
               headline="Capture your first engineering note"
@@ -209,4 +231,9 @@ const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  noteTitleSkeleton: { height: 16, borderRadius: 6, width: '58%' },
+  starSkeleton: { height: 16, width: 16, borderRadius: 8 },
+  noteLineSkeleton: { height: 12, borderRadius: 6, width: '96%', marginTop: 3 },
+  noteLineShortSkeleton: { height: 12, borderRadius: 6, width: '71%', marginTop: 3 },
+  noteTagSkeleton: { height: 22, borderRadius: 11, width: 56, marginTop: 4 },
 });

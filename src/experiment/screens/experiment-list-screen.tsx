@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { SkeletonShimmer } from '@/common/atoms/skeleton-shimmer';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
@@ -21,6 +22,7 @@ export default function ExperimentListScreen() {
   const dispatch = useAppDispatch();
   const experiments = useAppSelector(selectAllExperiments);
   const activeStatus = useAppSelector((state) => state.experiment.filterByStatus);
+  const isLoading = useAppSelector((state) => state.experiment.isLoading);
 
   const filtered = activeStatus
     ? experiments.filter((experiment) => experiment.status === activeStatus)
@@ -68,7 +70,27 @@ export default function ExperimentListScreen() {
         </View>
 
         <View style={styles.list}>
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, index) => (
+              <View
+                key={`experiment-skeleton-${index}`}
+                style={[
+                  styles.card,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <SkeletonShimmer style={styles.experimentTitleSkeleton} />
+                <View style={styles.skeletonStatusRow}>
+                  <View style={[styles.statusOutlineSkeleton, { borderColor: themeColors.border }]} />
+                  <SkeletonShimmer style={styles.experimentLineSkeleton} />
+                </View>
+                <View style={styles.skeletonChipRow}>
+                  <SkeletonShimmer style={styles.tagSkeleton} />
+                  <SkeletonShimmer style={styles.tagSkeleton} />
+                  <SkeletonShimmer style={styles.tagSkeleton} />
+                </View>
+              </View>
+            ))
+          ) : filtered.length === 0 ? (
             <ListEmptyState
               icon="flask.fill"
               headline="Run your first experiment"
@@ -114,4 +136,10 @@ const styles = StyleSheet.create({
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  skeletonStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
+  statusOutlineSkeleton: { width: 70, height: 24, borderWidth: 1, borderRadius: 12 },
+  skeletonChipRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
+  experimentTitleSkeleton: { height: 16, borderRadius: 6, width: '66%' },
+  experimentLineSkeleton: { height: 12, borderRadius: 6, width: '45%' },
+  tagSkeleton: { height: 22, borderRadius: 11, width: 58 },
 });
