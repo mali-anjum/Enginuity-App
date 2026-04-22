@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
+import { dispatchRetryOperation } from '@/sharedModules/state/retryRegistry';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 import { removeToast, selectToasts, type Toast } from '@/ui/state/uiSlice';
 
@@ -91,6 +92,18 @@ function ToastCard({ toast }: { toast: Toast }) {
         <ThemedText lightColor="#FFFFFF" darkColor="#FFFFFF" style={styles.toastText}>
           {toast.message}
         </ThemedText>
+        {toast.retry ? (
+          <Pressable
+            style={styles.retryButton}
+            onPress={() => {
+              dispatchRetryOperation(dispatch, toast.retry);
+              dispatch(removeToast(toast.id));
+            }}>
+            <ThemedText lightColor="#FFFFFF" darkColor="#FFFFFF" style={styles.retryText}>
+              Retry
+            </ThemedText>
+          </Pressable>
+        ) : null}
       </Pressable>
     </Animated.View>
   );
@@ -128,5 +141,17 @@ const styles = StyleSheet.create({
   },
   toastText: {
     fontWeight: '600',
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.65)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  retryText: {
+    fontWeight: '700',
   },
 });
