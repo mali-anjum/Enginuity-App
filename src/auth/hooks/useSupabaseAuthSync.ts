@@ -6,6 +6,7 @@ import {
   fetchProfileThunk,
   setAuthError,
 } from '@/auth/state/authSlice';
+import { clearActivityFeedData, fetchActivityFeedThunk } from '@/dashboard/state/activityFeedSlice';
 import { clearExperimentData, fetchExperimentsThunk } from '@/experiment/state/experimentSlice';
 import { clearHardwareData, fetchHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { fetchNotesThunk, fetchTagCountsThunk } from '@/notes/state/notesSlice';
@@ -51,6 +52,7 @@ export function SupabaseAuthSync() {
   const dispatch = useAppDispatch();
 
   const clearWorkspaceDomain = useCallback(() => {
+    dispatch(clearActivityFeedData());
     dispatch(clearProjectData());
     dispatch(clearExperimentData());
     dispatch(clearHardwareData());
@@ -110,6 +112,7 @@ export function SupabaseAuthSync() {
           void dispatch(fetchExperimentsThunk());
           void dispatch(fetchNotesThunk());
           void dispatch(fetchTagCountsThunk());
+          void dispatch(fetchActivityFeedThunk());
           void seedEngineeringTags(data.session.user.id);
           return;
         }
@@ -148,6 +151,7 @@ export function SupabaseAuthSync() {
           void dispatch(fetchExperimentsThunk());
           void dispatch(fetchNotesThunk());
           void dispatch(fetchTagCountsThunk());
+          void dispatch(fetchActivityFeedThunk());
           void seedEngineeringTags(session.user.id);
           return;
         }

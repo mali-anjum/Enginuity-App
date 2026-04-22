@@ -1,4 +1,5 @@
 import { deleteAccountThunk, fetchProfileThunk, forgotPasswordThunk, loginThunk, loginWithPasswordThunk, logoutThunk, refreshSessionThunk, resetPasswordThunk, signupThunk, updateProfileThunk, uploadAvatarThunk } from '@/auth/state/authSlice';
+import { fetchActivityFeedThunk } from '@/dashboard/state/activityFeedSlice';
 import { createExperimentThunk, deleteExperimentThunk, fetchExperimentsThunk, syncPendingExperimentsThunk, updateExperimentThunk, uploadAttachmentThunk } from '@/experiment/state/experimentSlice';
 import { addHardwareThunk, deleteHardwareThunk, fetchHardwareThunk, updateHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { createCustomTagThunk, createNoteThunk, deleteNoteThunk, fetchNotesThunk, fetchTagCountsThunk, searchNotesThunk, toggleNoteFavoriteThunk, updateNoteThunk } from '@/notes/state/notesSlice';
@@ -22,6 +23,7 @@ const RETRYABLE_THUNKS: Record<string, RetryThunkCreator> = {
   [updateProfileThunk.typePrefix]: updateProfileThunk,
   [fetchProfileThunk.typePrefix]: fetchProfileThunk,
   [uploadAvatarThunk.typePrefix]: uploadAvatarThunk,
+  [fetchActivityFeedThunk.typePrefix]: fetchActivityFeedThunk,
   [fetchProjectsThunk.typePrefix]: fetchProjectsThunk,
   [createProjectThunk.typePrefix]: createProjectThunk,
   [syncPendingProjectsThunk.typePrefix]: syncPendingProjectsThunk,
@@ -57,6 +59,7 @@ const RETRYABLE_THUNKS: Record<string, RetryThunkCreator> = {
 
 const AUTO_RETRY_PREFIXES = new Set<string>([
   fetchProjectsThunk.typePrefix,
+  fetchActivityFeedThunk.typePrefix,
   fetchExperimentsThunk.typePrefix,
   fetchNotesThunk.typePrefix,
   fetchHardwareThunk.typePrefix,
