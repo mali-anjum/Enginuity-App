@@ -7,6 +7,7 @@ import authReducer from '@/auth/state/authSlice';
 import activityFeedReducer from '@/dashboard/state/activityFeedSlice';
 import experimentReducer from '@/experiment/state/experimentSlice';
 import hardwareReducer from '@/hardware/state/hardwareSlice';
+import monetizationReducer from '@/monetization/state/monetizationSlice';
 import notesReducer from '@/notes/state/notesSlice';
 import onboardingReducer from '@/onboarding/state/onboardingSlice';
 import projectReducer from '@/project/state/projectSlice';
@@ -67,6 +68,7 @@ export const store = configureStore({
     experiment: experimentReducer,
     notes: notesReducer,
     hardware: hardwareReducer,
+    monetization: monetizationReducer,
     ui: persistedUiReducer,
     settings: settingsReducer,
   },

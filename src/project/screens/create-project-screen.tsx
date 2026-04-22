@@ -4,9 +4,15 @@ import { useState } from 'react';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
+import {
+  openCheckoutThunk,
+  selectCanCreateProject,
+  selectIsCheckoutLoading,
+} from '@/monetization/state/monetizationSlice';
 import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { createProjectThunk } from '@/project/state/projectSlice';
-import { useAppDispatch } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: ProjectFormValues = {
   title: '',
@@ -18,7 +24,10 @@ const INITIAL_VALUES: ProjectFormValues = {
 
 export default function CreateProjectScreen() {
   const [values, setValues] = useState<ProjectFormValues>(INITIAL_VALUES);
+  const [showPaywall, setShowPaywall] = useState(false);
   const dispatch = useAppDispatch();
+  const canCreateProject = useAppSelector(selectCanCreateProject);
+  const isCheckoutLoading = useAppSelector(selectIsCheckoutLoading);
   const router = useRouter();
 
   return (
@@ -31,6 +40,10 @@ export default function CreateProjectScreen() {
           submitLabel="Save Project"
           onSubmit={() => {
             if (!values.title.trim()) return;
+            if (!canCreateProject) {
+              setShowPaywall(true);
+              return;
+            }
             void (async () => {
               const created = await dispatch(
                 createProjectThunk({
@@ -46,6 +59,16 @@ export default function CreateProjectScreen() {
           }}
         />
       </ScrollView>
+      <ProPaywallModal
+        visible={showPaywall}
+        title="You've reached 3 projects."
+        description="Upgrade to Pro for unlimited projects."
+        isUpgradeLoading={isCheckoutLoading}
+        onClose={() => setShowPaywall(false)}
+        onUpgrade={() => {
+          void dispatch(openCheckoutThunk());
+        }}
+      />
     </ThemedView>
   );
 }

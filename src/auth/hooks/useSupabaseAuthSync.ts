@@ -9,6 +9,10 @@ import {
 import { clearActivityFeedData, fetchActivityFeedThunk } from '@/dashboard/state/activityFeedSlice';
 import { clearExperimentData, fetchExperimentsThunk } from '@/experiment/state/experimentSlice';
 import { clearHardwareData, fetchHardwareThunk } from '@/hardware/state/hardwareSlice';
+import {
+  clearMonetizationState,
+  fetchSubscriptionStatusThunk,
+} from '@/monetization/state/monetizationSlice';
 import { fetchNotesThunk, fetchTagCountsThunk } from '@/notes/state/notesSlice';
 import { resetOnboarding, setOnboardingCompleted } from '@/onboarding/state/onboardingSlice';
 import { clearProjectData, fetchProjectsThunk } from '@/project/state/projectSlice';
@@ -53,6 +57,7 @@ export function SupabaseAuthSync() {
 
   const clearWorkspaceDomain = useCallback(() => {
     dispatch(clearActivityFeedData());
+    dispatch(clearMonetizationState());
     dispatch(clearProjectData());
     dispatch(clearExperimentData());
     dispatch(clearHardwareData());
@@ -113,6 +118,7 @@ export function SupabaseAuthSync() {
           void dispatch(fetchNotesThunk());
           void dispatch(fetchTagCountsThunk());
           void dispatch(fetchActivityFeedThunk());
+          void dispatch(fetchSubscriptionStatusThunk());
           void seedEngineeringTags(data.session.user.id);
           return;
         }
@@ -152,6 +158,7 @@ export function SupabaseAuthSync() {
           void dispatch(fetchNotesThunk());
           void dispatch(fetchTagCountsThunk());
           void dispatch(fetchActivityFeedThunk());
+          void dispatch(fetchSubscriptionStatusThunk());
           void seedEngineeringTags(session.user.id);
           return;
         }
