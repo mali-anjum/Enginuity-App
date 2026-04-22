@@ -7,10 +7,22 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
-import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectAllNotes } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
+
+function disciplineBadgeLabel(discipline: string | null): string {
+  if (!discipline) return 'Student';
+  const labels: Record<string, string> = {
+    electrical: 'Electronics',
+    mechanical: 'Robotics',
+    software: 'CS',
+    civil: 'Physics',
+    chemical: 'Chemical',
+    other: 'Other',
+  };
+  return labels[discipline] ?? discipline.replace('_', ' ');
+}
 
 export default function ProfileHomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -19,7 +31,6 @@ export default function ProfileHomeScreen() {
   const projectCount = useAppSelector(selectAllProjects).length;
   const experimentCount = useAppSelector(selectAllExperiments).length;
   const notesCount = useAppSelector(selectAllNotes).length;
-  const hardwareCount = useAppSelector(selectAllHardware).length;
   const initials = (user?.name || 'U')
     .split(' ')
     .map((part) => part.charAt(0))
@@ -47,8 +58,11 @@ export default function ProfileHomeScreen() {
             <View style={styles.avatarInfo}>
               <ThemedText type="subtitle">{user?.name || 'User'}</ThemedText>
               <ThemedText style={{ color: themeColors.mutedText }}>{user?.email || 'No email'}</ThemedText>
+              <ThemedText style={{ color: themeColors.mutedText }}>
+                {user?.institution?.trim() ? user.institution : 'No institution set'}
+              </ThemedText>
               <ThemedText style={[styles.badge, { color: themeColors.primary }]}>
-                {(user?.discipline ?? 'student').replace('_', ' ')}
+                {disciplineBadgeLabel(user?.discipline ?? null)}
               </ThemedText>
             </View>
           </View>
@@ -61,10 +75,7 @@ export default function ProfileHomeScreen() {
           <StatPill label="Projects" value={projectCount} />
           <StatPill label="Experiments" value={experimentCount} />
         </View>
-        <View style={styles.statsRow}>
-          <StatPill label="Notes" value={notesCount} />
-          <StatPill label="Hardware" value={hardwareCount} />
-        </View>
+        <StatPill label="Notes" value={notesCount} />
 
         <View style={styles.actions}>
           <Link href={'/settings' as Href} asChild>
