@@ -37,6 +37,8 @@ const mapSessionToAuthState = (session: {
       discipline: null,
       avatarUrl: session.user.user_metadata?.avatar_url ?? null,
       bio: '',
+      institution: '',
+      storageUsedMb: 0,
     },
     session: {
       token: session.access_token,
