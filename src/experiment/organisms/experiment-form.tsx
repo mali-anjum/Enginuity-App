@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -9,6 +10,7 @@ import {
   experimentStatusLabel,
   type ExperimentStatus,
 } from '@/experiment/constants';
+import { fetchGithubCommitPreview } from '@/experiment/services/githubCommitLookupService';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -63,6 +65,54 @@ export function ExperimentForm({
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const projects = useAppSelector(selectAllProjects);
+  const [isLookupLoading, setIsLookupLoading] = useState(false);
+  const [commitMetaText, setCommitMetaText] = useState<string | null>(null);
+  const [lookupHint, setLookupHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    const raw = values.githubCommit.trim();
+    if (!raw) {
+      setCommitMetaText(null);
+      setLookupHint(null);
+      setIsLookupLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      setIsLookupLoading(true);
+      setLookupHint(null);
+      void (async () => {
+        try {
+          const result = await fetchGithubCommitPreview(raw);
+          if (cancelled) return;
+          if (result.kind === 'success') {
+            setCommitMetaText(`${result.message} - ${result.author}`);
+            setLookupHint(null);
+          } else if (result.kind === 'private_or_unavailable') {
+            setCommitMetaText(null);
+            setLookupHint('Private repo - commit message not available. You can enter details manually.');
+          } else {
+            setCommitMetaText(null);
+            setLookupHint('Enter full GitHub commit URL or owner/repo@hash to auto-fetch message.');
+          }
+        } catch {
+          if (cancelled) return;
+          setCommitMetaText(null);
+          setLookupHint('Could not fetch commit details right now.');
+        } finally {
+          if (!cancelled) {
+            setIsLookupLoading(false);
+          }
+        }
+      })();
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [values.githubCommit]);
 
   return (
     <ThemedView style={styles.container}>
@@ -135,6 +185,17 @@ export function ExperimentForm({
           autoCorrect={false}
           style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
+        {isLookupLoading ? (
+          <ThemedText style={{ color: themeColors.mutedText, fontSize: 12 }}>
+            Fetching commit metadata...
+          </ThemedText>
+        ) : null}
+        {commitMetaText ? (
+          <ThemedText style={{ color: themeColors.subtleText, fontSize: 12 }}>{commitMetaText}</ThemedText>
+        ) : null}
+        {lookupHint ? (
+          <ThemedText style={{ color: themeColors.mutedText, fontSize: 12 }}>{lookupHint}</ThemedText>
+        ) : null}
       </View>
 
       {lockedProjectTitle ? (
