@@ -1,4 +1,6 @@
+import { Link, type Href } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
+import type { StyleProp, TextStyle } from 'react-native';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -28,21 +30,61 @@ const INITIAL_FILTERS: AdvancedFilters = {
 
 type SearchTab = 'experiments' | 'notes' | 'hardware';
 
-function HighlightedText({ text, query }: { text: string; query: string }) {
+function HighlightedText({
+  text,
+  query,
+  style,
+  numberOfLines,
+}: {
+  text: string;
+  query: string;
+  style?: StyleProp<TextStyle>;
+  numberOfLines?: number;
+}) {
   const q = query.trim();
-  if (!q) return <ThemedText>{text}</ThemedText>;
+  if (!q) {
+    return (
+      <ThemedText style={style} numberOfLines={numberOfLines}>
+        {text}
+      </ThemedText>
+    );
+  }
   const index = text.toLowerCase().indexOf(q.toLowerCase());
-  if (index < 0) return <ThemedText>{text}</ThemedText>;
+  if (index < 0) {
+    return (
+      <ThemedText style={style} numberOfLines={numberOfLines}>
+        {text}
+      </ThemedText>
+    );
+  }
   const start = text.slice(0, index);
   const match = text.slice(index, index + q.length);
   const end = text.slice(index + q.length);
   return (
-    <ThemedText>
+    <ThemedText style={style} numberOfLines={numberOfLines}>
       {start}
       <Text style={{ fontWeight: '700' }}>{match}</Text>
       {end}
     </ThemedText>
   );
+}
+
+/** Strip Postgres ts_headline markup (<b>...</b>) for consistent client highlighting. */
+function stripTsHeadlineMarkup(html: string): string {
+  return html.replace(/<\/?b>/gi, '').replace(/<\/?[^>]+>/g, '');
+}
+
+function searchResultHref(row: GlobalSearchEntityRow): Href {
+  if (row.entity_type === 'experiment') {
+    return `/experiment/${row.entity_id}` as Href;
+  }
+  if (row.entity_type === 'note') {
+    return `/notes/${row.entity_id}` as Href;
+  }
+  if (row.entity_type === 'hardware') {
+    return `/hardware/${row.entity_id}` as Href;
+  }
+  return '/search' as Href;
 }
 
 export default function GlobalSearchScreen() {
@@ -119,7 +161,7 @@ export default function GlobalSearchScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Global Search</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
-          Search across experiment titles/observations, notes, and hardware names.
+          Search experiment titles and observations, note titles and bodies, and hardware names (Supabase FTS).
         </ThemedText>
 
         <TextInput
@@ -170,19 +212,23 @@ export default function GlobalSearchScreen() {
 
         <View style={styles.resultList}>
           {(activeTab === 'experiments' ? experimentHits : activeTab === 'notes' ? noteHits : hardwareHits).map((row) => (
-            <Pressable
-              key={`${row.entity_type}-${row.entity_id}`}
-              style={[styles.resultCard, { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated }]}>
-              <HighlightedText text={row.title} query={query} />
-              <ThemedText style={{ color: themeColors.mutedText }}>
-                {row.project_title ? `Project: ${row.project_title}` : 'Project context unavailable'}
-              </ThemedText>
-              {row.snippet ? (
-                <ThemedText style={{ color: themeColors.subtleText }} numberOfLines={2}>
-                  {row.snippet}
+            <Link key={`${row.entity_type}-${row.entity_id}`} href={searchResultHref(row)} asChild>
+              <Pressable
+                style={[styles.resultCard, { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated }]}>
+                <HighlightedText text={row.title} query={query} />
+                <ThemedText style={{ color: themeColors.mutedText }}>
+                  {row.project_title ? `Project: ${row.project_title}` : 'Project context unavailable'}
                 </ThemedText>
-              ) : null}
-            </Pressable>
+                {row.snippet ? (
+                  <HighlightedText
+                    text={stripTsHeadlineMarkup(row.snippet)}
+                    query={query}
+                    numberOfLines={2}
+                    style={{ color: themeColors.subtleText }}
+                  />
+                ) : null}
+              </Pressable>
+            </Link>
           ))}
         </View>
       </ScrollView>
