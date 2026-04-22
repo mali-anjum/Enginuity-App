@@ -2,13 +2,16 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { Colors } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ExperimentForm, type ExperimentFormValues } from '@/experiment/organisms/experiment-form';
 import { HardwarePickerSheet } from '@/experiment/organisms/hardware-picker-sheet';
 import { createExperimentThunk, uploadAttachmentThunk } from '@/experiment/state/experimentSlice';
+import { EXPERIMENT_TEMPLATES } from '@/experiment/utils/experimentTemplates';
 import { optimizeImageForUpload } from '@/experiment/utils/imageUploadOptimizer';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
@@ -39,13 +42,16 @@ export default function CreateExperimentScreen() {
   const [selectedHardwareIds, setSelectedHardwareIds] = useState<string[]>([]);
   const [pendingPhotoUris, setPendingPhotoUris] = useState<string[]>([]);
   const [pendingFileAssets, setPendingFileAssets] = useState<
-    Array<{ uri: string; name: string; mimeType: string | null; size: number | null }>
+    { uri: string; name: string; mimeType: string | null; size: number | null }[]
   >([]);
   const [isHardwarePickerOpen, setIsHardwarePickerOpen] = useState(false);
   const hardwareItems = useAppSelector(selectAllHardware);
   const lockedProject = useAppSelector(selectProjectById(initialProjectId));
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   const lockedProjectTitle = initialProjectId ? lockedProject?.title : undefined;
 
@@ -61,6 +67,51 @@ export default function CreateExperimentScreen() {
     <ThemedView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Create Experiment</ThemedText>
+        <View style={styles.templateSection}>
+          <View style={styles.templateHeader}>
+            <ThemedText type="defaultSemiBold">Use Template</ThemedText>
+            {selectedTemplateId ? (
+              <Pressable
+                onPress={() => setSelectedTemplateId(null)}
+                style={[
+                  styles.clearTemplateButton,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                ]}>
+                <ThemedText style={{ color: themeColors.mutedText }}>Clear</ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
+          <View style={styles.templateWrap}>
+            {EXPERIMENT_TEMPLATES.map((template) => {
+              const selected = selectedTemplateId === template.id;
+              return (
+                <Pressable
+                  key={template.id}
+                  onPress={() => {
+                    setSelectedTemplateId(template.id);
+                    setValues((prev) => ({
+                      ...prev,
+                      title: prev.title.trim() ? prev.title : template.defaultTitle,
+                      objective: template.objective,
+                      observations: template.observations,
+                    }));
+                  }}
+                  style={[
+                    styles.templateChip,
+                    {
+                      borderColor: selected ? themeColors.primary : themeColors.border,
+                      backgroundColor: selected ? themeColors.heroTint : themeColors.surfaceElevated,
+                    },
+                  ]}>
+                  <ThemedText>{template.name}</ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+          <ThemedText style={{ color: themeColors.mutedText, fontSize: 12 }}>
+            Templates are pre-built locally for faster engineering logs.
+          </ThemedText>
+        </View>
         <ExperimentForm
           values={values}
           selectedHardwareCount={selectedHardwareIds.length}
@@ -175,4 +226,9 @@ export default function CreateExperimentScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
+  templateSection: { gap: 8 },
+  templateHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  templateWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  templateChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 7 },
+  clearTemplateButton: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
 });
