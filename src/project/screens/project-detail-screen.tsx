@@ -6,11 +6,17 @@ import { ExperimentStatusChip } from '@/experiment/molecules/experiment-status-c
 import { enqueueExperimentRemoteSync } from '@/experiment/services/experimentRemoteSync';
 import { cycleExperimentStatus, selectExperimentsByProject } from '@/experiment/state/experimentSlice';
 import { selectNotesByProject } from '@/notes/state/notesSlice';
-import { selectProjectById } from '@/project/state/projectSlice';
+import { ShareProjectSheet } from '@/project/organisms/share-project-sheet';
+import {
+  inviteProjectMemberThunk,
+  selectProjectById,
+  selectProjectCanEdit,
+} from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { addToast } from '@/ui/state/uiSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 type DetailTab = 'experiments' | 'notes';
@@ -21,8 +27,11 @@ export default function ProjectDetailScreen() {
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<DetailTab>('experiments');
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
+  const [isInviteSending, setIsInviteSending] = useState(false);
 
   const project = useAppSelector(selectProjectById(projectId ?? ''));
+  const canEditProject = useAppSelector(selectProjectCanEdit(projectId ?? ''));
   const experiments = useAppSelector(selectExperimentsByProject(projectId ?? ''));
   const notes = useAppSelector(selectNotesByProject(projectId ?? ''));
 
@@ -49,10 +58,22 @@ export default function ProjectDetailScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topRow}>
           <ThemedText type="title">{project.title}</ThemedText>
-          <Link href={`/project/${project.id}/edit` as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
-          </Link>
+          <View style={styles.topActions}>
+            <Pressable onPress={() => setIsShareSheetOpen(true)}>
+              <ThemedText style={{ color: themeColors.primary }}>Share</ThemedText>
+            </Pressable>
+            {canEditProject ? (
+              <Link href={`/project/${project.id}/edit` as Href}>
+                <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
+              </Link>
+            ) : null}
+          </View>
         </View>
+        {project.sharedWithMe ? (
+          <View style={[styles.sharedBadge, { borderColor: themeColors.accentBorder, backgroundColor: themeColors.accentSoft }]}>
+            <ThemedText type="defaultSemiBold">Shared with me · {project.accessRole}</ThemedText>
+          </View>
+        ) : null}
 
         <View
           style={[
@@ -112,9 +133,11 @@ export default function ProjectDetailScreen() {
           <View style={styles.section}>
             <View style={styles.sectionTitleRow}>
               <ThemedText type="defaultSemiBold">Experiments</ThemedText>
-              <Link href={experimentCreateHref}>
-                <ThemedText style={{ color: themeColors.primary }}>Add experiment</ThemedText>
-              </Link>
+              {canEditProject ? (
+                <Link href={experimentCreateHref}>
+                  <ThemedText style={{ color: themeColors.primary }}>Add experiment</ThemedText>
+                </Link>
+              ) : null}
             </View>
             {experimentsSorted.length === 0 ? (
               <View
@@ -128,14 +151,24 @@ export default function ProjectDetailScreen() {
                 <ThemedText style={{ color: themeColors.mutedText }}>
                   No experiments yet. Add one to track work inside this project.
                 </ThemedText>
-                <Link href={experimentCreateHref} asChild>
+                {canEditProject ? (
+                  <Link href={experimentCreateHref} asChild>
+                    <Pressable
+                      style={[styles.primaryOutline, { borderColor: themeColors.primary }]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Create experiment for this project">
+                      <ThemedText style={{ color: themeColors.primary }}>Create experiment</ThemedText>
+                    </Pressable>
+                  </Link>
+                ) : (
                   <Pressable
-                    style={[styles.primaryOutline, { borderColor: themeColors.primary }]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Create experiment for this project">
-                    <ThemedText style={{ color: themeColors.primary }}>Create experiment</ThemedText>
+                    style={[styles.primaryOutline, { borderColor: themeColors.border }]}
+                    disabled>
+                    <ThemedText style={{ color: themeColors.mutedText }}>
+                      Viewer access cannot create experiments
+                    </ThemedText>
                   </Pressable>
-                </Link>
+                )}
               </View>
             ) : (
               experimentsSorted.map((experiment) => (
@@ -164,6 +197,15 @@ export default function ProjectDetailScreen() {
                   <ExperimentStatusChip
                     status={experiment.status}
                     onPress={() => {
+                      if (!canEditProject) {
+                        dispatch(
+                          addToast({
+                            message: 'Viewer access cannot edit experiment status.',
+                            variant: 'info',
+                          }),
+                        );
+                        return;
+                      }
                       dispatch(
                         cycleExperimentStatus({
                           experimentId: experiment.id,
@@ -181,9 +223,11 @@ export default function ProjectDetailScreen() {
           <View style={styles.section}>
             <View style={styles.sectionTitleRow}>
               <ThemedText type="defaultSemiBold">Notes</ThemedText>
-              <Link href={`/notes/create?projectId=${encodeURIComponent(project.id)}` as Href}>
-                <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
-              </Link>
+              {canEditProject ? (
+                <Link href={`/notes/create?projectId=${encodeURIComponent(project.id)}` as Href}>
+                  <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
+                </Link>
+              ) : null}
             </View>
             {notes.length === 0 ? (
               <View style={styles.notesEmpty}>
@@ -217,6 +261,29 @@ export default function ProjectDetailScreen() {
           </View>
         )}
       </ScrollView>
+      <ShareProjectSheet
+        visible={isShareSheetOpen}
+        isSubmitting={isInviteSending}
+        onClose={() => setIsShareSheetOpen(false)}
+        onSubmit={({ email, role }) => {
+          if (!email || !projectId) return;
+          setIsInviteSending(true);
+          void (async () => {
+            try {
+              await dispatch(inviteProjectMemberThunk({ projectId, email, role })).unwrap();
+              dispatch(
+                addToast({
+                  message: `Invite sent to ${email}`,
+                  variant: 'success',
+                }),
+              );
+              setIsShareSheetOpen(false);
+            } finally {
+              setIsInviteSending(false);
+            }
+          })();
+        }}
+      />
     </ThemedView>
   );
 }
@@ -225,6 +292,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sharedBadge: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+  },
   metaCard: {
     borderWidth: 1,
     borderRadius: 12,

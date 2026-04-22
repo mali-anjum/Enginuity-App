@@ -87,6 +87,15 @@ export default function ProjectListScreen() {
                     },
                   ]}>
                   <ThemedText type="defaultSemiBold">{project.title}</ThemedText>
+                  {project.sharedWithMe ? (
+                    <View
+                      style={[
+                        styles.sharedBadge,
+                        { borderColor: themeColors.accentBorder, backgroundColor: themeColors.accentSoft },
+                      ]}>
+                      <ThemedText style={styles.sharedBadgeText}>Shared with me</ThemedText>
+                    </View>
+                  ) : null}
                   <ThemedText style={{ color: themeColors.mutedText }} numberOfLines={2}>
                     {project.description || 'No description'}
                   </ThemedText>
@@ -108,6 +117,14 @@ const styles = StyleSheet.create({
   filterChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
   card: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  sharedBadge: {
+    borderWidth: 1,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  sharedBadgeText: { fontSize: 11, fontWeight: '600' },
   projectTitleSkeleton: { height: 16, borderRadius: 6, width: '62%', marginBottom: 4 },
   projectLineSkeleton: { height: 12, borderRadius: 6, width: '95%' },
   projectLineShortSkeleton: { height: 12, borderRadius: 6, width: '74%', marginTop: 4 },

@@ -5,7 +5,7 @@ import { addHardwareThunk, deleteHardwareThunk, fetchHardwareThunk, updateHardwa
 import { fetchSubscriptionStatusThunk, openCheckoutThunk } from '@/monetization/state/monetizationSlice';
 import { createCustomTagThunk, createNoteThunk, deleteNoteThunk, fetchNotesThunk, fetchTagCountsThunk, searchNotesThunk, toggleNoteFavoriteThunk, updateNoteThunk } from '@/notes/state/notesSlice';
 import { flushOnboardingDraftThunk } from '@/onboarding/thunks/flushOnboardingDraftThunk';
-import { createProjectThunk, deleteProjectThunk, fetchProjectsThunk, syncPendingProjectsThunk, toggleFavouriteThunk, toggleProjectStatusThunk, updateProjectThunk } from '@/project/state/projectSlice';
+import { createProjectThunk, deleteProjectThunk, fetchProjectsThunk, inviteProjectMemberThunk, syncPendingProjectsThunk, toggleFavouriteThunk, toggleProjectStatusThunk, updateProjectThunk } from '@/project/state/projectSlice';
 import { fetchNotificationSettingsThunk, fetchStorageUsageThunk, manualSyncThunk, processLocalSyncQueueThunk, saveNotificationSettingsThunk } from '@/settings/state/settingsSlice';
 import type { AppDispatch } from '@/sharedModules/state/store';
 import type { RetryDescriptor } from '@/ui/state/uiSlice';
@@ -32,6 +32,7 @@ const RETRYABLE_THUNKS: Record<string, RetryThunkCreator> = {
   [deleteProjectThunk.typePrefix]: deleteProjectThunk,
   [toggleFavouriteThunk.typePrefix]: toggleFavouriteThunk,
   [toggleProjectStatusThunk.typePrefix]: toggleProjectStatusThunk,
+  [inviteProjectMemberThunk.typePrefix]: inviteProjectMemberThunk,
   [fetchExperimentsThunk.typePrefix]: fetchExperimentsThunk,
   [createExperimentThunk.typePrefix]: createExperimentThunk,
   [syncPendingExperimentsThunk.typePrefix]: syncPendingExperimentsThunk,
