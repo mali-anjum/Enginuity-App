@@ -6,6 +6,7 @@ import {
   syncPendingExperimentsThunk,
 } from '@/experiment/state/experimentSlice';
 import { syncPendingProjectsThunk } from '@/project/state/projectSlice';
+import { processLocalSyncQueueThunk } from '@/settings/state/settingsSlice';
 import { useAppDispatch } from '@/sharedModules/state/hooks';
 
 export function OfflineSyncReconciler() {
@@ -22,6 +23,7 @@ export function OfflineSyncReconciler() {
         }
       }
       await dispatch(syncPendingExperimentsThunk());
+      await dispatch(processLocalSyncQueueThunk());
     };
 
     const unsub = NetInfo.addEventListener((state) => {
