@@ -42,7 +42,7 @@ export default function NotificationsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Notifications</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
-          Preferences are stored in Supabase under your account (`user_settings`).
+          Push notification preference is stored in Supabase under your account (`user_settings`).
         </ThemedText>
 
         {settingsError ? (
@@ -54,18 +54,6 @@ export default function NotificationsScreen() {
             label="Push notifications"
             value={prefs.pushNotificationsEnabled}
             onChange={(v) => patch({ pushNotificationsEnabled: v })}
-            themeColors={themeColors}
-          />
-          <Row
-            label="Email notifications"
-            value={prefs.emailNotificationsEnabled}
-            onChange={(v) => patch({ emailNotificationsEnabled: v })}
-            themeColors={themeColors}
-          />
-          <Row
-            label="Experiment reminders"
-            value={prefs.experimentRemindersEnabled}
-            onChange={(v) => patch({ experimentRemindersEnabled: v })}
             themeColors={themeColors}
           />
         </View>

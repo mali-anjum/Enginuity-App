@@ -129,6 +129,22 @@ export const logoutThunk = createAsyncThunk<void, void, { rejectValue: string }>
   },
 );
 
+export const deleteAccountThunk = createAsyncThunk<void, void, { state: RootState; rejectValue: string }>(
+  'auth/deleteAccountThunk',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const currentUser = getState().auth.user;
+      if (!currentUser) {
+        return rejectWithValue('No authenticated user');
+      }
+      await oauthAuthService.deactivateAccount(currentUser.id);
+      return;
+    } catch (error: unknown) {
+      return rejectWithValue(toError(error).message || 'Account deletion failed');
+    }
+  },
+);
+
 export const refreshSessionThunk = createAsyncThunk<AuthSession, SessionPayload, { rejectValue: string }>(
   'auth/refreshSessionThunk',
   async ({ token, expiresAt }, { rejectWithValue }) => {
@@ -315,6 +331,20 @@ const authSlice = createSlice({
       .addCase(logoutThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload ?? 'Logout failed';
+      })
+      .addCase(deleteAccountThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteAccountThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.session = null;
+        state.hasInitialized = true;
+      })
+      .addCase(deleteAccountThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? 'Account deletion failed';
       })
       .addCase(refreshSessionThunk.fulfilled, (state, action) => {
         state.session = action.payload;

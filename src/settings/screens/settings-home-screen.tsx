@@ -28,7 +28,7 @@ const LINKS: SettingsLink[] = [
   },
   {
     title: 'Notifications',
-    subtitle: 'Push and email preferences (saved to your account)',
+    subtitle: 'Push notification preference (saved to your account)',
     href: '/settings/notifications' as Href,
   },
   {
