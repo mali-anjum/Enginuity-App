@@ -13,6 +13,7 @@ import {
   updateExperimentThunk,
   uploadAttachmentThunk,
 } from '@/experiment/state/experimentSlice';
+import { optimizeImageForUpload } from '@/experiment/utils/imageUploadOptimizer';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -81,7 +82,12 @@ export default function EditExperimentScreen() {
                 quality: 0.85,
               });
               if (result.canceled || !result.assets[0]?.uri) return;
-              setPendingPhotoUris((prev) => [...prev, result.assets[0].uri]);
+              try {
+                const optimizedUri = await optimizeImageForUpload(result.assets[0].uri);
+                setPendingPhotoUris((prev) => [...prev, optimizedUri]);
+              } catch {
+                setPendingPhotoUris((prev) => [...prev, result.assets[0].uri]);
+              }
             })();
           }}
           onAttachFile={() => {
