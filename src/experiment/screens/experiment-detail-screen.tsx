@@ -1,5 +1,7 @@
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams, type Href } from 'expo-router';
+import * as Sharing from 'expo-sharing';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -10,9 +12,14 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { experimentStatusLabel, nextExperimentStatus } from '@/experiment/constants';
 import type { ExperimentStatus } from '@/experiment/constants';
 import { CsvPreviewChartSection } from '@/experiment/organisms/csv-preview-chart-section';
+import {
+  exportExperimentAsPdf,
+  resolveProjectName,
+} from '@/experiment/services/experimentPdfExportService';
 import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/experimentSlice';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectNotesByExperiment } from '@/notes/state/notesSlice';
+import { selectProjectById } from '@/project/state/projectSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 function statusChipColors(
@@ -57,9 +64,11 @@ export default function ExperimentDetailScreen() {
   const experiment = useAppSelector(selectExperimentById(experimentId ?? ''));
   const hardwareItems = useAppSelector(selectAllHardware);
   const linkedNotes = useAppSelector(selectNotesByExperiment(experimentId ?? ''));
+  const project = useAppSelector(selectProjectById(experiment?.projectId ?? ''));
   const dispatch = useAppDispatch();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   if (!experiment) {
     return (
@@ -81,15 +90,44 @@ export default function ExperimentDetailScreen() {
   const firstCsvAttachment = fileAttachments.find((item) =>
     isCsvAttachment(item.fileType, item.fileName),
   );
+  const hardwareNames = linkedHardware.map((item) => item.name);
+
+  const onSharePdf = async () => {
+    if (isExportingPdf) return;
+    setIsExportingPdf(true);
+    try {
+      const pdfPath = await exportExperimentAsPdf({
+        experiment,
+        projectName: resolveProjectName(project),
+        hardwareNames,
+      });
+      const shareUri = pdfPath.startsWith('file://') ? pdfPath : `file://${pdfPath}`;
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(shareUri, {
+          mimeType: 'application/pdf',
+          UTI: 'com.adobe.pdf',
+        });
+      }
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
 
   return (
     <ThemedView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topRow}>
           <ThemedText type="title">{experiment.title}</ThemedText>
-          <Link href={`/experiment/${experiment.id}/edit` as Href}>
-            <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
-          </Link>
+          <View style={styles.topActions}>
+            <Pressable onPress={() => void onSharePdf()}>
+              <ThemedText style={{ color: themeColors.primary }}>
+                {isExportingPdf ? 'Preparing…' : 'Share'}
+              </ThemedText>
+            </Pressable>
+            <Link href={`/experiment/${experiment.id}/edit` as Href}>
+              <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
+            </Link>
+          </View>
         </View>
 
         <Pressable
@@ -298,6 +336,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   statusChip: {
     alignSelf: 'flex-start',
     borderWidth: 2,
