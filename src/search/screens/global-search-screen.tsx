@@ -175,7 +175,7 @@ export default function GlobalSearchScreen() {
         <Pressable
           style={[styles.filterButton, { borderColor: themeColors.border }]}
           onPress={() => setIsFilterSheetOpen(true)}>
-          <ThemedText>Open Advanced Filters</ThemedText>
+          <ThemedText>Filter</ThemedText>
         </Pressable>
 
         {query.trim() ? (
