@@ -10,6 +10,10 @@ import projectReducer, {
 function projectFixture(overrides: Partial<Project> = {}): Project {
   const base: Project = {
     id: 'proj-1',
+    workspaceId: 'ws-1',
+    ownerId: 'user-1',
+    accessRole: 'admin',
+    sharedWithMe: false,
     title: 'Drone Nav',
     description: '',
     startDate: null,

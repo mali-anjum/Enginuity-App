@@ -11,6 +11,7 @@ import {
   insertProjectForUser,
   updateProjectForUser,
 } from '@/project/services/projectSupabaseService';
+import { sendProjectInviteEmail, type ShareRole } from '@/project/services/projectSharingService';
 import type { RootState } from '@/sharedModules/state/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { createLocalUuidV4, isUuid } from '@/sharedModules/utils/uuid';
@@ -20,6 +21,10 @@ export type ProjectStatus = 'active' | 'completed' | 'archived';
 
 export type Project = {
   id: string;
+  workspaceId: string;
+  ownerId: string;
+  accessRole: 'admin' | 'member' | 'viewer';
+  sharedWithMe: boolean;
   title: string;
   description: string;
   startDate: string | null;
@@ -78,6 +83,10 @@ export const createProjectThunk = createAsyncThunk<
   const { title, description = '', startDate = null, dueDate = null, status = 'active' } = payload;
   return {
     id: createLocalUuidV4(),
+    workspaceId: 'local-workspace',
+    ownerId: user?.id ?? 'local-user',
+    accessRole: 'admin',
+    sharedWithMe: false,
     title,
     description,
     startDate,
@@ -92,7 +101,7 @@ export const createProjectThunk = createAsyncThunk<
 });
 
 export const syncPendingProjectsThunk = createAsyncThunk<
-  { synced: Array<{ tempId: string; server: Project }>; idMap: Record<string, string> },
+  { synced: { tempId: string; server: Project }[]; idMap: Record<string, string> },
   void,
   { state: RootState }
 >('project/syncPendingProjectsThunk', async (_, { getState }) => {
@@ -103,7 +112,7 @@ export const syncPendingProjectsThunk = createAsyncThunk<
   }
 
   const pendingProjects = getState().project.projects.filter((project) => project.pendingSync);
-  const synced: Array<{ tempId: string; server: Project }> = [];
+  const synced: { tempId: string; server: Project }[] = [];
   const idMap: Record<string, string> = {};
 
   for (const project of pendingProjects) {
@@ -200,6 +209,19 @@ export const attachProjectFileThunk = createAsyncThunk<
   { projectId: string; fileUrl: string },
   { projectId: string; fileUrl: string }
 >('project/attachProjectFileThunk', async (payload) => payload);
+
+export const inviteProjectMemberThunk = createAsyncThunk<
+  void,
+  { projectId: string; email: string; role: ShareRole },
+  { state: RootState }
+>('project/inviteProjectMemberThunk', async (payload, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  if (!user || !client) {
+    throw new Error('Invite unavailable');
+  }
+  await sendProjectInviteEmail(client, payload);
+});
 
 const projectSlice = createSlice({
   name: 'project',
@@ -308,6 +330,11 @@ export const selectFilteredProjects = (state: RootState) => {
 };
 export const selectProjectById = (projectId: string) => (state: RootState) =>
   state.project.projects.find((item) => item.id === projectId) ?? null;
+export const selectProjectCanEdit = (projectId: string) => (state: RootState) => {
+  const project = state.project.projects.find((item) => item.id === projectId);
+  if (!project) return false;
+  return project.accessRole === 'admin' || project.accessRole === 'member';
+};
 export const selectProjectStats = (state: RootState) => {
   const projects = state.project.projects;
   const total = projects.length;

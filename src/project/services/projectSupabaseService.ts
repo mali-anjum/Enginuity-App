@@ -12,6 +12,10 @@ function mapRowToProject(row: Database['public']['Tables']['projects']['Row']): 
   const status: ProjectStatus = row.archived ? 'archived' : row.status;
   return {
     id: row.id,
+    workspaceId: row.workspace_id,
+    ownerId: row.owner_id,
+    accessRole: 'admin',
+    sharedWithMe: false,
     title: row.title,
     description: row.description ?? '',
     startDate: row.start_date ? row.start_date.slice(0, 10) : null,
@@ -59,6 +63,19 @@ export async function fetchProjectsForUser(
   const workspaceIds = await fetchAccessibleWorkspaceIds(client, userId);
   if (workspaceIds.length === 0) return [];
 
+  const { data: membershipRows, error: membershipError } = await sb
+    .from('workspace_members')
+    .select('workspace_id, role')
+    .eq('user_id', userId)
+    .in('workspace_id', workspaceIds);
+  if (membershipError) throw membershipError;
+  const roleByWorkspace = new Map(
+    (membershipRows ?? []).map((row: { workspace_id: string; role: 'admin' | 'member' | 'viewer' }) => [
+      row.workspace_id,
+      row.role,
+    ]),
+  );
+
   const { data, error } = await sb
     .from('projects')
     .select('*')
@@ -66,7 +83,15 @@ export async function fetchProjectsForUser(
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return (data ?? []).map(mapRowToProject);
+  return (data ?? []).map((row) => {
+    const mapped = mapRowToProject(row);
+    const role = roleByWorkspace.get(row.workspace_id) ?? 'viewer';
+    return {
+      ...mapped,
+      accessRole: role,
+      sharedWithMe: row.owner_id !== userId,
+    };
+  });
 }
 
 type CreateProjectInput = Pick<Project, 'title'> &
@@ -97,7 +122,8 @@ export async function insertProjectForUser(
 
   const { data, error } = await sb.from('projects').insert(insert).select('*').single();
   if (error) throw error;
-  return mapRowToProject(data);
+  const project = mapRowToProject(data);
+  return { ...project, accessRole: 'admin', sharedWithMe: false };
 }
 
 export async function updateProjectForUser(
