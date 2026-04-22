@@ -23,6 +23,7 @@ export type Project = {
   id: string;
   workspaceId: string;
   ownerId: string;
+  ownerAvatarUrl: string | null;
   accessRole: 'admin' | 'member' | 'viewer';
   sharedWithMe: boolean;
   title: string;
@@ -85,6 +86,7 @@ export const createProjectThunk = createAsyncThunk<
     id: createLocalUuidV4(),
     workspaceId: 'local-workspace',
     ownerId: user?.id ?? 'local-user',
+    ownerAvatarUrl: null,
     accessRole: 'admin',
     sharedWithMe: false,
     title,

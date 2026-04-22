@@ -1,9 +1,10 @@
+import { Image } from 'expo-image';
 import { Link, useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import {
-  selectProjectsWithExperimentCounts,
+  selectHomeProjectSections,
   selectRecentExperimentsForHome,
 } from '@/dashboard/selectors/home-dashboard';
 import { selectActivityFeedItems, selectActivityFeedLoading } from '@/dashboard/state/activityFeedSlice';
@@ -83,7 +84,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
-  const projectsWithCounts = useAppSelector(selectProjectsWithExperimentCounts);
+  const { myProjects, sharedProjects } = useAppSelector(selectHomeProjectSections);
   const recentRows = useAppSelector(selectRecentExperimentsForHome);
   const activityFeed = useAppSelector(selectActivityFeedItems);
   const isActivityLoading = useAppSelector(selectActivityFeedLoading);
@@ -98,7 +99,7 @@ export default function HomeScreen() {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (!normalizedQuery) return [];
 
-    const projectMatches = projectsWithCounts
+    const projectMatches = [...myProjects, ...sharedProjects]
       .filter((project) => project.title.toLowerCase().includes(normalizedQuery))
       .map((project) => ({
         id: `project-${project.id}`,
@@ -117,7 +118,7 @@ export default function HomeScreen() {
       }));
 
     return [...projectMatches, ...experimentMatches].slice(0, 8);
-  }, [searchQuery, projectsWithCounts, recentRows]);
+  }, [searchQuery, myProjects, sharedProjects, recentRows]);
 
   const openCreateProject = () => {
     setIsCreateSheetOpen(false);
@@ -125,7 +126,7 @@ export default function HomeScreen() {
   };
 
   const openCreateExperimentForRecentProject = () => {
-    const target = projectsWithCounts[0];
+    const target = myProjects[0] ?? sharedProjects[0];
     if (!target) {
       setIsCreateSheetOpen(false);
       return;
@@ -182,7 +183,7 @@ export default function HomeScreen() {
 
         <View style={styles.sectionHeader}>
           <ThemedText type="subtitle">Projects</ThemedText>
-          {projectsWithCounts.length > 0 ? (
+          {myProjects.length + sharedProjects.length > 0 ? (
             <Link href={'/project' as Href}>
               <ThemedText style={{ color: themeColors.primary }}>See all</ThemedText>
             </Link>
@@ -190,35 +191,103 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.sectionBody}>
-          {projectsWithCounts.length === 0 ? (
+          {myProjects.length + sharedProjects.length === 0 ? (
             <HomeEmptyProjects onCreateProject={openCreateProject} />
           ) : (
-            projectsWithCounts.map((project) => {
-              const chip = projectChipColors(themeColors, project.status);
-              return (
-                <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
-                  <Pressable
-                    style={[
-                      styles.projectCard,
-                      {
-                        borderColor: themeColors.border,
-                        backgroundColor: themeColors.surfaceElevated,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open project ${project.title}`}>
-                    <View style={styles.projectCardTop}>
-                      <ThemedText type="defaultSemiBold" style={styles.projectTitle} numberOfLines={2}>
-                        {project.title}
-                      </ThemedText>
-                      <View style={[styles.statusChip, { borderColor: chip.border, backgroundColor: chip.background }]}>
-                        <ThemedText style={{ fontSize: 12, fontWeight: '600' }}>
-                          {formatProjectStatusLabel(project.status)}
+            <>
+              <ThemedText type="defaultSemiBold">My Projects</ThemedText>
+              {myProjects.length === 0 ? (
+                <ThemedText style={{ color: themeColors.mutedText }}>
+                  No personal projects yet.
+                </ThemedText>
+              ) : null}
+              {myProjects.map((project) => {
+                const chip = projectChipColors(themeColors, project.status);
+                return (
+                  <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
+                    <Pressable
+                      style={[
+                        styles.projectCard,
+                        {
+                          borderColor: themeColors.border,
+                          backgroundColor: themeColors.surfaceElevated,
+                        },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Open project ${project.title}`}>
+                      <View style={styles.projectCardTop}>
+                        <ThemedText type="defaultSemiBold" style={styles.projectTitle} numberOfLines={2}>
+                          {project.title}
+                        </ThemedText>
+                        <View style={[styles.statusChip, { borderColor: chip.border, backgroundColor: chip.background }]}>
+                          <ThemedText style={{ fontSize: 12, fontWeight: '600' }}>
+                            {formatProjectStatusLabel(project.status)}
+                          </ThemedText>
+                        </View>
+                      </View>
+                      <View style={styles.projectMeta}>
+                        <ThemedText style={{ color: themeColors.mutedText }}>
+                          {project.experimentCount} experiment{project.experimentCount === 1 ? '' : 's'}
+                        </ThemedText>
+                        <ThemedText style={{ color: themeColors.subtleText }}>
+                          Updated {new Date(project.updatedAt).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
                         </ThemedText>
                       </View>
-                    </View>
-                    <View style={styles.projectMeta}>
-                      {project.sharedWithMe ? (
+                    </Pressable>
+                  </Link>
+                );
+              })}
+
+              <ThemedText type="defaultSemiBold" style={styles.subsectionLabel}>
+                Shared with Me
+              </ThemedText>
+              {sharedProjects.length === 0 ? (
+                <ThemedText style={{ color: themeColors.mutedText }}>
+                  No shared projects yet.
+                </ThemedText>
+              ) : null}
+              {sharedProjects.map((project) => {
+                const chip = projectChipColors(themeColors, project.status);
+                return (
+                  <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
+                    <Pressable
+                      style={[
+                        styles.projectCard,
+                        {
+                          borderColor: themeColors.border,
+                          backgroundColor: themeColors.surfaceElevated,
+                        },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Open shared project ${project.title}`}>
+                      <View style={styles.projectCardTop}>
+                        <View style={styles.sharedTitleRow}>
+                          {project.ownerAvatarUrl ? (
+                            <Image source={{ uri: project.ownerAvatarUrl }} style={styles.ownerAvatar} contentFit="cover" />
+                          ) : (
+                            <View
+                              style={[
+                                styles.ownerAvatarFallback,
+                                { borderColor: themeColors.border, backgroundColor: themeColors.surface },
+                              ]}>
+                              <IconSymbol name="person.crop.circle.fill" size={14} color={themeColors.mutedText} />
+                            </View>
+                          )}
+                          <ThemedText type="defaultSemiBold" style={styles.projectTitle} numberOfLines={2}>
+                            {project.title}
+                          </ThemedText>
+                        </View>
+                        <View style={[styles.statusChip, { borderColor: chip.border, backgroundColor: chip.background }]}>
+                          <ThemedText style={{ fontSize: 12, fontWeight: '600' }}>
+                            {formatProjectStatusLabel(project.status)}
+                          </ThemedText>
+                        </View>
+                      </View>
+                      <View style={styles.projectMeta}>
                         <View
                           style={[
                             styles.sharedBadge,
@@ -226,22 +295,15 @@ export default function HomeScreen() {
                           ]}>
                           <ThemedText style={styles.sharedBadgeText}>Shared with me</ThemedText>
                         </View>
-                      ) : null}
-                      <ThemedText style={{ color: themeColors.mutedText }}>
-                        {project.experimentCount} experiment{project.experimentCount === 1 ? '' : 's'}
-                      </ThemedText>
-                      <ThemedText style={{ color: themeColors.subtleText }}>
-                        Updated {new Date(project.updatedAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </ThemedText>
-                    </View>
-                  </Pressable>
-                </Link>
-              );
-            })
+                        <ThemedText style={{ color: themeColors.mutedText }}>
+                          {project.experimentCount} experiment{project.experimentCount === 1 ? '' : 's'}
+                        </ThemedText>
+                      </View>
+                    </Pressable>
+                  </Link>
+                );
+              })}
+            </>
           )}
         </View>
 
@@ -350,8 +412,8 @@ export default function HomeScreen() {
       ) : null}
       <HomeFabCreateSheet
         isOpen={isCreateSheetOpen}
-        hasProjects={projectsWithCounts.length > 0}
-        recentProjectTitle={projectsWithCounts[0]?.title ?? null}
+        hasProjects={myProjects.length + sharedProjects.length > 0}
+        recentProjectTitle={(myProjects[0] ?? sharedProjects[0])?.title ?? null}
         onCreateProject={openCreateProject}
         onCreateExperiment={openCreateExperimentForRecentProject}
         onClose={() => setIsCreateSheetOpen(false)}
@@ -432,6 +494,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 8,
+  },
+  subsectionLabel: { marginTop: 8 },
+  sharedTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
+  ownerAvatar: { width: 24, height: 24, borderRadius: 12 },
+  ownerAvatarFallback: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sharedBadge: {
     borderWidth: 1,

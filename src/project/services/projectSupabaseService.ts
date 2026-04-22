@@ -14,6 +14,7 @@ function mapRowToProject(row: Database['public']['Tables']['projects']['Row']): 
     id: row.id,
     workspaceId: row.workspace_id,
     ownerId: row.owner_id,
+    ownerAvatarUrl: null,
     accessRole: 'admin',
     sharedWithMe: false,
     title: row.title,
@@ -83,6 +84,19 @@ export async function fetchProjectsForUser(
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
+  const ownerIds = Array.from(new Set((data ?? []).map((row) => row.owner_id)));
+  const { data: profileRows, error: profileError } = await sb
+    .from('profiles')
+    .select('user_id, avatar_url')
+    .in('user_id', ownerIds);
+  if (profileError) throw profileError;
+  const avatarByUserId = new Map(
+    (profileRows ?? []).map((row: { user_id: string; avatar_url: string | null }) => [
+      row.user_id,
+      row.avatar_url,
+    ]),
+  );
+
   return (data ?? []).map((row) => {
     const mapped = mapRowToProject(row);
     const role = roleByWorkspace.get(row.workspace_id) ?? 'viewer';
@@ -90,6 +104,7 @@ export async function fetchProjectsForUser(
       ...mapped,
       accessRole: role,
       sharedWithMe: row.owner_id !== userId,
+      ownerAvatarUrl: avatarByUserId.get(row.owner_id) ?? null,
     };
   });
 }
@@ -123,7 +138,7 @@ export async function insertProjectForUser(
   const { data, error } = await sb.from('projects').insert(insert).select('*').single();
   if (error) throw error;
   const project = mapRowToProject(data);
-  return { ...project, accessRole: 'admin', sharedWithMe: false };
+  return { ...project, accessRole: 'admin', sharedWithMe: false, ownerAvatarUrl: null };
 }
 
 export async function updateProjectForUser(

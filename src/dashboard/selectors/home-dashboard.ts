@@ -5,6 +5,10 @@ import type { Project } from '@/project/state/projectSlice';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type ProjectCardModel = Project & { experimentCount: number };
+export type HomeProjectSections = {
+  myProjects: ProjectCardModel[];
+  sharedProjects: ProjectCardModel[];
+};
 
 export type RecentExperimentRow = {
   experiment: Experiment;
@@ -23,6 +27,14 @@ export const selectProjectsWithExperimentCounts = createSelector(
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .map((p) => ({ ...p, experimentCount: counts.get(p.id) ?? 0 }));
   },
+);
+
+export const selectHomeProjectSections = createSelector(
+  [selectProjectsWithExperimentCounts],
+  (projects): HomeProjectSections => ({
+    myProjects: projects.filter((project) => !project.sharedWithMe),
+    sharedProjects: projects.filter((project) => project.sharedWithMe),
+  }),
 );
 
 /** Last five experiments globally, with project title for the feed. */
