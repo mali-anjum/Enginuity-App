@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/sharedModules/state/store';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
-type Toast = { id: string; message: string; variant?: 'info' | 'success' | 'warning' | 'error' };
+export type Toast = { id: string; message: string; variant?: 'info' | 'success' | 'warning' | 'error' };
 
 type UiState = {
   theme: ThemeMode;
