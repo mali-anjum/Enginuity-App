@@ -1,10 +1,11 @@
-import { Link, type Href } from 'expo-router';
+import { Link, useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ListEmptyState } from '@/common/organisms/list-empty-state';
 import {
   selectFilteredProjects,
   selectProjectFilter,
@@ -15,6 +16,7 @@ import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 const FILTERS = ['active', 'completed', 'archived', 'favourites'] as const;
 
 export default function ProjectListScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
@@ -51,9 +53,13 @@ export default function ProjectListScreen() {
         </View>
         <View style={styles.list}>
           {projects.length === 0 ? (
-            <ThemedText style={{ color: themeColors.mutedText }}>
-              No projects yet for this filter.
-            </ThemedText>
+            <ListEmptyState
+              icon="folder.badge.plus"
+              headline="Your first project is one tap away"
+              body="Organise your engineering work and track experiments in one place."
+              ctaLabel="Create Project"
+              onPressCta={() => router.push('/project/create' as Href)}
+            />
           ) : (
             projects.map((project) => (
               <Link key={project.id} href={`/project/${project.id}` as Href} asChild>

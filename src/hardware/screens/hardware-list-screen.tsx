@@ -1,10 +1,11 @@
-import { Link, type Href } from 'expo-router';
+import { Link, useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ListEmptyState } from '@/common/organisms/list-empty-state';
 import { HARDWARE_CATEGORIES } from '@/hardware/constants';
 import type { HardwareCategory } from '@/hardware/constants';
 import {
@@ -17,6 +18,7 @@ import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 const FILTER_OPTIONS: ('All' | HardwareCategory)[] = ['All', ...HARDWARE_CATEGORIES];
 
 export default function HardwareListScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
@@ -63,7 +65,13 @@ export default function HardwareListScreen() {
 
         <View style={styles.list}>
           {filteredItems.length === 0 ? (
-            <ThemedText style={{ color: themeColors.mutedText }}>No hardware found.</ThemedText>
+            <ListEmptyState
+              icon="cpu.fill"
+              headline="Build your hardware library"
+              body="Save boards, sensors, and modules so every project can reuse proven components."
+              ctaLabel="Add Hardware"
+              onPressCta={() => router.push('/hardware/add' as Href)}
+            />
           ) : (
             filteredItems.map((item) => (
               <Link key={item.id} href={`/hardware/${item.id}` as Href} asChild>
