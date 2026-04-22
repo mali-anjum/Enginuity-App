@@ -2,6 +2,7 @@ import { deleteAccountThunk, fetchProfileThunk, forgotPasswordThunk, loginThunk,
 import { fetchActivityFeedThunk } from '@/dashboard/state/activityFeedSlice';
 import { createExperimentThunk, deleteExperimentThunk, fetchExperimentsThunk, syncPendingExperimentsThunk, updateExperimentThunk, uploadAttachmentThunk } from '@/experiment/state/experimentSlice';
 import { addHardwareThunk, deleteHardwareThunk, fetchHardwareThunk, updateHardwareThunk } from '@/hardware/state/hardwareSlice';
+import { fetchSubscriptionStatusThunk, openCheckoutThunk } from '@/monetization/state/monetizationSlice';
 import { createCustomTagThunk, createNoteThunk, deleteNoteThunk, fetchNotesThunk, fetchTagCountsThunk, searchNotesThunk, toggleNoteFavoriteThunk, updateNoteThunk } from '@/notes/state/notesSlice';
 import { flushOnboardingDraftThunk } from '@/onboarding/thunks/flushOnboardingDraftThunk';
 import { createProjectThunk, deleteProjectThunk, fetchProjectsThunk, syncPendingProjectsThunk, toggleFavouriteThunk, toggleProjectStatusThunk, updateProjectThunk } from '@/project/state/projectSlice';
@@ -49,6 +50,8 @@ const RETRYABLE_THUNKS: Record<string, RetryThunkCreator> = {
   [addHardwareThunk.typePrefix]: addHardwareThunk,
   [updateHardwareThunk.typePrefix]: updateHardwareThunk,
   [deleteHardwareThunk.typePrefix]: deleteHardwareThunk,
+  [fetchSubscriptionStatusThunk.typePrefix]: fetchSubscriptionStatusThunk,
+  [openCheckoutThunk.typePrefix]: openCheckoutThunk,
   [fetchNotificationSettingsThunk.typePrefix]: fetchNotificationSettingsThunk,
   [saveNotificationSettingsThunk.typePrefix]: saveNotificationSettingsThunk,
   [fetchStorageUsageThunk.typePrefix]: fetchStorageUsageThunk,
@@ -63,6 +66,7 @@ const AUTO_RETRY_PREFIXES = new Set<string>([
   fetchExperimentsThunk.typePrefix,
   fetchNotesThunk.typePrefix,
   fetchHardwareThunk.typePrefix,
+  fetchSubscriptionStatusThunk.typePrefix,
   fetchProfileThunk.typePrefix,
   fetchTagCountsThunk.typePrefix,
   fetchNotificationSettingsThunk.typePrefix,
