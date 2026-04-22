@@ -6,13 +6,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-
-function parseCsvText(csvText: string): string[][] {
-  return csvText
-    .split(/\r?\n/)
-    .filter((line) => line.trim().length > 0)
-    .map((line) => line.split(',').map((cell) => cell.trim()));
-}
+import { parseCsvPreviewRows } from '@/experiment/utils/csvPreview';
 
 export default function CsvDataPreviewScreen() {
   const { url, name } = useLocalSearchParams<{ url: string; name?: string }>();
@@ -33,12 +27,9 @@ export default function CsvDataPreviewScreen() {
       try {
         const response = await fetch(decodedUrl);
         const text = await response.text();
-        const parsedRows = parseCsvText(text);
+        const parsedRows = parseCsvPreviewRows(text, 20);
         if (cancelled) return;
-        const limited = parsedRows
-          .slice(0, 20)
-          .map((row) => row.map((cell) => String(cell ?? '')));
-        setRows(limited);
+        setRows(parsedRows);
         setIsLoading(false);
       } catch (err) {
         if (cancelled) return;

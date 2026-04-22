@@ -11,13 +11,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-
-function parseCsvText(csvText: string): string[][] {
-  return csvText
-    .split(/\r?\n/)
-    .filter((line) => line.trim().length > 0)
-    .map((line) => line.split(',').map((cell) => cell.trim()));
-}
+import { parseCsvPreviewRows } from '@/experiment/utils/csvPreview';
 
 function inferAttachmentKind(url: string, type: string): 'image' | 'csv' | 'pdf' | 'unknown' {
   const lowerType = type.toLowerCase();
@@ -53,7 +47,7 @@ export default function AttachmentViewerScreen() {
       try {
         const response = await fetch(decodedUrl);
         const text = await response.text();
-        const parsedRows = parseCsvText(text).slice(0, 20);
+        const parsedRows = parseCsvPreviewRows(text, 20);
         if (cancelled) return;
         setRows(parsedRows);
         setIsLoadingCsv(false);
