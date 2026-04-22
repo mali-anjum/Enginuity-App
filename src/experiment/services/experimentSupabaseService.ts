@@ -27,6 +27,7 @@ function mapRowToExperiment(
       .map((item) => item.url),
     attachments,
     tags: [],
+    pendingSync: false,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
