@@ -194,6 +194,19 @@ class OAuthAuthService {
       throw new Error(error.message);
     }
   }
+
+  async deactivateAccount(userId: string): Promise<void> {
+    const { error } = await withSupabaseClient(async (client) => {
+      return await client
+        .from('users')
+        .update({ is_active: false } as never)
+        .eq('id', userId);
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+    await this.signOut();
+  }
 }
 
 export const oauthAuthService = new OAuthAuthService();

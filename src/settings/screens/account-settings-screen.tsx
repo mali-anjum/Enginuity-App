@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import {
+  deleteAccountThunk,
   logoutThunk,
   resetPasswordThunk,
   selectAuthError,
@@ -46,13 +47,18 @@ export default function AccountSettingsScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete account',
-      'Permanent deletion must be processed on the server. You can sign out now; contact support to remove all data.',
+      'This will deactivate your account and sign you out. Continue?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Sign out',
+          text: 'Delete',
           style: 'destructive',
-          onPress: () => void handleSignOut(),
+          onPress: async () => {
+            const action = await dispatch(deleteAccountThunk());
+            if (deleteAccountThunk.fulfilled.match(action)) {
+              router.replace('/auth/login' as Href);
+            }
+          },
         },
       ],
     );
