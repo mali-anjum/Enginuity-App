@@ -8,9 +8,14 @@ type ProfileRow = {
   discipline: AuthDiscipline | null;
   avatar_url: string | null;
   bio: string | null;
+  institution: string | null;
+  storage_used_mb: number | null;
 };
 
-type PersistedProfile = Pick<AuthUser, 'name' | 'discipline' | 'avatarUrl' | 'bio'>;
+type PersistedProfile = Pick<
+  AuthUser,
+  'name' | 'discipline' | 'avatarUrl' | 'bio' | 'institution' | 'storageUsedMb'
+>;
 
 function mapProfileToUserProfile(profile: ProfileRow | null, fallbackName: string): PersistedProfile {
   return {
@@ -18,6 +23,8 @@ function mapProfileToUserProfile(profile: ProfileRow | null, fallbackName: strin
     discipline: profile?.discipline ?? null,
     avatarUrl: profile?.avatar_url ?? null,
     bio: profile?.bio ?? '',
+    institution: profile?.institution ?? '',
+    storageUsedMb: profile?.storage_used_mb ?? 0,
   };
 }
 
@@ -25,7 +32,7 @@ export async function fetchProfileByUserId(userId: string, fallbackName: string)
   const { data, error } = await withSupabaseClient((client) =>
     client
       .from('profiles')
-      .select('full_name, discipline, avatar_url, bio')
+      .select('full_name, discipline, avatar_url, bio, institution, storage_used_mb')
       .eq('user_id', userId)
       .maybeSingle(),
   );
@@ -39,7 +46,7 @@ export async function fetchProfileByUserId(userId: string, fallbackName: string)
 
 export async function saveProfileByUserId(
   userId: string,
-  payload: { name: string; discipline: AuthDiscipline | null; bio: string },
+  payload: { name: string; discipline: AuthDiscipline | null; bio: string; institution: string },
 ) {
   const { error } = await withSupabaseClient((client) =>
     client
@@ -50,6 +57,7 @@ export async function saveProfileByUserId(
           full_name: payload.name,
           discipline: payload.discipline,
           bio: payload.bio,
+          institution: payload.institution || null,
         },
         { onConflict: 'user_id' },
       ),

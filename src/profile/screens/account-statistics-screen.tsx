@@ -9,6 +9,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { useAppSelector } from '@/sharedModules/state/hooks';
+import { selectUser } from '@/auth/state/authSlice';
 
 export default function AccountStatisticsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -17,6 +18,7 @@ export default function AccountStatisticsScreen() {
   const experiments = useAppSelector(selectAllExperiments);
   const notes = useAppSelector(selectAllNotes);
   const hardware = useAppSelector(selectAllHardware);
+  const user = useAppSelector(selectUser);
 
   return (
     <ThemedView style={styles.screen}>
@@ -27,6 +29,7 @@ export default function AccountStatisticsScreen() {
         <StatCard label="Total Experiments" value={experiments.length} />
         <StatCard label="Total Notes" value={notes.length} />
         <StatCard label="Total Hardware Items" value={hardware.length} />
+        <StatCard label="Storage Used (MB)" value={Number((user?.storageUsedMb ?? 0).toFixed(2))} />
 
         <View style={[styles.smallCard, { borderColor: themeColors.border }]}>
           <ThemedText type="defaultSemiBold">Activity breakdown</ThemedText>

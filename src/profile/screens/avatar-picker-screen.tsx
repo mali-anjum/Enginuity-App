@@ -28,8 +28,16 @@ export default function AvatarPickerScreen() {
 
     const result =
       source === 'camera'
-        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 })
-        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
+        ? await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          });
 
     if (result.canceled || !result.assets[0]?.uri) {
       return;

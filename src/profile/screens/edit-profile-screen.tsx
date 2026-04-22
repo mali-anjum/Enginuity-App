@@ -10,13 +10,24 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const DISCIPLINES: AuthDiscipline[] = [
-  'mechanical',
   'electrical',
-  'civil',
+  'mechanical',
   'software',
-  'chemical',
+  'civil',
   'other',
 ];
+
+function disciplineLabel(value: AuthDiscipline): string {
+  const labels: Record<AuthDiscipline, string> = {
+    electrical: 'Electronics',
+    mechanical: 'Robotics',
+    software: 'CS',
+    civil: 'Physics',
+    chemical: 'Chemical',
+    other: 'Other',
+  };
+  return labels[value];
+}
 
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -28,11 +39,13 @@ export default function EditProfileScreen() {
   const [name, setName] = useState('');
   const [discipline, setDiscipline] = useState<AuthDiscipline | null>(null);
   const [bio, setBio] = useState('');
+  const [institution, setInstitution] = useState('');
 
   useEffect(() => {
     setName(user?.name ?? '');
     setDiscipline(user?.discipline ?? null);
     setBio(user?.bio ?? '');
+    setInstitution(user?.institution ?? '');
   }, [user]);
 
   return (
@@ -44,6 +57,13 @@ export default function EditProfileScreen() {
           value={name}
           onChangeText={setName}
           placeholder="Full name"
+          placeholderTextColor={themeColors.mutedText}
+          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
+        />
+        <TextInput
+          value={institution}
+          onChangeText={setInstitution}
+          placeholder="Institution"
           placeholderTextColor={themeColors.mutedText}
           style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
@@ -71,7 +91,7 @@ export default function EditProfileScreen() {
                   },
                 ]}
                 onPress={() => setDiscipline(option)}>
-                <ThemedText>{option}</ThemedText>
+                <ThemedText>{disciplineLabel(option)}</ThemedText>
               </Pressable>
             );
           })}
@@ -81,7 +101,14 @@ export default function EditProfileScreen() {
           style={[styles.saveBtn, { backgroundColor: themeColors.primary }]}
           onPress={() => {
             if (!name.trim()) return;
-            void dispatch(updateProfileThunk({ name: name.trim(), discipline, bio: bio.trim() }));
+            void dispatch(
+              updateProfileThunk({
+                name: name.trim(),
+                discipline,
+                bio: bio.trim(),
+                institution: institution.trim(),
+              }),
+            );
             router.replace('/profile' as Href);
           }}>
           <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>

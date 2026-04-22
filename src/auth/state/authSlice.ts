@@ -18,6 +18,8 @@ export type AuthUser = {
   discipline: AuthDiscipline | null;
   avatarUrl: string | null;
   bio: string;
+  institution: string;
+  storageUsedMb: number;
 };
 
 export type AuthSession = {
@@ -43,7 +45,7 @@ const initialState: AuthState = {
 type LoginPayload = { provider: OAuthProviderKey };
 type SignupPayload = { email: string; password: string; name: string; discipline?: AuthDiscipline | null };
 type SessionPayload = { token: string; expiresAt: number | null };
-type ProfilePayload = Pick<AuthUser, 'name' | 'discipline' | 'bio'>;
+type ProfilePayload = Pick<AuthUser, 'name' | 'discipline' | 'bio' | 'institution'>;
 type AvatarPayload = { localUri: string };
 type PasswordLoginPayload = { email: string; password: string };
 type ForgotPasswordPayload = { email: string };
@@ -138,9 +140,13 @@ export const refreshSessionThunk = createAsyncThunk<AuthSession, SessionPayload,
   },
 );
 
-export const updateProfileThunk = createAsyncThunk<AuthUser, ProfilePayload, { state: RootState; rejectValue: string }>(
+export const updateProfileThunk = createAsyncThunk<
+  AuthUser,
+  ProfilePayload,
+  { state: RootState; rejectValue: string }
+>(
   'auth/updateProfileThunk',
-  async ({ name, discipline, bio }, { getState, rejectWithValue }) => {
+  async ({ name, discipline, bio, institution }, { getState, rejectWithValue }) => {
     try {
       const currentUser = getState().auth.user;
       if (!currentUser) {
@@ -150,8 +156,15 @@ export const updateProfileThunk = createAsyncThunk<AuthUser, ProfilePayload, { s
         name: name.trim(),
         discipline,
         bio: bio.trim(),
+        institution: institution.trim(),
       });
-      return { ...currentUser, name: name.trim(), discipline, bio: bio.trim() };
+      return {
+        ...currentUser,
+        name: name.trim(),
+        discipline,
+        bio: bio.trim(),
+        institution: institution.trim(),
+      };
     } catch (error: unknown) {
       return rejectWithValue(toError(error).message || 'Profile update failed');
     }
@@ -173,6 +186,8 @@ export const fetchProfileThunk = createAsyncThunk<AuthUser, void, { state: RootS
         discipline: profile.discipline,
         avatarUrl: profile.avatarUrl,
         bio: profile.bio,
+        institution: profile.institution,
+        storageUsedMb: profile.storageUsedMb,
       };
     } catch (error: unknown) {
       return rejectWithValue(toError(error).message || 'Could not load profile');
