@@ -15,6 +15,8 @@ export type SubscriptionStatusResult = {
   isPro: boolean;
 };
 
+export type CheckoutBillingCycle = 'monthly' | 'annual';
+
 function normalizePlan(value: string | null | undefined): SubscriptionPlan {
   const plan = (value ?? '').toLowerCase();
   if (plan.includes('year')) return 'pro_yearly';
@@ -51,10 +53,13 @@ export async function fetchSubscriptionStatusForUser(
   return { plan, isPro: active && plan !== 'free' };
 }
 
-export async function openStripeCheckout(client: SupabaseClient): Promise<void> {
+export async function openStripeCheckout(
+  client: SupabaseClient,
+  billingCycle: CheckoutBillingCycle = 'monthly',
+): Promise<void> {
   const sb = unwrapSupabaseClient(client);
   const { data, error } = await sb.functions.invoke('create-stripe-checkout', {
-    body: { source: 'enginuity-paywall' },
+    body: { source: 'enginuity-paywall', billingCycle },
   });
 
   if (error) {
@@ -67,4 +72,15 @@ export async function openStripeCheckout(client: SupabaseClient): Promise<void> 
   }
 
   await WebBrowser.openBrowserAsync(checkoutUrl);
+}
+
+export async function cancelStripeSubscription(client: SupabaseClient): Promise<void> {
+  const sb = unwrapSupabaseClient(client);
+  const { error } = await sb.functions.invoke('cancel-stripe-subscription', {
+    body: { source: 'enginuity-account-settings' },
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

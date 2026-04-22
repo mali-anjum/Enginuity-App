@@ -10,6 +10,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
 import {
+  fetchSubscriptionStatusThunk,
   openCheckoutThunk,
   selectCanCreateExperiment,
   selectCanUseStorage,
@@ -252,8 +253,12 @@ export default function CreateExperimentScreen() {
         description={paywallDescription}
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
+        onViewPlans={() => router.push('/settings/upgrade')}
         onUpgrade={() => {
-          void dispatch(openCheckoutThunk());
+          void (async () => {
+            await dispatch(openCheckoutThunk());
+            await dispatch(fetchSubscriptionStatusThunk());
+          })();
         }}
       />
     </ThemedView>

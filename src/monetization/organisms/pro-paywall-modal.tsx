@@ -10,6 +10,7 @@ type Props = {
   description: string;
   isUpgradeLoading?: boolean;
   onClose: () => void;
+  onViewPlans?: () => void;
   onUpgrade: () => void;
 };
 
@@ -19,6 +20,7 @@ export function ProPaywallModal({
   description,
   isUpgradeLoading = false,
   onClose,
+  onViewPlans,
   onUpgrade,
 }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
@@ -49,6 +51,16 @@ export function ProPaywallModal({
               ]}>
               <ThemedText>Not now</ThemedText>
             </Pressable>
+            {onViewPlans ? (
+              <Pressable
+                onPress={onViewPlans}
+                style={[
+                  styles.secondaryButton,
+                  { borderColor: themeColors.border, backgroundColor: themeColors.surface },
+                ]}>
+                <ThemedText>See plans</ThemedText>
+              </Pressable>
+            ) : null}
             <Pressable
               onPress={onUpgrade}
               style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}>
