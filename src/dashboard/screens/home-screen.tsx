@@ -19,6 +19,7 @@ import { useAppSelector } from '@/sharedModules/state/hooks';
 
 import { HomeFabCreateSheet } from '../organisms/home-fab-create-sheet';
 import { HomeQuickSearchOverlay } from '../organisms/home-quick-search-overlay';
+import { HomeFabGuidanceTooltip } from '../molecules/home-fab-guidance-tooltip';
 
 function formatProjectStatusLabel(status: Project['status']): string {
   return status.charAt(0).toUpperCase() + status.slice(1);
@@ -47,6 +48,7 @@ export default function HomeScreen() {
   const projectsWithCounts = useAppSelector(selectProjectsWithExperimentCounts);
   const recentRows = useAppSelector(selectRecentExperimentsForHome);
   const projectStats = useAppSelector(selectProjectStats);
+  const hasCompletedOnboarding = useAppSelector((state) => state.onboarding.hasCompletedOnboarding);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
@@ -91,6 +93,13 @@ export default function HomeScreen() {
     setIsCreateSheetOpen(false);
     router.push(`/experiment/create?projectId=${encodeURIComponent(target.id)}` as Href);
   };
+
+  const fabTooltipMessage = useMemo(() => {
+    if (!hasCompletedOnboarding) return null;
+    if (projectStats.total === 0) return 'Create your first project here.';
+    if (recentRows.length === 0) return 'Add an experiment to your project.';
+    return null;
+  }, [hasCompletedOnboarding, projectStats.total, recentRows.length]);
 
   return (
     <ThemedView style={styles.screen}>
@@ -243,6 +252,7 @@ export default function HomeScreen() {
           +
         </ThemedText>
       </Pressable>
+      {fabTooltipMessage ? <HomeFabGuidanceTooltip message={fabTooltipMessage} /> : null}
 
       <HomeQuickSearchOverlay
         isOpen={isSearchOpen}
