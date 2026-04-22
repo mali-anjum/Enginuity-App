@@ -218,6 +218,15 @@ export default function HomeScreen() {
                       </View>
                     </View>
                     <View style={styles.projectMeta}>
+                      {project.sharedWithMe ? (
+                        <View
+                          style={[
+                            styles.sharedBadge,
+                            { borderColor: themeColors.accentBorder, backgroundColor: themeColors.accentSoft },
+                          ]}>
+                          <ThemedText style={styles.sharedBadgeText}>Shared with me</ThemedText>
+                        </View>
+                      ) : null}
                       <ThemedText style={{ color: themeColors.mutedText }}>
                         {project.experimentCount} experiment{project.experimentCount === 1 ? '' : 's'}
                       </ThemedText>
@@ -424,6 +433,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
+  sharedBadge: {
+    borderWidth: 1,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  sharedBadgeText: { fontSize: 11, fontWeight: '600' },
   card: {
     borderWidth: 1,
     borderRadius: 12,
