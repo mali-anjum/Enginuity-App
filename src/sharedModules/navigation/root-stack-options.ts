@@ -62,6 +62,7 @@ export const ROOT_STACK_SCREENS = {
     name: 'settings/storage-sync',
     options: { title: 'Storage & sync', headerShown: true },
   },
+  settingsUpgrade: { name: 'settings/upgrade', options: { title: 'Upgrade', headerShown: true } },
   settingsAccount: { name: 'settings/account', options: { title: 'Account', headerShown: true } },
   settingsAbout: { name: 'settings/about', options: { title: 'About', headerShown: true } },
   authSplash: { name: 'auth/splash', options: { headerShown: false } },

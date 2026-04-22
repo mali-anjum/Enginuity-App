@@ -98,6 +98,11 @@ export default function ProfileHomeScreen() {
               <ThemedText>Account Statistics</ThemedText>
             </Pressable>
           </Link>
+          <Link href={'/settings/upgrade' as Href} asChild>
+            <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
+              <ThemedText>Upgrade to Pro</ThemedText>
+            </Pressable>
+          </Link>
         </View>
       </ScrollView>
     </ThemedView>

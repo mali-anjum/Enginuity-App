@@ -37,6 +37,11 @@ const LINKS: SettingsLink[] = [
     href: '/settings/storage-sync' as Href,
   },
   {
+    title: 'Upgrade',
+    subtitle: 'Free vs Pro, pricing, and checkout',
+    href: '/settings/upgrade' as Href,
+  },
+  {
     title: 'Account',
     subtitle: 'Password, sign out, delete account',
     href: '/settings/account' as Href,

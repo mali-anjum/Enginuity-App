@@ -6,6 +6,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
 import {
+  fetchSubscriptionStatusThunk,
   openCheckoutThunk,
   selectCanCreateProject,
   selectIsCheckoutLoading,
@@ -65,8 +66,12 @@ export default function CreateProjectScreen() {
         description="Upgrade to Pro for unlimited projects."
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
+        onViewPlans={() => router.push('/settings/upgrade')}
         onUpgrade={() => {
-          void dispatch(openCheckoutThunk());
+          void (async () => {
+            await dispatch(openCheckoutThunk());
+            await dispatch(fetchSubscriptionStatusThunk());
+          })();
         }}
       />
     </ThemedView>

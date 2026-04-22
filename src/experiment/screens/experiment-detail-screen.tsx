@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Link, useLocalSearchParams, type Href } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -20,6 +20,7 @@ import { selectExperimentById, updateExperimentThunk } from '@/experiment/state/
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
 import {
+  fetchSubscriptionStatusThunk,
   openCheckoutThunk,
   selectCanUseCsvCharts,
   selectCanUsePdfExport,
@@ -73,6 +74,7 @@ export default function ExperimentDetailScreen() {
   const linkedNotes = useAppSelector(selectNotesByExperiment(experimentId ?? ''));
   const project = useAppSelector(selectProjectById(experiment?.projectId ?? ''));
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -374,8 +376,12 @@ export default function ExperimentDetailScreen() {
         description={paywallDescription}
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
+        onViewPlans={() => router.push('/settings/upgrade')}
         onUpgrade={() => {
-          void dispatch(openCheckoutThunk());
+          void (async () => {
+            await dispatch(openCheckoutThunk());
+            await dispatch(fetchSubscriptionStatusThunk());
+          })();
         }}
       />
     </ThemedView>

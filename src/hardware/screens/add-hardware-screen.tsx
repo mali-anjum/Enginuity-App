@@ -8,6 +8,7 @@ import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hard
 import { addHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
 import {
+  fetchSubscriptionStatusThunk,
   openCheckoutThunk,
   selectCanCreateHardware,
   selectIsCheckoutLoading,
@@ -61,8 +62,12 @@ export default function AddHardwareScreen() {
         description="Upgrade to Pro for unlimited hardware."
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
+        onViewPlans={() => router.push('/settings/upgrade')}
         onUpgrade={() => {
-          void dispatch(openCheckoutThunk());
+          void (async () => {
+            await dispatch(openCheckoutThunk());
+            await dispatch(fetchSubscriptionStatusThunk());
+          })();
         }}
       />
     </ThemedView>

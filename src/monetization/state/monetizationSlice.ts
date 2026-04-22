@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { FREE_PLAN_LIMITS, type SubscriptionPlan } from '@/monetization/constants';
 import {
+  cancelStripeSubscription,
+  type CheckoutBillingCycle,
   fetchSubscriptionStatusForUser,
   openStripeCheckout,
 } from '@/monetization/services/subscriptionSupabaseService';
@@ -13,6 +15,7 @@ type MonetizationState = {
   isPro: boolean;
   isLoading: boolean;
   isCheckoutLoading: boolean;
+  isCancelLoading: boolean;
   error: string | null;
 };
 
@@ -21,6 +24,7 @@ const initialState: MonetizationState = {
   isPro: false,
   isLoading: false,
   isCheckoutLoading: false,
+  isCancelLoading: false,
   error: null,
 };
 
@@ -36,10 +40,17 @@ export const fetchSubscriptionStatusThunk = createAsyncThunk<
   });
 });
 
-export const openCheckoutThunk = createAsyncThunk<void, void, { state: RootState }>(
+export const openCheckoutThunk = createAsyncThunk<void, CheckoutBillingCycle | undefined, { state: RootState }>(
   'monetization/openCheckoutThunk',
+  async (billingCycle) => {
+    await withSupabaseClient((client) => openStripeCheckout(client, billingCycle));
+  },
+);
+
+export const cancelSubscriptionThunk = createAsyncThunk<void, void, { state: RootState }>(
+  'monetization/cancelSubscriptionThunk',
   async () => {
-    await withSupabaseClient((client) => openStripeCheckout(client));
+    await withSupabaseClient((client) => cancelStripeSubscription(client));
   },
 );
 
@@ -52,6 +63,7 @@ const monetizationSlice = createSlice({
       state.isPro = false;
       state.isLoading = false;
       state.isCheckoutLoading = false;
+      state.isCancelLoading = false;
       state.error = null;
     },
   },
@@ -80,6 +92,17 @@ const monetizationSlice = createSlice({
       .addCase(openCheckoutThunk.rejected, (state, action) => {
         state.isCheckoutLoading = false;
         state.error = action.error.message ?? 'Checkout could not be started';
+      })
+      .addCase(cancelSubscriptionThunk.pending, (state) => {
+        state.isCancelLoading = true;
+        state.error = null;
+      })
+      .addCase(cancelSubscriptionThunk.fulfilled, (state) => {
+        state.isCancelLoading = false;
+      })
+      .addCase(cancelSubscriptionThunk.rejected, (state, action) => {
+        state.isCancelLoading = false;
+        state.error = action.error.message ?? 'Subscription cancellation could not be started';
       });
   },
 });
@@ -88,7 +111,9 @@ export const { clearMonetizationState } = monetizationSlice.actions;
 export default monetizationSlice.reducer;
 
 export const selectIsProPlan = (state: RootState) => state.monetization.isPro;
+export const selectSubscriptionPlan = (state: RootState) => state.monetization.plan;
 export const selectIsCheckoutLoading = (state: RootState) => state.monetization.isCheckoutLoading;
+export const selectIsCancelLoading = (state: RootState) => state.monetization.isCancelLoading;
 export const selectCanUsePdfExport = (state: RootState) => state.monetization.isPro;
 export const selectCanUseCsvCharts = (state: RootState) => state.monetization.isPro;
 export const selectCanCreateProject = (state: RootState) =>

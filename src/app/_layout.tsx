@@ -259,6 +259,10 @@ function RootNavigator() {
           options={ROOT_STACK_SCREENS.settingsStorageSync.options}
         />
         <Stack.Screen
+          name={ROOT_STACK_SCREENS.settingsUpgrade.name}
+          options={ROOT_STACK_SCREENS.settingsUpgrade.options}
+        />
+        <Stack.Screen
           name={ROOT_STACK_SCREENS.settingsAccount.name}
           options={ROOT_STACK_SCREENS.settingsAccount.options}
         />

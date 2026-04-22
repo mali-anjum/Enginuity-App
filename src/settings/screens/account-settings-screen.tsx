@@ -13,6 +13,13 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import {
+  cancelSubscriptionThunk,
+  fetchSubscriptionStatusThunk,
+  selectIsCancelLoading,
+  selectIsProPlan,
+  selectSubscriptionPlan,
+} from '@/monetization/state/monetizationSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function AccountSettingsScreen() {
@@ -23,6 +30,9 @@ export default function AccountSettingsScreen() {
   const router = useRouter();
   const authStatus = useAppSelector(selectAuthStatus);
   const authError = useAppSelector(selectAuthError);
+  const isProPlan = useAppSelector(selectIsProPlan);
+  const subscriptionPlan = useAppSelector(selectSubscriptionPlan);
+  const isCancelLoading = useAppSelector(selectIsCancelLoading);
   const isLoading = authStatus === 'loading';
 
   const [password, setPassword] = useState('');
@@ -58,6 +68,24 @@ export default function AccountSettingsScreen() {
             if (deleteAccountThunk.fulfilled.match(action)) {
               router.replace('/auth/login' as Href);
             }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      'Cancel subscription',
+      'You can resubscribe at any time from Upgrade.',
+      [
+        { text: 'Keep plan', style: 'cancel' },
+        {
+          text: 'Cancel subscription',
+          style: 'destructive',
+          onPress: async () => {
+            await dispatch(cancelSubscriptionThunk());
+            await dispatch(fetchSubscriptionStatusThunk());
           },
         },
       ],
@@ -102,6 +130,28 @@ export default function AccountSettingsScreen() {
         ) : null}
         {passwordMessage ? (
           <ThemedText style={{ color: themeColors.primary }}>{passwordMessage}</ThemedText>
+        ) : null}
+
+        <View style={[styles.divider, { backgroundColor: subtleLine }]} />
+
+        <ThemedText type="subtitle">Subscription</ThemedText>
+        <ThemedText style={{ color: themeColors.mutedText }}>
+          Current plan: {isProPlan ? subscriptionPlan.replace('_', ' ') : 'free'}
+        </ThemedText>
+        <Pressable
+          style={[styles.secondaryBtn, { borderColor: themeColors.border }]}
+          onPress={() => router.push('/settings/upgrade')}>
+          <ThemedText>Manage or upgrade plan</ThemedText>
+        </Pressable>
+        {isProPlan ? (
+          <Pressable
+            style={[styles.dangerBtn, { borderColor: themeColors.danger }]}
+            disabled={isCancelLoading}
+            onPress={handleCancelSubscription}>
+            <ThemedText style={{ color: themeColors.danger }}>
+              {isCancelLoading ? 'Cancelling...' : 'Cancel subscription'}
+            </ThemedText>
+          </Pressable>
         ) : null}
 
         <View style={[styles.divider, { backgroundColor: subtleLine }]} />
