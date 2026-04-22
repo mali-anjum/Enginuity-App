@@ -8,6 +8,7 @@ import {
   selectIsSyncing,
   selectSettingsError,
   selectStorageUsedMb,
+  selectSyncProgress,
 } from '@/settings/state/settingsSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
@@ -22,6 +23,7 @@ export default function StorageSyncScreen() {
   const mb = useAppSelector(selectStorageUsedMb);
   const isSyncing = useAppSelector(selectIsSyncing);
   const settingsError = useAppSelector(selectSettingsError);
+  const syncProgress = useAppSelector(selectSyncProgress);
 
   useEffect(() => {
     void dispatch(fetchStorageUsageThunk());
@@ -39,7 +41,7 @@ export default function StorageSyncScreen() {
         <ThemedText type="title">Storage & sync</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
           Storage usage comes from your `profiles.storage_used_mb` row. Manual sync enqueues work on
-          `sync_queue` and refreshes profile data.
+          local queue first, then processes pending items to `sync_queue` in order.
         </ThemedText>
 
         {settingsError ? (
@@ -63,6 +65,12 @@ export default function StorageSyncScreen() {
           onPress={() => void dispatch(fetchStorageUsageThunk())}>
           <ThemedText>Refresh usage</ThemedText>
         </Pressable>
+
+        <ThemedText type="subtitle">Sync queue progress</ThemedText>
+        <ThemedText style={{ color: themeColors.mutedText }}>
+          Processed {syncProgress.processed} / {syncProgress.total}
+          {syncProgress.remaining > 0 ? ` · ${syncProgress.remaining} pending` : ' · all synced'}
+        </ThemedText>
       </ScrollView>
     </ThemedView>
   );
