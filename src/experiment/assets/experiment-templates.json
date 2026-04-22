@@ -1,0 +1,37 @@
+[
+  {
+    "id": "pid_tuning",
+    "name": "PID Tuning",
+    "defaultTitle": "PID Tuning Run",
+    "objective": "Tune proportional, integral, and derivative gains to reach stable control with minimal overshoot.",
+    "observations": "1) What Kp, Ki, Kd values were used?\n2) Did the system overshoot/undershoot the target?\n3) What was the settling time and steady-state error?\n4) How did output respond to a step change?\n5) What gain adjustments are needed next iteration?"
+  },
+  {
+    "id": "sensor_calibration",
+    "name": "Sensor Calibration",
+    "defaultTitle": "Sensor Calibration Procedure",
+    "objective": "Calibrate sensor readings against a known reference and compute correction factors.",
+    "observations": "1) What reference source/instrument was used?\n2) Record raw readings vs reference values.\n3) Calculate offset/scale correction factors.\n4) Apply calibration and record corrected values.\n5) What is final measurement error after calibration?"
+  },
+  {
+    "id": "motor_test",
+    "name": "Motor Test",
+    "defaultTitle": "Motor Performance Test",
+    "objective": "Evaluate motor behavior across operating conditions (speed, torque/load, and thermal response).",
+    "observations": "1) Test voltage/current and PWM values.\n2) RPM achieved at each input level.\n3) Behavior under load (stall, vibration, noise).\n4) Motor/driver temperature observations.\n5) Efficiency or performance limitations identified."
+  },
+  {
+    "id": "communication_protocol_test",
+    "name": "Communication Protocol Test",
+    "defaultTitle": "Communication Protocol Validation",
+    "objective": "Validate reliability and correctness of data exchange over the selected communication protocol.",
+    "observations": "1) Protocol and baud/data settings used.\n2) Packet/message success rate and retries.\n3) Latency and throughput measurements.\n4) Any checksum/frame/parsing errors observed.\n5) Stability notes over extended run."
+  },
+  {
+    "id": "power_consumption_test",
+    "name": "Power Consumption Test",
+    "defaultTitle": "Power Consumption Profile",
+    "objective": "Measure power consumption across idle, normal, and peak operating conditions.",
+    "observations": "1) Supply voltage and current in each operating mode.\n2) Instantaneous vs average power draw.\n3) Peak consumption events and duration.\n4) Battery life estimate from measured profile.\n5) Recommended optimizations to reduce power usage."
+  }
+]
