@@ -10,6 +10,7 @@ import notesReducer from '@/notes/state/notesSlice';
 import onboardingReducer from '@/onboarding/state/onboardingSlice';
 import projectReducer from '@/project/state/projectSlice';
 import settingsReducer from '@/settings/state/settingsSlice';
+import { getRetryThunk, isAutoRetryType } from '@/sharedModules/state/retryRegistry';
 import uiReducer, { addToast } from '@/ui/state/uiSlice';
 
 const createNoopStorage = () => ({
@@ -70,28 +71,74 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat((api) => (next) => (action) => {
-      const result = next(action);
+    }).concat(() => {
+      const retryAttempts = new Map<string, number>();
 
-      if (typeof action.type === 'string' && action.type.endsWith('/rejected')) {
-        const payload = action.payload;
-        const fallback = action.error?.message;
-        const message =
-          typeof payload === 'string'
-            ? payload
-            : typeof fallback === 'string'
-              ? fallback
-              : 'Something went wrong.';
-        api.dispatch(addToast({ message, variant: 'error' }));
-      } else if (
-        typeof action.type === 'string' &&
-        (action.type === 'settings/manualSync/fulfilled' ||
-          action.type === 'settings/processLocalSyncQueue/fulfilled')
-      ) {
-        api.dispatch(addToast({ message: 'Sync completed successfully.', variant: 'success' }));
-      }
+      const toRetryKey = (typePrefix: string, arg: unknown) =>
+        `${typePrefix}::${JSON.stringify(arg ?? null)}`;
 
-      return result;
+      const scheduleAutoRetry = (dispatch: AppDispatch, typePrefix: string, arg: unknown, attempt: number) => {
+        const thunk = getRetryThunk(typePrefix);
+        if (!thunk || attempt > 3) return;
+        const delayMs = 500 * 2 ** (attempt - 1);
+        setTimeout(() => {
+          dispatch(thunk(arg));
+        }, delayMs);
+      };
+
+      return (api) => (next) => (action) => {
+        const result = next(action);
+
+        if (typeof action.type === 'string' && action.type.endsWith('/rejected')) {
+          const typePrefix = action.type.slice(0, -'/rejected'.length);
+          const retryThunk = getRetryThunk(typePrefix);
+          const arg = action.meta?.arg;
+          const retryKey = toRetryKey(typePrefix, arg);
+          const currentAttempt = retryAttempts.get(retryKey) ?? 0;
+          const nextAttempt = currentAttempt + 1;
+          retryAttempts.set(retryKey, nextAttempt);
+
+          if (isAutoRetryType(typePrefix) && nextAttempt <= 3) {
+            scheduleAutoRetry(api.dispatch, typePrefix, arg, nextAttempt);
+          }
+
+          const payload = action.payload;
+          const fallback = action.error?.message;
+          const message =
+            typeof payload === 'string'
+              ? payload
+              : typeof fallback === 'string'
+                ? fallback
+                : 'Something went wrong.';
+          api.dispatch(
+            addToast({
+              message,
+              variant: 'error',
+              retry: retryThunk
+                ? {
+                    typePrefix,
+                    arg,
+                    attempt: nextAttempt,
+                    maxAttempts: 3,
+                  }
+                : undefined,
+            }),
+          );
+        } else if (typeof action.type === 'string' && action.type.endsWith('/fulfilled')) {
+          const typePrefix = action.type.slice(0, -'/fulfilled'.length);
+          const retryKey = toRetryKey(typePrefix, action.meta?.arg);
+          retryAttempts.delete(retryKey);
+
+          if (
+            action.type === 'settings/manualSync/fulfilled' ||
+            action.type === 'settings/processLocalSyncQueue/fulfilled'
+          ) {
+            api.dispatch(addToast({ message: 'Sync completed successfully.', variant: 'success' }));
+          }
+        }
+
+        return result;
+      };
     }),
 });
 
