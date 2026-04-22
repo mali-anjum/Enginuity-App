@@ -7,6 +7,7 @@ import { PostAuthOnboardingSync } from '@/auth/organisms/post-auth-onboarding-sy
 import { SupabaseAuthSync } from '@/auth/hooks/useSupabaseAuthSync';
 import { NetworkStatusBanner } from '@/sharedModules/organisms/network-status-banner';
 import { OfflineSyncReconciler } from '@/sharedModules/organisms/offline-sync-reconciler';
+import { SharedProjectsRealtimeSync } from '@/sharedModules/organisms/shared-projects-realtime-sync';
 import { initializeSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { persistor } from '@/sharedModules/state/persistor';
 import { store } from '@/sharedModules/state/store';
@@ -22,6 +23,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <SupabaseAuthSync />
         <PostAuthOnboardingSync />
         <OfflineSyncReconciler />
+        <SharedProjectsRealtimeSync />
         <View style={styles.root}>
           {children}
           <NetworkStatusBanner />
