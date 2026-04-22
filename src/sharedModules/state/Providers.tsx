@@ -6,6 +6,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { PostAuthOnboardingSync } from '@/auth/organisms/post-auth-onboarding-sync';
 import { SupabaseAuthSync } from '@/auth/hooks/useSupabaseAuthSync';
 import { NetworkStatusBanner } from '@/sharedModules/organisms/network-status-banner';
+import { OfflineSyncReconciler } from '@/sharedModules/organisms/offline-sync-reconciler';
 import { initializeSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { persistor } from '@/sharedModules/state/persistor';
 import { store } from '@/sharedModules/state/store';
@@ -20,6 +21,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <PersistGate loading={null} persistor={persistor}>
         <SupabaseAuthSync />
         <PostAuthOnboardingSync />
+        <OfflineSyncReconciler />
         <View style={styles.root}>
           {children}
           <NetworkStatusBanner />

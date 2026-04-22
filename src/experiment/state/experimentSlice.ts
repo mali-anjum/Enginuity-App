@@ -13,7 +13,7 @@ import { upsertWorkspaceTags } from '@/sharedModules/services/supabase/tagSupaba
 import { getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
 import type { RootState } from '@/sharedModules/state/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
-import { isUuid } from '@/sharedModules/utils/uuid';
+import { createLocalUuidV4, isUuid } from '@/sharedModules/utils/uuid';
 
 export type Experiment = {
   id: string;
@@ -34,6 +34,7 @@ export type Experiment = {
     uploadedAt: string;
   }[];
   tags: string[];
+  pendingSync: boolean;
   /** Set once when the experiment is created. */
   createdAt: string;
   updatedAt: string;
@@ -104,25 +105,30 @@ export const createExperimentThunk = createAsyncThunk<
   } = payload;
 
   if (user && client && isUuid(projectId)) {
-    const workspaceId = await getPersonalWorkspaceId(client, user.id);
-    await upsertWorkspaceTags(client, workspaceId, tags);
-    return insertExperimentForUser(client, user.id, {
-      title,
-      projectId,
-      objective,
-      observations,
-      githubCommit,
-      status,
-      hardwareIds,
-      attachmentUrls,
-      attachments,
-      tags,
-    });
+    try {
+      const workspaceId = await getPersonalWorkspaceId(client, user.id);
+      await upsertWorkspaceTags(client, workspaceId, tags);
+      const created = await insertExperimentForUser(client, user.id, {
+        title,
+        projectId,
+        objective,
+        observations,
+        githubCommit,
+        status,
+        hardwareIds,
+        attachmentUrls,
+        attachments,
+        tags,
+      });
+      return { ...created, pendingSync: false };
+    } catch {
+      // fall through to local pending record when offline/unreachable
+    }
   }
 
   const now = new Date().toISOString();
   return {
-    id: `exp-${Date.now()}`,
+    id: createLocalUuidV4(),
     projectId,
     title,
     objective,
@@ -133,9 +139,54 @@ export const createExperimentThunk = createAsyncThunk<
     attachmentUrls,
     attachments,
     tags,
+    pendingSync: true,
     createdAt: now,
     updatedAt: now,
   };
+});
+
+export const syncPendingExperimentsThunk = createAsyncThunk<
+  { synced: Array<{ tempId: string; server: Experiment }>; idMap: Record<string, string> },
+  void,
+  { state: RootState }
+>('experiment/syncPendingExperimentsThunk', async (_, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  if (!user || !client) {
+    return { synced: [], idMap: {} };
+  }
+
+  const pendingExperiments = getState().experiment.experiments.filter((experiment) => experiment.pendingSync);
+  const synced: Array<{ tempId: string; server: Experiment }> = [];
+  const idMap: Record<string, string> = {};
+
+  for (const experiment of pendingExperiments) {
+    if (!isUuid(experiment.projectId)) {
+      continue;
+    }
+    try {
+      const workspaceId = await getPersonalWorkspaceId(client, user.id);
+      await upsertWorkspaceTags(client, workspaceId, experiment.tags);
+      const serverExperiment = await insertExperimentForUser(client, user.id, {
+        title: experiment.title,
+        projectId: experiment.projectId,
+        objective: experiment.objective,
+        observations: experiment.observations,
+        githubCommit: experiment.githubCommit,
+        status: experiment.status,
+        hardwareIds: experiment.hardwareIds,
+        attachmentUrls: experiment.attachmentUrls,
+        attachments: experiment.attachments,
+        tags: experiment.tags,
+      });
+      synced.push({ tempId: experiment.id, server: { ...serverExperiment, pendingSync: false } });
+      idMap[experiment.id] = serverExperiment.id;
+    } catch {
+      // keep pending records as-is for next retry
+    }
+  }
+
+  return { synced, idMap };
 });
 
 export const updateExperimentThunk = createAsyncThunk<Experiment, Experiment, { state: RootState }>(
@@ -216,6 +267,13 @@ const experimentSlice = createSlice({
     setExperimentHardwareFilter(state, action: PayloadAction<string | null>) {
       state.filterByHardware = action.payload;
     },
+    remapExperimentProjectIds(state, action: PayloadAction<Record<string, string>>) {
+      const idMap = action.payload;
+      state.experiments = state.experiments.map((experiment) => ({
+        ...experiment,
+        projectId: idMap[experiment.projectId] ?? experiment.projectId,
+      }));
+    },
     /** One-tap status cycle for list chips (synchronous optimistic update). */
     cycleExperimentStatus(
       state,
@@ -243,7 +301,7 @@ const experimentSlice = createSlice({
       })
       .addCase(fetchExperimentsThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.experiments = action.payload;
+        state.experiments = action.payload.map((experiment) => ({ ...experiment, pendingSync: false }));
       })
       .addCase(fetchExperimentsThunk.rejected, (state, action) => {
         state.isLoading = false;
@@ -251,6 +309,17 @@ const experimentSlice = createSlice({
       })
       .addCase(createExperimentThunk.fulfilled, (state, action) => {
         state.experiments.unshift(action.payload);
+      })
+      .addCase(syncPendingExperimentsThunk.fulfilled, (state, action) => {
+        for (const item of action.payload.synced) {
+          const index = state.experiments.findIndex((experiment) => experiment.id === item.tempId);
+          if (index >= 0) {
+            state.experiments[index] = item.server;
+          }
+        }
+        if (state.selectedExperimentId && action.payload.idMap[state.selectedExperimentId]) {
+          state.selectedExperimentId = action.payload.idMap[state.selectedExperimentId];
+        }
       })
       .addCase(updateExperimentThunk.fulfilled, (state, action) => {
         const index = state.experiments.findIndex((item) => item.id === action.payload.id);
@@ -280,6 +349,7 @@ export const {
   setExperimentProjectFilter,
   setExperimentStatusFilter,
   setExperimentHardwareFilter,
+  remapExperimentProjectIds,
   cycleExperimentStatus,
   clearExperimentData,
 } = experimentSlice.actions;

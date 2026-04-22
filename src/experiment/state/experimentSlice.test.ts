@@ -20,6 +20,7 @@ function experimentFixture(overrides: Partial<Experiment> = {}): Experiment {
     attachmentUrls: [],
     attachments: [],
     tags: [],
+    pendingSync: false,
     createdAt: '2024-06-01T12:00:00.000Z',
     updatedAt: '2024-06-01T12:00:00.000Z',
   };

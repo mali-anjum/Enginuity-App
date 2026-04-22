@@ -20,6 +20,7 @@ function mapRowToProject(row: Database['public']['Tables']['projects']['Row']): 
     fileUrls: [],
     isCompleted: row.status === 'completed',
     isFavourite: row.is_favorite,
+    pendingSync: false,
     updatedAt: row.updated_at,
   };
 }

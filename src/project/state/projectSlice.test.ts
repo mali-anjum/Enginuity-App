@@ -18,6 +18,7 @@ function projectFixture(overrides: Partial<Project> = {}): Project {
     fileUrls: [],
     isCompleted: false,
     isFavourite: false,
+    pendingSync: false,
     updatedAt: '2024-06-01T12:00:00.000Z',
   };
   return { ...base, ...overrides };

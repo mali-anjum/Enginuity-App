@@ -13,7 +13,7 @@ import {
 } from '@/project/services/projectSupabaseService';
 import type { RootState } from '@/sharedModules/state/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
-import { isUuid } from '@/sharedModules/utils/uuid';
+import { createLocalUuidV4, isUuid } from '@/sharedModules/utils/uuid';
 
 export type ProjectFilter = 'active' | 'completed' | 'archived' | 'favourites';
 export type ProjectStatus = 'active' | 'completed' | 'archived';
@@ -28,6 +28,7 @@ export type Project = {
   fileUrls: string[];
   isCompleted: boolean;
   isFavourite: boolean;
+  pendingSync: boolean;
   updatedAt: string;
 };
 
@@ -66,12 +67,17 @@ export const createProjectThunk = createAsyncThunk<
   const user = getState().auth.user;
   const client = getSupabaseClientOrNull();
   if (user && client) {
-    return insertProjectForUser(client, user.id, payload);
+    try {
+      const created = await insertProjectForUser(client, user.id, payload);
+      return { ...created, pendingSync: false };
+    } catch {
+      // fall through to local pending record when connectivity/storage is unavailable
+    }
   }
 
   const { title, description = '', startDate = null, dueDate = null, status = 'active' } = payload;
   return {
-    id: `project-${Date.now()}`,
+    id: createLocalUuidV4(),
     title,
     description,
     startDate,
@@ -80,8 +86,43 @@ export const createProjectThunk = createAsyncThunk<
     fileUrls: [],
     isCompleted: status === 'completed',
     isFavourite: false,
+    pendingSync: true,
     updatedAt: new Date().toISOString(),
   };
+});
+
+export const syncPendingProjectsThunk = createAsyncThunk<
+  { synced: Array<{ tempId: string; server: Project }>; idMap: Record<string, string> },
+  void,
+  { state: RootState }
+>('project/syncPendingProjectsThunk', async (_, { getState }) => {
+  const user = getState().auth.user;
+  const client = getSupabaseClientOrNull();
+  if (!user || !client) {
+    return { synced: [], idMap: {} };
+  }
+
+  const pendingProjects = getState().project.projects.filter((project) => project.pendingSync);
+  const synced: Array<{ tempId: string; server: Project }> = [];
+  const idMap: Record<string, string> = {};
+
+  for (const project of pendingProjects) {
+    try {
+      const serverProject = await insertProjectForUser(client, user.id, {
+        title: project.title,
+        description: project.description,
+        startDate: project.startDate,
+        dueDate: project.dueDate,
+        status: project.status,
+      });
+      synced.push({ tempId: project.id, server: { ...serverProject, pendingSync: false } });
+      idMap[project.id] = serverProject.id;
+    } catch {
+      // keep pending records intact; they'll retry next reconnect
+    }
+  }
+
+  return { synced, idMap };
 });
 
 export const updateProjectThunk = createAsyncThunk<Project, Project, { state: RootState }>(
@@ -184,7 +225,7 @@ const projectSlice = createSlice({
       })
       .addCase(fetchProjectsThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.projects = action.payload;
+        state.projects = action.payload.map((project) => ({ ...project, pendingSync: false }));
       })
       .addCase(fetchProjectsThunk.rejected, (state, action) => {
         state.isLoading = false;
@@ -192,6 +233,17 @@ const projectSlice = createSlice({
       })
       .addCase(createProjectThunk.fulfilled, (state, action) => {
         state.projects.unshift(action.payload);
+      })
+      .addCase(syncPendingProjectsThunk.fulfilled, (state, action) => {
+        for (const item of action.payload.synced) {
+          const index = state.projects.findIndex((project) => project.id === item.tempId);
+          if (index >= 0) {
+            state.projects[index] = item.server;
+          }
+        }
+        if (state.selectedProjectId && action.payload.idMap[state.selectedProjectId]) {
+          state.selectedProjectId = action.payload.idMap[state.selectedProjectId];
+        }
       })
       .addCase(updateProjectThunk.fulfilled, (state, action) => {
         const index = state.projects.findIndex((item) => item.id === action.payload.id);
