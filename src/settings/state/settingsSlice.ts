@@ -3,12 +3,15 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { fetchProfileThunk } from '@/auth/state/authSlice';
 import type { RootState } from '@/sharedModules/state/store';
 import {
-  enqueueManualSyncJob,
   fetchProfileStorageUsedMb,
   fetchUserNotificationSettings,
   type NotificationPrefs,
   saveUserNotificationSettings,
 } from '@/settings/services/userSettingsSupabaseService';
+import {
+  enqueueLocalSyncQueueItem,
+  processPendingLocalSyncQueue,
+} from '@/settings/services/localSyncQueueService';
 
 export type SettingsState = {
   notificationPrefs: NotificationPrefs;
@@ -19,6 +22,11 @@ export type SettingsState = {
   isLoadingNotifications: boolean;
   isLoadingStorage: boolean;
   isSyncing: boolean;
+  syncProgress: {
+    processed: number;
+    total: number;
+    remaining: number;
+  };
   error: string | null;
 };
 
@@ -37,6 +45,7 @@ const initialState: SettingsState = {
   isLoadingNotifications: false,
   isLoadingStorage: false,
   isSyncing: false,
+  syncProgress: { processed: 0, total: 0, remaining: 0 },
   error: null,
 };
 
@@ -96,7 +105,14 @@ export const manualSyncThunk = createAsyncThunk<void, void, { state: RootState; 
       return rejectWithValue('Not signed in');
     }
     try {
-      await enqueueManualSyncJob(userId);
+      await enqueueLocalSyncQueueItem({
+        userId,
+        entityType: 'manual_sync',
+        entityId: `manual-sync-${Date.now()}`,
+        operation: 'update',
+        payload: { source: 'settings_ui', created_at: new Date().toISOString() },
+      });
+      await dispatch(processLocalSyncQueueThunk());
       await dispatch(fetchProfileThunk());
       await dispatch(fetchStorageUsageThunk());
     } catch (error) {
@@ -104,6 +120,22 @@ export const manualSyncThunk = createAsyncThunk<void, void, { state: RootState; 
     }
   },
 );
+
+export const processLocalSyncQueueThunk = createAsyncThunk<
+  { processed: number; total: number; remaining: number },
+  void,
+  { state: RootState; rejectValue: string }
+>('settings/processLocalSyncQueue', async (_, { getState, rejectWithValue }) => {
+  const userId = getState().auth.user?.id;
+  if (!userId) {
+    return rejectWithValue('Not signed in');
+  }
+  try {
+    return await processPendingLocalSyncQueue(userId);
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : 'Failed to process sync queue');
+  }
+});
 
 const settingsSlice = createSlice({
   name: 'settings',
@@ -163,6 +195,18 @@ const settingsSlice = createSlice({
       .addCase(manualSyncThunk.rejected, (state, action) => {
         state.isSyncing = false;
         state.error = action.payload ?? 'Manual sync failed';
+      })
+      .addCase(processLocalSyncQueueThunk.pending, (state) => {
+        state.isSyncing = true;
+        state.error = null;
+      })
+      .addCase(processLocalSyncQueueThunk.fulfilled, (state, action) => {
+        state.isSyncing = false;
+        state.syncProgress = action.payload;
+      })
+      .addCase(processLocalSyncQueueThunk.rejected, (state, action) => {
+        state.isSyncing = false;
+        state.error = action.payload ?? 'Sync queue processing failed';
       });
   },
 });
@@ -174,3 +218,4 @@ export const selectNotificationPrefs = (state: RootState) => state.settings.noti
 export const selectStorageUsedMb = (state: RootState) => state.settings.storageUsedMb;
 export const selectSettingsError = (state: RootState) => state.settings.error;
 export const selectIsSyncing = (state: RootState) => state.settings.isSyncing;
+export const selectSyncProgress = (state: RootState) => state.settings.syncProgress;

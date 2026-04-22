@@ -78,15 +78,23 @@ export async function fetchProfileStorageUsedMb(userId: string): Promise<number>
   return Number.isFinite(n) ? n : 0;
 }
 
-export async function enqueueManualSyncJob(userId: string) {
+export async function enqueueManualSyncJob(
+  userId: string,
+  input?: {
+    entityType?: string;
+    entityId?: string;
+    operation?: 'insert' | 'update' | 'delete';
+    payload?: Record<string, unknown>;
+  },
+) {
   const { error } = await withSupabaseClient((client) =>
     client.from('sync_queue').insert({
       user_id: userId,
-      entity_type: 'manual_sync',
-      entity_id: randomUuidV4(),
-      operation: 'update',
+      entity_type: input?.entityType ?? 'manual_sync',
+      entity_id: input?.entityId ?? randomUuidV4(),
+      operation: input?.operation ?? 'update',
       status: 'pending',
-      payload: { source: 'settings_ui', created_at: new Date().toISOString() },
+      payload: input?.payload ?? { source: 'settings_ui', created_at: new Date().toISOString() },
     }),
   );
 
