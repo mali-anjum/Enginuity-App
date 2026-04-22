@@ -1,4 +1,4 @@
-import { Link, type Href } from 'expo-router';
+import { Link, useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
@@ -6,6 +6,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ListEmptyState } from '@/common/organisms/list-empty-state';
 import { EXPERIMENT_STATUSES, experimentStatusLabel } from '@/experiment/constants';
 import {
   selectAllExperiments,
@@ -14,6 +15,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function ExperimentListScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
@@ -67,9 +69,13 @@ export default function ExperimentListScreen() {
 
         <View style={styles.list}>
           {filtered.length === 0 ? (
-            <ThemedText style={{ color: themeColors.mutedText }}>
-              No experiments in this view.
-            </ThemedText>
+            <ListEmptyState
+              icon="flask.fill"
+              headline="Run your first experiment"
+              body="Track objectives, observations, attachments, and status in one structured engineering log."
+              ctaLabel="Create Experiment"
+              onPressCta={() => router.push('/experiment/create' as Href)}
+            />
           ) : (
             filtered.map((experiment) => (
               <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href} asChild>

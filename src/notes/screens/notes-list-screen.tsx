@@ -1,4 +1,4 @@
-import { Link, type Href } from 'expo-router';
+import { Link, useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
@@ -7,6 +7,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ListEmptyState } from '@/common/organisms/list-empty-state';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import {
   searchNotesThunk,
@@ -21,6 +22,7 @@ import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 type NoteFilter = 'all' | 'project' | 'tag' | 'favourites';
 
 export default function NotesListScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const dispatch = useAppDispatch();
@@ -147,7 +149,13 @@ export default function NotesListScreen() {
 
         <View style={styles.list}>
           {filteredNotes.length === 0 ? (
-            <ThemedText style={{ color: themeColors.mutedText }}>No notes found.</ThemedText>
+            <ListEmptyState
+              icon="doc.text.fill"
+              headline="Capture your first engineering note"
+              body="Document decisions, findings, and lessons so future experiments move faster."
+              ctaLabel="Create Note"
+              onPressCta={() => router.push('/notes/create' as Href)}
+            />
           ) : (
             filteredNotes.map((note) => (
               <Link key={note.id} href={`/notes/${note.id}` as Href} asChild>
