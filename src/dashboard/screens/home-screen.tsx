@@ -2,11 +2,11 @@ import { Link, useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { experimentStatusLabel } from '@/experiment/constants';
 import {
   selectProjectsWithExperimentCounts,
   selectRecentExperimentsForHome,
 } from '@/dashboard/selectors/home-dashboard';
+import { selectActivityFeedItems, selectActivityFeedLoading } from '@/dashboard/state/activityFeedSlice';
 import { HomeEmptyProjects } from '@/dashboard/organisms/home-empty-projects';
 import type { Project } from '@/project/state/projectSlice';
 import { selectProjectStats } from '@/project/state/projectSlice';
@@ -23,6 +23,44 @@ import { HomeFabGuidanceTooltip } from '../molecules/home-fab-guidance-tooltip';
 
 function formatProjectStatusLabel(status: Project['status']): string {
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatRelativeTime(dateIso: string): string {
+  const target = new Date(dateIso).getTime();
+  if (Number.isNaN(target)) return 'just now';
+  const diffMs = Date.now() - target;
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return new Date(dateIso).toLocaleDateString();
+}
+
+function iconForActivity(eventType: string): Parameters<typeof IconSymbol>[0]['name'] {
+  switch (eventType) {
+    case 'experiment_created':
+      return 'sparkles';
+    case 'experiment_status_changed':
+      return 'checkmark.circle.fill';
+    case 'note_added':
+      return 'paperplane.fill';
+    case 'hardware_added':
+      return 'bolt.fill';
+    default:
+      return 'chevron.right';
+  }
+}
+
+function linkForActivity(entityType: string, entityId: string | null): Href | null {
+  if (!entityId) return null;
+  if (entityType === 'experiment') return `/experiment/${entityId}` as Href;
+  if (entityType === 'note') return `/notes/${entityId}` as Href;
+  if (entityType === 'hardware') return `/hardware/${entityId}` as Href;
+  if (entityType === 'project') return `/project/${entityId}` as Href;
+  return null;
 }
 
 function projectChipColors(
@@ -47,6 +85,8 @@ export default function HomeScreen() {
   const themeColors = Colors[colorScheme];
   const projectsWithCounts = useAppSelector(selectProjectsWithExperimentCounts);
   const recentRows = useAppSelector(selectRecentExperimentsForHome);
+  const activityFeed = useAppSelector(selectActivityFeedItems);
+  const isActivityLoading = useAppSelector(selectActivityFeedLoading);
   const projectStats = useAppSelector(selectProjectStats);
   const hasCompletedOnboarding = useAppSelector((state) => state.onboarding.hasCompletedOnboarding);
 
@@ -197,23 +237,20 @@ export default function HomeScreen() {
         </View>
 
         <View style={[styles.sectionHeader, styles.sectionSpacer]}>
-          <ThemedText type="subtitle">Recent experiments</ThemedText>
-          {recentRows.length > 0 ? (
-            <Link href={'/experiment' as Href}>
-              <ThemedText style={{ color: themeColors.primary }}>See all</ThemedText>
-            </Link>
-          ) : null}
+          <ThemedText type="subtitle">Activity feed</ThemedText>
         </View>
         <View style={styles.sectionBody}>
-          {recentRows.length === 0 ? (
+          {isActivityLoading ? (
+            <ThemedText style={{ color: themeColors.mutedText }}>Loading activity…</ThemedText>
+          ) : activityFeed.length === 0 ? (
             <ThemedText style={{ color: themeColors.mutedText }}>
-              {projectsWithCounts.length === 0
-                ? 'Experiments you log will appear here.'
-                : 'No experiments yet. Tap + to log one in your latest project.'}
+              Activity will appear here when you create experiments, update statuses, add notes, and add
+              hardware components.
             </ThemedText>
           ) : (
-            recentRows.map(({ experiment, projectTitle }) => (
-              <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href} asChild>
+            activityFeed.map((item) => {
+              const href = linkForActivity(item.entityType, item.entityId);
+              const card = (
                 <Pressable
                   style={[
                     styles.card,
@@ -223,19 +260,39 @@ export default function HomeScreen() {
                     },
                   ]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Open experiment ${experiment.title}`}>
-                  <ThemedText type="defaultSemiBold" numberOfLines={2}>
-                    {experiment.title}
-                  </ThemedText>
-                  <ThemedText style={{ color: themeColors.mutedText }} numberOfLines={1}>
-                    {projectTitle} · {experimentStatusLabel(experiment.status)}
-                  </ThemedText>
-                  <ThemedText style={{ color: themeColors.subtleText, fontSize: 12 }}>
-                    {new Date(experiment.updatedAt).toLocaleString()}
-                  </ThemedText>
+                  accessibilityLabel={href ? `Open activity item ${item.description}` : item.description}>
+                  <View style={styles.activityRow}>
+                    <View
+                      style={[
+                        styles.activityIconWrap,
+                        { borderColor: themeColors.border, backgroundColor: themeColors.heroTint },
+                      ]}>
+                      <IconSymbol name={iconForActivity(item.eventType)} size={16} color={themeColors.primary} />
+                    </View>
+                    <View style={styles.activityTextWrap}>
+                      <ThemedText type="defaultSemiBold" numberOfLines={2}>
+                        {item.description}
+                      </ThemedText>
+                      <ThemedText style={{ color: themeColors.subtleText, fontSize: 12 }}>
+                        {formatRelativeTime(item.createdAt)}
+                      </ThemedText>
+                    </View>
+                    {href ? (
+                      <ThemedText style={{ color: themeColors.primary, fontSize: 12 }}>Open</ThemedText>
+                    ) : null}
+                  </View>
                 </Pressable>
-              </Link>
-            ))
+              );
+
+              if (!href) {
+                return <View key={item.id}>{card}</View>;
+              }
+              return (
+                <Link key={item.id} href={href} asChild>
+                  {card}
+                </Link>
+              );
+            })
           )}
         </View>
       </ScrollView>
@@ -373,6 +430,23 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 12,
     gap: 4,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  activityIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activityTextWrap: {
+    flex: 1,
+    gap: 2,
   },
   fab: {
     position: 'absolute',
