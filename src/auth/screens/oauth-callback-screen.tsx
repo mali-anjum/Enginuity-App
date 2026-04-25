@@ -57,7 +57,7 @@ export default function OAuthCallbackScreen() {
 
     exchangeOAuthCodeForSession(code)
       .then(() => {
-        router.replace(ROUTES.home);
+        router.replace(ROUTES.HOME);
       })
       .catch((e: unknown) => {
         const message = e instanceof Error ? e.message : 'OAuth exchange failed';
@@ -81,7 +81,7 @@ export default function OAuthCallbackScreen() {
             styles.button,
             { backgroundColor: themeColors.primary },
           ]}
-          onPress={() => router.replace(ROUTES.authLogin)}>
+          onPress={() => router.replace(ROUTES.AUTH_LOGIN)}>
           <ThemedText style={styles.buttonText} lightColor={Colors.light.background} darkColor={Colors.light.background}>
             Return to login
           </ThemedText>
