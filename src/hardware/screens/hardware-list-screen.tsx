@@ -15,7 +15,7 @@ import {
   setHardwareCategoryFilter,
 } from '@/hardware/state/hardwareSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 const FILTER_OPTIONS: ('All' | HardwareCategory)[] = ['All', ...HARDWARE_CATEGORIES];
 
