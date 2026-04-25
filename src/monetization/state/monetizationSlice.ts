@@ -8,7 +8,7 @@ import {
   openStripeCheckout,
 } from '@/monetization/services/subscriptionSupabaseService';
 import { withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 
 type MonetizationState = {
   plan: SubscriptionPlan;
