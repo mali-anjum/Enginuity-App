@@ -29,7 +29,7 @@ export default function ResetPasswordScreen() {
     if (resetPasswordThunk.fulfilled.match(action)) {
       setSuccessMessage('Password has been reset. You can sign in now.');
       setTimeout(() => {
-        router.replace(ROUTES.authLogin);
+        router.replace(ROUTES.AUTH_LOGIN);
       }, 700);
     }
   };
