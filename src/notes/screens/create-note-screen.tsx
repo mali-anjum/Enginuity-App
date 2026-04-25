@@ -62,7 +62,7 @@ export default function CreateNoteScreen() {
                 tags: formValues.tags,
               }),
             );
-            router.replace(ROUTES.notesList);
+            router.replace(ROUTES.NOTES_LIST);
           })}
         />
       </ScrollView>
