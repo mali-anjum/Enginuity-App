@@ -8,7 +8,7 @@ import { selectExperimentById } from '@/experiment/state/experimentSlice';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { createCustomTagThunk, createNoteThunk } from '@/notes/state/notesSlice';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 const INITIAL_VALUES: NoteFormValues = {
   title: '',
