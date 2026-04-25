@@ -4,7 +4,7 @@ import {
   fetchActivityLogsForUser,
   type ActivityLogItem,
 } from '@/dashboard/services/activitySupabaseService';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 import { withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 
 type ActivityFeedState = {
