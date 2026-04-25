@@ -7,7 +7,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { createCustomTagThunk, selectNoteById, updateNoteThunk } from '@/notes/state/notesSlice';
-import { routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function EditNoteScreen() {
@@ -64,7 +64,7 @@ export default function EditNoteScreen() {
                 tags: formValues.tags,
               }),
             );
-            router.replace(routePaths.noteDetail(note.id));
+            router.replace(ROUTE_PATHS.NOTE_DETAIL(note.id));
           })}
         />
       </ScrollView>
