@@ -9,7 +9,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import { selectAllTags } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 export type NoteFormValues = {
   title: string;
