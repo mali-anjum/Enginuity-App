@@ -7,7 +7,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { getSupabaseClientOrNull } from '@/sharedModules/services/supabase/supabaseClient';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { unwrapSupabaseClient } from '@/sharedModules/services/supabase/supabaseUntypedClient';
 
 export function SharedProjectsRealtimeSync() {
