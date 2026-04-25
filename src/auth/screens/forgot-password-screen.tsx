@@ -9,7 +9,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function ForgotPasswordScreen() {
   const dispatch = useAppDispatch();
