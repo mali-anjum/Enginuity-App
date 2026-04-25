@@ -1,4 +1,4 @@
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { generatePDF } from 'react-native-html-to-pdf';
 
 import type { Experiment } from '@/experiment/state/experimentSlice';
 import type { Project } from '@/project/state/projectSlice';
@@ -96,7 +96,7 @@ export async function exportExperimentAsPdf({
     base64: false,
   };
 
-  const pdf = await RNHTMLtoPDF.convert(options);
+  const pdf = await generatePDF(options);
   if (!pdf.filePath) {
     throw new Error('Failed to generate PDF file');
   }
