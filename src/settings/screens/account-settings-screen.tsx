@@ -52,7 +52,7 @@ export default function AccountSettingsScreen() {
 
   const handleSignOut = async () => {
     await dispatch(logoutThunk());
-    router.replace(ROUTES.authLogin as Href);
+    router.replace(ROUTES.AUTH_LOGIN as Href);
   };
 
   const handleDeleteAccount = () => {
@@ -67,7 +67,7 @@ export default function AccountSettingsScreen() {
           onPress: async () => {
             const action = await dispatch(deleteAccountThunk());
             if (deleteAccountThunk.fulfilled.match(action)) {
-              router.replace(ROUTES.authLogin as Href);
+              router.replace(ROUTES.AUTH_LOGIN as Href);
             }
           },
         },
@@ -141,7 +141,7 @@ export default function AccountSettingsScreen() {
         </ThemedText>
         <Pressable
           style={[styles.secondaryBtn, { borderColor: themeColors.border }]}
-          onPress={() => router.push(ROUTES.settingsUpgrade)}>
+          onPress={() => router.push(ROUTES.SETTINGS_UPGRADE)}>
           <ThemedText>Manage or upgrade plan</ThemedText>
         </Pressable>
         {isProPlan ? (
