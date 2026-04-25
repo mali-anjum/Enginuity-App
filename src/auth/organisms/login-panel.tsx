@@ -7,7 +7,7 @@ import { loginWithPasswordThunk, selectAuthError, selectAuthStatus } from '@/aut
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 import { AuthSubtitle } from '../molecules/auth-subtitle';
 
