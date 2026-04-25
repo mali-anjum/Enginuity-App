@@ -2,7 +2,7 @@ import { createSelector } from '@reduxjs/toolkit';
 
 import type { Experiment } from '@/experiment/state/experimentSlice';
 import type { Project } from '@/project/state/projectSlice';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 
 export type ProjectCardModel = Project & { experimentCount: number };
 export type HomeProjectSections = {
