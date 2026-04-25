@@ -124,7 +124,7 @@ export function HardwarePickerSheet({
                   ? 'Your hardware library is empty.'
                   : 'No matches for this filter or search.'}
               </ThemedText>
-              <Link href={ROUTES.hardwareAdd as Href}>
+              <Link href={ROUTES.HARDWARE_ADD as Href}>
                 <ThemedText style={{ color: themeColors.primary }}>Add hardware to library</ThemedText>
               </Link>
             </View>

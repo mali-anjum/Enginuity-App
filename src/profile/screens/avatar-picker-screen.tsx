@@ -45,7 +45,7 @@ export default function AvatarPickerScreen() {
     }
 
     await dispatch(uploadAvatarThunk({ localUri: result.assets[0].uri }));
-    router.replace(ROUTES.profileHome as Href);
+    router.replace(ROUTES.PROFILE_HOME as Href);
   };
 
   return (

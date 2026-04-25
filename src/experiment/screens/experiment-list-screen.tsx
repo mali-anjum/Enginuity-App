@@ -13,7 +13,7 @@ import {
   selectAllExperiments,
   setExperimentStatusFilter,
 } from '@/experiment/state/experimentSlice';
-import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function ExperimentListScreen() {
@@ -34,7 +34,7 @@ export default function ExperimentListScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Experiment List</ThemedText>
-          <Link href={ROUTES.experimentCreate as Href}>
+          <Link href={ROUTES.EXPERIMENT_CREATE as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Create Experiment</ThemedText>
           </Link>
         </View>
@@ -97,11 +97,11 @@ export default function ExperimentListScreen() {
               headline="Run your first experiment"
               body="Track objectives, observations, attachments, and status in one structured engineering log."
               ctaLabel="Create Experiment"
-              onPressCta={() => router.push(ROUTES.experimentCreate as Href)}
+              onPressCta={() => router.push(ROUTES.EXPERIMENT_CREATE as Href)}
             />
           ) : (
             filtered.map((experiment) => (
-              <Link key={experiment.id} href={routePaths.experimentDetail(experiment.id)} asChild>
+              <Link key={experiment.id} href={ROUTE_PATHS.EXPERIMENT_DETAIL(experiment.id)} asChild>
                 <Pressable
                   style={[
                     styles.card,

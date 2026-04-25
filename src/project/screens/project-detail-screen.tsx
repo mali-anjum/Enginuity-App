@@ -16,6 +16,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { addToast } from '@/ui/state/uiSlice';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -51,7 +52,7 @@ export default function ProjectDetailScreen() {
     );
   }
 
-  const experimentCreateHref = `/experiment/create?projectId=${encodeURIComponent(project.id)}` as Href;
+  const experimentCreateHref = ROUTE_PATHS.EXPERIMENT_CREATE_FOR_PROJECT(project.id);
 
   return (
     <ThemedView style={styles.screen}>
@@ -63,7 +64,7 @@ export default function ProjectDetailScreen() {
               <ThemedText style={{ color: themeColors.primary }}>Share</ThemedText>
             </Pressable>
             {canEditProject ? (
-              <Link href={`/project/${project.id}/edit` as Href}>
+              <Link href={ROUTE_PATHS.PROJECT_EDIT(project.id)}>
                 <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
               </Link>
             ) : null}
@@ -181,7 +182,7 @@ export default function ProjectDetailScreen() {
                       backgroundColor: themeColors.surfaceElevated,
                     },
                   ]}>
-                  <Link href={`/experiment/${experiment.id}` as Href} asChild>
+                  <Link href={ROUTE_PATHS.EXPERIMENT_DETAIL(experiment.id)} asChild>
                     <Pressable
                       style={styles.experimentMain}
                       accessibilityRole="button"
@@ -224,7 +225,7 @@ export default function ProjectDetailScreen() {
             <View style={styles.sectionTitleRow}>
               <ThemedText type="defaultSemiBold">Notes</ThemedText>
               {canEditProject ? (
-                <Link href={`/notes/create?projectId=${encodeURIComponent(project.id)}` as Href}>
+                <Link href={ROUTE_PATHS.NOTES_CREATE_FOR_PROJECT(project.id)}>
                   <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
                 </Link>
               ) : null}
@@ -239,7 +240,7 @@ export default function ProjectDetailScreen() {
               </View>
             ) : (
               notes.map((note) => (
-                <Link key={note.id} href={`/notes/${note.id}` as Href} asChild>
+                <Link key={note.id} href={ROUTE_PATHS.NOTE_DETAIL(note.id)} asChild>
                   <Pressable
                     style={[
                       styles.noteCard,

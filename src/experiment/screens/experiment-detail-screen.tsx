@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Link, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -28,7 +28,7 @@ import {
 } from '@/monetization/state/monetizationSlice';
 import { selectNotesByExperiment } from '@/notes/state/notesSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
-import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 function statusChipColors(
@@ -146,7 +146,7 @@ export default function ExperimentDetailScreen() {
                 {isExportingPdf ? 'Preparing…' : 'Share'}
               </ThemedText>
             </Pressable>
-            <Link href={`/experiment/${experiment.id}/edit` as Href}>
+            <Link href={ROUTE_PATHS.EXPERIMENT_EDIT(experiment.id)}>
               <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
             </Link>
           </View>
@@ -204,7 +204,7 @@ export default function ExperimentDetailScreen() {
           <View style={styles.notesRow}>
             <View style={styles.topRow}>
               <ThemedText type="defaultSemiBold">Linked notes</ThemedText>
-              <Link href={routePaths.notesCreateForExperiment(experiment.id)}>
+              <Link href={ROUTE_PATHS.NOTES_CREATE_FOR_EXPERIMENT(experiment.id)}>
                 <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
               </Link>
             </View>
@@ -214,7 +214,7 @@ export default function ExperimentDetailScreen() {
               </ThemedText>
             ) : (
               linkedNotes.map((note) => (
-                <Link key={note.id} href={routePaths.noteDetail(note.id)} asChild>
+                <Link key={note.id} href={ROUTE_PATHS.NOTE_DETAIL(note.id)} asChild>
                   <Pressable
                     style={[
                       styles.noteCard,
@@ -250,7 +250,7 @@ export default function ExperimentDetailScreen() {
           ) : (
             <View style={styles.chipWrap}>
               {linkedHardware.map((hardware) => (
-                <Link key={hardware.id} href={routePaths.hardwareDetail(hardware.id)} asChild>
+                <Link key={hardware.id} href={ROUTE_PATHS.HARDWARE_DETAIL(hardware.id)} asChild>
                   <Pressable
                     style={[
                       styles.hardwareChip,
@@ -281,7 +281,7 @@ export default function ExperimentDetailScreen() {
               {imageAttachments.map((attachment) => (
                 <Link
                   key={attachment.url}
-                  href={routePaths.experimentAttachmentViewer(
+                  href={ROUTE_PATHS.EXPERIMENT_ATTACHMENT_VIEWER(
                     attachment.url,
                     attachment.fileName,
                     attachment.fileType ?? 'image/*',
@@ -311,7 +311,7 @@ export default function ExperimentDetailScreen() {
             fileAttachments.map((attachment) => (
               <Link
                 key={attachment.url}
-                href={routePaths.experimentAttachmentViewer(
+                href={ROUTE_PATHS.EXPERIMENT_ATTACHMENT_VIEWER(
                   attachment.url,
                   attachment.fileName,
                   attachment.fileType ??
@@ -372,7 +372,7 @@ export default function ExperimentDetailScreen() {
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">Quick Actions</ThemedText>
           <Link
-            href={routePaths.notesCreateForExperimentWithTitle(
+            href={ROUTE_PATHS.NOTES_CREATE_FOR_EXPERIMENT_WITH_TITLE(
               experiment.id,
               `Notes on: ${experiment.title}`,
             )}
@@ -391,7 +391,7 @@ export default function ExperimentDetailScreen() {
         description={paywallDescription}
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
-        onViewPlans={() => router.push(ROUTES.settingsUpgrade)}
+        onViewPlans={() => router.push(ROUTES.SETTINGS_UPGRADE)}
         onUpgrade={() => {
           void (async () => {
             await dispatch(openCheckoutThunk());

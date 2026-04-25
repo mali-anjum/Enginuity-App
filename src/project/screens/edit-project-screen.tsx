@@ -6,7 +6,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { selectProjectById, updateProjectThunk } from '@/project/state/projectSlice';
-import { routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function EditProjectScreen() {
@@ -56,7 +56,7 @@ export default function EditProjectScreen() {
                 isCompleted: values.status === 'completed',
               }),
             );
-            router.replace(routePaths.projectDetail(project.id));
+            router.replace(ROUTE_PATHS.PROJECT_DETAIL(project.id));
           }}
         />
       </ScrollView>

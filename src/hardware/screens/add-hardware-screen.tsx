@@ -53,7 +53,7 @@ export default function AddHardwareScreen() {
                 datasheetUrl: values.datasheetUrl.trim(),
               }),
             );
-            router.replace(ROUTES.hardwareList);
+            router.replace(ROUTES.HARDWARE_LIST);
           }}
         />
       </ScrollView>
@@ -63,7 +63,7 @@ export default function AddHardwareScreen() {
         description="Upgrade to Pro for unlimited hardware."
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
-        onViewPlans={() => router.push(ROUTES.settingsUpgrade)}
+        onViewPlans={() => router.push(ROUTES.SETTINGS_UPGRADE)}
         onUpgrade={() => {
           void (async () => {
             await dispatch(openCheckoutThunk());

@@ -21,18 +21,18 @@ export default function LoginScreen() {
         <AuthOauthSection />
         <AppButton
           label="Continue with email"
-          onPress={() => router.push(ROUTES.authLoginEmail as never)}
+          onPress={() => router.push(ROUTES.AUTH_LOGIN_EMAIL as never)}
         />
         <View style={styles.links}>
           <ThemedText
             type="link"
-            onPress={() => router.push(ROUTES.authForgotPassword as never)}
+            onPress={() => router.push(ROUTES.AUTH_FORGOT_PASSWORD as never)}
           >
             Forgot password?
           </ThemedText>
           <ThemedText
             type="link"
-            onPress={() => router.replace(ROUTES.authSignup)}
+            onPress={() => router.replace(ROUTES.AUTH_SIGNUP)}
           >
             Don&apos;t have an account? Sign up
           </ThemedText>

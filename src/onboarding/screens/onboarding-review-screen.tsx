@@ -65,10 +65,10 @@ export default function OnboardingReviewScreen() {
     title: string;
     value: string;
     editHref:
-      | typeof ROUTES.onboardingFocus
-      | typeof ROUTES.onboardingEducation
-      | typeof ROUTES.onboardingUsage
-      | typeof ROUTES.onboardingGoals;
+      | typeof ROUTES.ONBOARDING_FOCUS
+      | typeof ROUTES.ONBOARDING_EDUCATION
+      | typeof ROUTES.ONBOARDING_USAGE
+      | typeof ROUTES.ONBOARDING_GOALS;
   }) => (
     <View style={[styles.card, { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated }]}>
       <View style={styles.cardHead}>
@@ -83,7 +83,7 @@ export default function OnboardingReviewScreen() {
 
   const continueSignup = () => {
     dispatch(markPreAuthProfileCompleted());
-    router.replace(ROUTES.authSignup);
+    router.replace(ROUTES.AUTH_SIGNUP);
   };
 
   return (
@@ -95,19 +95,19 @@ export default function OnboardingReviewScreen() {
           account.
         </ThemedText>
 
-        <Row title="Focus areas" value={s.focus} editHref={ROUTES.onboardingFocus} />
+        <Row title="Focus areas" value={s.focus} editHref={ROUTES.ONBOARDING_FOCUS} />
         <Row
           title="Education & affiliation"
           value={`${s.institution}\n${s.field}`}
-          editHref={ROUTES.onboardingEducation}
+          editHref={ROUTES.ONBOARDING_EDUCATION}
         />
-        <Row title="Usage context" value={s.usage} editHref={ROUTES.onboardingUsage} />
-        <Row title="Goals & discovery" value={`${s.goal}\n${s.discovery}`} editHref={ROUTES.onboardingGoals} />
+        <Row title="Usage context" value={s.usage} editHref={ROUTES.ONBOARDING_USAGE} />
+        <Row title="Goals & discovery" value={`${s.goal}\n${s.discovery}`} editHref={ROUTES.ONBOARDING_GOALS} />
 
         <View style={styles.row}>
           <Pressable
             style={[styles.secondary, { borderColor: themeColors.border }]}
-            onPress={() => router.push(ROUTES.onboardingGoals as never)}>
+            onPress={() => router.push(ROUTES.ONBOARDING_GOALS as never)}>
             <ThemedText>Back</ThemedText>
           </Pressable>
           <Pressable style={[styles.primary, { backgroundColor: themeColors.primary }]} onPress={continueSignup}>

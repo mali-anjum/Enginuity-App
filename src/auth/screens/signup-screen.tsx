@@ -17,9 +17,9 @@ export default function SignupScreen() {
         <ThemedText type="title">Create account</ThemedText>
         <AuthSubtitle>Join with Google, Apple, Facebook, GitHub, or email after your onboarding plan.</AuthSubtitle>
         <AuthOauthSection />
-        <AppButton label="Continue with email" onPress={() => router.push(ROUTES.authSignupEmail as never)} />
+        <AppButton label="Continue with email" onPress={() => router.push(ROUTES.AUTH_SIGNUP_EMAIL as never)} />
         <View style={styles.footer}>
-          <ThemedText type="link" onPress={() => router.replace(ROUTES.authLogin)}>
+          <ThemedText type="link" onPress={() => router.replace(ROUTES.AUTH_LOGIN)}>
             Already have an account? Sign in
           </ThemedText>
         </View>

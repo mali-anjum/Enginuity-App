@@ -8,7 +8,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import { deleteHardwareThunk, selectHardwareById } from '@/hardware/state/hardwareSlice';
-import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function HardwareDetailScreen() {
@@ -35,7 +35,7 @@ export default function HardwareDetailScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <ThemedText type="title">{hardware.name}</ThemedText>
-          <Link href={routePaths.hardwareEdit(hardware.id)}>
+          <Link href={ROUTE_PATHS.HARDWARE_EDIT(hardware.id)}>
             <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
           </Link>
         </View>
@@ -52,7 +52,7 @@ export default function HardwareDetailScreen() {
             <ThemedText style={{ color: themeColors.mutedText }}>Not used in any experiments yet.</ThemedText>
           ) : (
             usedByExperiments.map((exp) => (
-              <Link key={exp.id} href={routePaths.experimentDetail(exp.id)}>
+              <Link key={exp.id} href={ROUTE_PATHS.EXPERIMENT_DETAIL(exp.id)}>
                 <ThemedText style={{ color: themeColors.primary }}>{exp.title}</ThemedText>
               </Link>
             ))
@@ -83,7 +83,7 @@ export default function HardwareDetailScreen() {
                 onPress={() => setIsDeleteDialogOpen(false)}>
                 <ThemedText>Cancel</ThemedText>
               </Pressable>
-              <Link href={ROUTES.hardwareList as Href} asChild>
+              <Link href={ROUTES.HARDWARE_LIST as Href} asChild>
                 <Pressable
                   style={[styles.dialogButton, { borderColor: themeColors.danger }]}
                   onPress={() => {

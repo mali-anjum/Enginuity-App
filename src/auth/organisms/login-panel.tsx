@@ -28,13 +28,13 @@ export function LoginPanel() {
     if (isLoading) return;
     const action = await dispatch(loginWithPasswordThunk({ email, password }));
     if (loginWithPasswordThunk.fulfilled.match(action)) {
-      router.replace(ROUTES.home);
+      router.replace(ROUTES.HOME);
     }
   };
 
   return (
     <View style={styles.stack}>
-      <ThemedText type="link" onPress={() => router.replace(ROUTES.authLogin)}>
+      <ThemedText type="link" onPress={() => router.replace(ROUTES.AUTH_LOGIN)}>
         ← More sign-in options
       </ThemedText>
       <ThemedText type="title">Sign in</ThemedText>
@@ -62,10 +62,10 @@ export function LoginPanel() {
       ) : null}
       {authError ? <ThemedText style={styles.errorText}>{authError}</ThemedText> : null}
       <View style={styles.linksRow}>
-        <ThemedText type="link" onPress={() => router.push(ROUTES.authForgotPassword as never)}>
+        <ThemedText type="link" onPress={() => router.push(ROUTES.AUTH_FORGOT_PASSWORD as never)}>
           Forgot password?
         </ThemedText>
-        <ThemedText type="link" onPress={() => router.push(ROUTES.authSignup as never)}>
+        <ThemedText type="link" onPress={() => router.push(ROUTES.AUTH_SIGNUP as never)}>
           Create account
         </ThemedText>
       </View>

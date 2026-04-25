@@ -66,7 +66,7 @@ export default function OnboardingFocusScreen() {
           </Pressable>
           <Pressable
             style={[styles.primary, { backgroundColor: themeColors.primary }]}
-            onPress={() => router.push(ROUTES.onboardingEducation as never)}
+            onPress={() => router.push(ROUTES.ONBOARDING_EDUCATION as never)}
           >
             <ThemedText
               style={{ color: themeColors.buttonPrimaryText }}
