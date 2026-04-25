@@ -16,7 +16,7 @@ import {
 import { optimizeImageForUpload } from '@/experiment/utils/imageUploadOptimizer';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function EditExperimentScreen() {
   const { experimentId } = useLocalSearchParams<{ experimentId: string }>();
