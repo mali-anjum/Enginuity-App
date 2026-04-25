@@ -2,7 +2,7 @@
 
 ## Root Composition
 - App entry for routing is `src/app/_layout.tsx`.
-- Providers are mounted in `src/sharedModules/state/Providers.tsx`.
+- Providers are mounted in `src/store/Providers.tsx`.
 - `AppProviders` wraps Redux `Provider`, `PersistGate`, auth sync, onboarding sync, offline reconciler, realtime sync, and global UI banners.
 
 ## Auth + Route Guard Behavior

@@ -8,7 +8,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 import { SectionSpacer } from '../atoms/section-spacer';
 import { WelcomeTitleRow } from '../molecules/welcome-title-row';

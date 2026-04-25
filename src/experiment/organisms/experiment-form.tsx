@@ -12,7 +12,7 @@ import {
 } from '@/experiment/constants';
 import { fetchGithubCommitPreview } from '@/experiment/services/githubCommitLookupService';
 import { selectAllProjects } from '@/project/state/projectSlice';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 export type ExperimentFormValues = {
   title: string;

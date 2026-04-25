@@ -46,7 +46,8 @@ Notes:
 - `project/` – Project management feature: project list/detail/edit state and services.
 - `search/` – Cross-feature/global search experience.
 - `settings/` – App settings screens/state/services (notifications, sync, preferences).
-- `sharedModules/` – App-wide shared infrastructure (store/providers, navigation helpers, sync/client integrations).
+- `sharedModules/` – App-wide shared infrastructure (navigation helpers, sync/client integrations, cross-feature utilities).
+- `store/` – Redux setup module (configureStore, persist, middleware registry, typed hooks, provider wiring).
 - `testing/` – Shared test utilities and test support helpers.
 - `types/` – Cross-feature/global TypeScript types.
 - `ui/` – App-wide UI system pieces not scoped to a single feature.
@@ -60,7 +61,7 @@ These are equivalent or closest mappings:
 - `onboarding` -> `onboarding`
 - `auth` -> `auth`
 - `sharedModules` -> `sharedModules`
-- `store` (other project) -> currently under `sharedModules/state` in this app
+- `store` (other project) -> now represented by top-level `src/store` in this app
 - `paywall/subscription/shop` (other project) -> currently grouped under `monetization` in this app
 - `resources` (other project) -> mostly covered by root `assets/` and style/theme files in shared/common areas
 

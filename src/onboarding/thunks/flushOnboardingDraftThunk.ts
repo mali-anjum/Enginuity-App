@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import type { AuthDiscipline } from '@/auth/state/authSlice';
 import { fetchProfileThunk } from '@/auth/state/authSlice';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 import { getSupabaseClientOrNull } from '@/sharedModules/services/supabase/supabaseClient';
 
 import {

@@ -21,7 +21,7 @@ import {
   selectSubscriptionPlan,
 } from '@/monetization/state/monetizationSlice';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function AccountSettingsScreen() {
   const colorScheme = useColorScheme();

@@ -14,7 +14,7 @@ import {
   selectIsCheckoutLoading,
 } from '@/monetization/state/monetizationSlice';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 const INITIAL_VALUES: HardwareFormValues = {
   name: '',

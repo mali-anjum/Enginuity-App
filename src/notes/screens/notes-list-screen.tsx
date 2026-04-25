@@ -19,7 +19,7 @@ import {
 } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 type NoteFilter = 'all' | 'project' | 'tag' | 'favourites';
 

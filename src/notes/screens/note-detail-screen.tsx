@@ -10,7 +10,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { NoteRichText } from '@/notes/molecules/note-rich-text';
 import { deleteNoteThunk, selectNoteById } from '@/notes/state/notesSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function NoteDetailScreen() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();

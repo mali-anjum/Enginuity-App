@@ -10,7 +10,7 @@ import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import { selectAllNotes } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 function disciplineBadgeLabel(discipline: string | null): string {
   if (!discipline) return 'Student';

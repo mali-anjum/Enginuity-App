@@ -11,7 +11,7 @@ import {
 } from '@/experiment/services/experimentSupabaseService';
 import { upsertWorkspaceTags } from '@/sharedModules/services/supabase/tagSupabaseService';
 import { getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { createLocalUuidV4, isUuid } from '@/sharedModules/utils/uuid';
 

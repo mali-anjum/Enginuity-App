@@ -6,7 +6,7 @@ This document is a fast context reference for day-to-day implementation, debuggi
 
 - **Routing:** Expo Router with file-based routes in `src/app`.
 - **Feature logic:** Lives outside `src/app` inside feature modules (`auth`, `project`, `experiment`, etc.).
-- **Global state:** Redux Toolkit + persist; providers initialized through `src/sharedModules/state/Providers.tsx`.
+- **Global state:** Redux Toolkit + persist; providers initialized through `src/store/Providers.tsx`.
 - **Backend:** Supabase client/services under `src/sharedModules/services/supabase`.
 - **UI strategy:** Shared UI in `common`/`ui`; feature-specific UI in each module.
 
@@ -16,6 +16,7 @@ This document is a fast context reference for day-to-day implementation, debuggi
 - Keep tests, services, selectors, and business logic in feature folders (for example `src/auth/services`).
 - Prefer feature-local organization from `docs/MODULE_STRUCTURE.md`.
 - Keep reusable test helpers in `src/testing`; keep feature tests near the feature.
+- Do **not** use `any` in TypeScript application code. Prefer `unknown`, narrowed union types, or typed interfaces/guards.
 
 ## 3) Current Module Responsibility Map
 

@@ -10,7 +10,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectAllTags } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 import { AdvancedFilterSheet, type AdvancedFilters } from '../organisms/advanced-filter-sheet';
 import {

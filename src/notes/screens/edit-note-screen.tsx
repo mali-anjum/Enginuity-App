@@ -8,7 +8,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { createCustomTagThunk, selectNoteById, updateNoteThunk } from '@/notes/state/notesSlice';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function EditNoteScreen() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();

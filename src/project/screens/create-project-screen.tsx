@@ -14,7 +14,7 @@ import {
 import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { createProjectThunk } from '@/project/state/projectSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 const INITIAL_VALUES: ProjectFormValues = {
   title: '',

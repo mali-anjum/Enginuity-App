@@ -12,7 +12,7 @@ import {
   selectIsProPlan,
   selectSubscriptionPlan,
 } from '@/monetization/state/monetizationSlice';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 type BillingCycle = 'monthly' | 'annual';
 

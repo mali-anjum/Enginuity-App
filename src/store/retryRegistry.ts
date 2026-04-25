@@ -7,10 +7,10 @@ import { createCustomTagThunk, createNoteThunk, deleteNoteThunk, fetchNotesThunk
 import { flushOnboardingDraftThunk } from '@/onboarding/thunks/flushOnboardingDraftThunk';
 import { createProjectThunk, deleteProjectThunk, fetchProjectsThunk, inviteProjectMemberThunk, syncPendingProjectsThunk, toggleFavouriteThunk, toggleProjectStatusThunk, updateProjectThunk } from '@/project/state/projectSlice';
 import { fetchNotificationSettingsThunk, fetchStorageUsageThunk, manualSyncThunk, processLocalSyncQueueThunk, saveNotificationSettingsThunk } from '@/settings/state/settingsSlice';
-import type { AppDispatch } from '@/sharedModules/state/store';
+import type { AppDispatch } from '@/store/store';
 import type { RetryDescriptor } from '@/ui/state/uiSlice';
 
-type RetryThunkCreator = (arg: any) => any;
+type RetryThunkCreator = (arg: unknown) => unknown;
 
 const RETRYABLE_THUNKS: Record<string, RetryThunkCreator> = {
   [loginThunk.typePrefix]: loginThunk,
@@ -88,6 +88,6 @@ export function isAutoRetryType(typePrefix: string): boolean {
 export function dispatchRetryOperation(dispatch: AppDispatch, retry: RetryDescriptor): boolean {
   const thunk = getRetryThunk(retry.typePrefix);
   if (!thunk) return false;
-  dispatch(thunk(retry.arg));
+  dispatch(thunk(retry.arg) as never);
   return true;
 }

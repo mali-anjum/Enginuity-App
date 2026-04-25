@@ -7,7 +7,7 @@ import { selectAuthError, selectAuthStatus, signupThunk } from '@/auth/state/aut
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { mapFocusAreasToAuthDiscipline } from '@/onboarding/types/profileDraft';
 
 export default function SignupEmailScreen() {

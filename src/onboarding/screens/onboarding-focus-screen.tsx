@@ -9,7 +9,7 @@ import { FOCUS_AREA_OPTIONS } from "@/onboarding/constants/onboardingLabels";
 import { setFocusAreas } from "@/onboarding/state/onboardingSlice";
 import type { FocusArea } from "@/onboarding/types/profileDraft";
 import { ROUTES } from "@/sharedModules/navigation/routes";
-import { useAppDispatch, useAppSelector } from "@/sharedModules/state/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export default function OnboardingFocusScreen() {
   const router = useRouter();

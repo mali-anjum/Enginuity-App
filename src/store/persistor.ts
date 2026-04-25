@@ -1,5 +1,5 @@
 import { persistStore } from 'redux-persist';
 
-import { store } from '@/sharedModules/state/store';
+import { store } from '@/store/store';
 
 export const persistor = persistStore(store);

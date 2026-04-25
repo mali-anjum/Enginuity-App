@@ -9,7 +9,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import { deleteHardwareThunk, selectHardwareById } from '@/hardware/state/hardwareSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function HardwareDetailScreen() {
   const { hardwareId } = useLocalSearchParams<{ hardwareId: string }>();

@@ -10,7 +10,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { DISCOVERY_OPTIONS } from '@/onboarding/constants/onboardingLabels';
 import { setGoalsFields } from '@/onboarding/state/onboardingSlice';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function OnboardingGoalsScreen() {
   const router = useRouter();
