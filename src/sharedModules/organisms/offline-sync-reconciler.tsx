@@ -7,7 +7,7 @@ import {
 } from '@/experiment/state/experimentSlice';
 import { syncPendingProjectsThunk } from '@/project/state/projectSlice';
 import { processLocalSyncQueueThunk } from '@/settings/state/settingsSlice';
-import { useAppDispatch } from '@/sharedModules/state/hooks';
+import { useAppDispatch } from '@/store/hooks';
 
 export function OfflineSyncReconciler() {
   const dispatch = useAppDispatch();
