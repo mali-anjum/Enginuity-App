@@ -14,7 +14,7 @@ import {
   selectHardwareCategoryFilter,
   setHardwareCategoryFilter,
 } from '@/hardware/state/hardwareSlice';
-import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const FILTER_OPTIONS: ('All' | HardwareCategory)[] = ['All', ...HARDWARE_CATEGORIES];
@@ -36,7 +36,7 @@ export default function HardwareListScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Hardware Library</ThemedText>
-          <Link href={ROUTES.hardwareAdd as Href}>
+          <Link href={ROUTES.HARDWARE_ADD as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Add Hardware</ThemedText>
           </Link>
         </View>
@@ -87,11 +87,11 @@ export default function HardwareListScreen() {
               headline="Build your hardware library"
               body="Save boards, sensors, and modules so every project can reuse proven components."
               ctaLabel="Add Hardware"
-              onPressCta={() => router.push(ROUTES.hardwareAdd as Href)}
+              onPressCta={() => router.push(ROUTES.HARDWARE_ADD as Href)}
             />
           ) : (
             filteredItems.map((item) => (
-              <Link key={item.id} href={routePaths.hardwareDetail(item.id)} asChild>
+              <Link key={item.id} href={ROUTE_PATHS.HARDWARE_DETAIL(item.id)} asChild>
                 <Pressable
                   style={[
                     styles.card,
