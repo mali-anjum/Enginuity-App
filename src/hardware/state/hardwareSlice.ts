@@ -7,7 +7,7 @@ import {
   insertHardwareForUser,
   updateHardwareForUser,
 } from '@/hardware/services/hardwareSupabaseService';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { isUuid } from '@/sharedModules/utils/uuid';
 
