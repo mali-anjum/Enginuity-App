@@ -60,7 +60,7 @@ export default function ForgotPasswordScreen() {
       {successMessage ? (
         <ThemedText style={[styles.message, { color: themeColors.success }]}>{successMessage}</ThemedText>
       ) : null}
-      <Link href={ROUTES.authLogin}>
+      <Link href={ROUTES.AUTH_LOGIN}>
         <ThemedText type="link">Back to sign in</ThemedText>
       </Link>
     </View>
