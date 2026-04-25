@@ -11,7 +11,7 @@ import { INSTITUTION_TYPE_OPTIONS } from "@/onboarding/constants/onboardingLabel
 import { setInstitutionFields } from "@/onboarding/state/onboardingSlice";
 import type { InstitutionType } from "@/onboarding/types/profileDraft";
 import { ROUTES } from "@/sharedModules/navigation/routes";
-import { useAppDispatch, useAppSelector } from "@/sharedModules/state/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export default function OnboardingEducationScreen() {
   const router = useRouter();
