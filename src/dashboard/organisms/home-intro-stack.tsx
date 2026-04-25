@@ -22,10 +22,10 @@ export function HomeIntroStack() {
     <>
       <WelcomeTitleRow />
       <ThemedView style={styles.stepContainer}>
-        <Link href={ROUTES.onboarding as Href}>
+        <Link href={ROUTES.ONBOARDING as Href}>
           <ThemedText type="subtitle">Preview onboarding</ThemedText>
         </Link>
-        <Link href={ROUTES.authLogin as Href}>
+        <Link href={ROUTES.AUTH_LOGIN as Href}>
           <ThemedText type="subtitle">Login with Google</ThemedText>
         </Link>
         {isAuthenticated ? (
