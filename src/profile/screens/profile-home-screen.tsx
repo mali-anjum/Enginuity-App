@@ -79,27 +79,27 @@ export default function ProfileHomeScreen() {
         <StatPill label="Notes" value={notesCount} />
 
         <View style={styles.actions}>
-          <Link href={ROUTES.settingsHome as Href} asChild>
+          <Link href={ROUTES.SETTINGS_HOME as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Settings</ThemedText>
             </Pressable>
           </Link>
-          <Link href={ROUTES.profileEdit as Href} asChild>
+          <Link href={ROUTES.PROFILE_EDIT as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Edit Profile</ThemedText>
             </Pressable>
           </Link>
-          <Link href={ROUTES.profileAvatar as Href} asChild>
+          <Link href={ROUTES.PROFILE_AVATAR as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Avatar Picker</ThemedText>
             </Pressable>
           </Link>
-          <Link href={ROUTES.profileStatistics as Href} asChild>
+          <Link href={ROUTES.PROFILE_STATISTICS as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Account Statistics</ThemedText>
             </Pressable>
           </Link>
-          <Link href={ROUTES.settingsUpgrade as Href} asChild>
+          <Link href={ROUTES.SETTINGS_UPGRADE as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Upgrade to Pro</ThemedText>
             </Pressable>
