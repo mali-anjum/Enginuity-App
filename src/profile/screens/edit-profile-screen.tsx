@@ -110,7 +110,7 @@ export default function EditProfileScreen() {
                 institution: institution.trim(),
               }),
             );
-            router.replace(ROUTES.profileHome as Href);
+            router.replace(ROUTES.PROFILE_HOME as Href);
           }}>
           <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
             Save Profile
