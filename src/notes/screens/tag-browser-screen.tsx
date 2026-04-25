@@ -9,6 +9,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectExperimentsByTag } from '@/experiment/state/experimentSlice';
 import { selectNotesByTag, selectTagCounts } from '@/notes/state/notesSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function TagBrowserScreen() {
@@ -43,19 +44,19 @@ export default function TagBrowserScreen() {
               title="Most Used"
               items={grouped.high}
               activeTag={activeTag}
-              onPress={(tag) => router.replace(`/notes/tags?tag=${encodeURIComponent(tag)}` as Href)}
+              onPress={(tag) => router.replace(routePaths.notesTagsWithTag(tag))}
             />
             <TagGroup
               title="Used Recently"
               items={grouped.medium}
               activeTag={activeTag}
-              onPress={(tag) => router.replace(`/notes/tags?tag=${encodeURIComponent(tag)}` as Href)}
+              onPress={(tag) => router.replace(routePaths.notesTagsWithTag(tag))}
             />
             <TagGroup
               title="Seeded Engineering Tags"
               items={grouped.seeded}
               activeTag={activeTag}
-              onPress={(tag) => router.replace(`/notes/tags?tag=${encodeURIComponent(tag)}` as Href)}
+              onPress={(tag) => router.replace(routePaths.notesTagsWithTag(tag))}
             />
           </>
         )}
@@ -63,7 +64,7 @@ export default function TagBrowserScreen() {
           <View style={[styles.tagSection, { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated }]}>
             <View style={styles.activeHeader}>
               <ThemedText type="defaultSemiBold">Filtered Notes</ThemedText>
-              <Pressable onPress={() => router.replace('/notes/tags' as Href)}>
+              <Pressable onPress={() => router.replace(ROUTES.notesTags as Href)}>
                 <ThemedText style={{ color: themeColors.primary }}>Clear</ThemedText>
               </Pressable>
             </View>
@@ -73,12 +74,12 @@ export default function TagBrowserScreen() {
             ) : (
               <>
                 {filteredNotes.map((note) => (
-                  <Link key={note.id} href={`/notes/${note.id}` as Href}>
+                  <Link key={note.id} href={routePaths.noteDetail(note.id)}>
                     <ThemedText style={{ color: themeColors.primary }}>Note: {note.title}</ThemedText>
                   </Link>
                 ))}
                 {filteredExperiments.map((experiment) => (
-                  <Link key={experiment.id} href={`/experiment/${experiment.id}` as Href}>
+                  <Link key={experiment.id} href={routePaths.experimentDetail(experiment.id)}>
                     <ThemedText style={{ color: themeColors.primary }}>
                       Experiment: {experiment.title}
                     </ThemedText>

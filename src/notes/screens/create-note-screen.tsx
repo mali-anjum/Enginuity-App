@@ -7,6 +7,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { selectExperimentById } from '@/experiment/state/experimentSlice';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { createCustomTagThunk, createNoteThunk } from '@/notes/state/notesSlice';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: NoteFormValues = {
@@ -61,7 +62,7 @@ export default function CreateNoteScreen() {
                 tags: formValues.tags,
               }),
             );
-            router.replace('/notes');
+            router.replace(ROUTES.notesList);
           })}
         />
       </ScrollView>

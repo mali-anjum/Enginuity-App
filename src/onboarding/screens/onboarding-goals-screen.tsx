@@ -9,6 +9,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { DISCOVERY_OPTIONS } from '@/onboarding/constants/onboardingLabels';
 import { setGoalsFields } from '@/onboarding/state/onboardingSlice';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function OnboardingGoalsScreen() {
@@ -24,7 +25,7 @@ export default function OnboardingGoalsScreen() {
   const save = () => {
     const src = customDiscovery.trim() || discovery.trim();
     dispatch(setGoalsFields({ primaryGoal: goal.trim(), discoverySource: src }));
-    router.push('/onboarding/review' as never);
+    router.push(ROUTES.onboardingReview as never);
   };
 
   return (

@@ -8,6 +8,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { FOCUS_AREA_OPTIONS } from '@/onboarding/constants/onboardingLabels';
 import { setFocusAreas } from '@/onboarding/state/onboardingSlice';
 import type { FocusArea } from '@/onboarding/types/profileDraft';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function OnboardingFocusScreen() {
@@ -58,7 +59,7 @@ export default function OnboardingFocusScreen() {
           </Pressable>
           <Pressable
             style={[styles.primary, { backgroundColor: themeColors.primary }]}
-            onPress={() => router.push('/onboarding/education' as never)}>
+            onPress={() => router.push(ROUTES.onboardingEducation as never)}>
             <ThemedText style={{ color: themeColors.buttonPrimaryText }} type="defaultSemiBold">
               Continue
             </ThemedText>

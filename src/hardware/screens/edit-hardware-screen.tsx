@@ -6,6 +6,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hardware-form';
 import { selectHardwareById, updateHardwareThunk } from '@/hardware/state/hardwareSlice';
+import { routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function EditHardwareScreen() {
@@ -52,7 +53,7 @@ export default function EditHardwareScreen() {
                 datasheetUrl: values.datasheetUrl.trim(),
               }),
             );
-            router.replace(`/hardware/${hardware.id}`);
+            router.replace(routePaths.hardwareDetail(hardware.id));
           }}
         />
       </ScrollView>

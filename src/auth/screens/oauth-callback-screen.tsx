@@ -7,6 +7,7 @@ import { exchangeOAuthCodeForSession } from '@/auth/services/authCallback';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 
 export default function OAuthCallbackScreen() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function OAuthCallbackScreen() {
 
     exchangeOAuthCodeForSession(code)
       .then(() => {
-        router.replace('/');
+        router.replace(ROUTES.home);
       })
       .catch((e: unknown) => {
         const message = e instanceof Error ? e.message : 'OAuth exchange failed';
@@ -80,7 +81,7 @@ export default function OAuthCallbackScreen() {
             styles.button,
             { backgroundColor: themeColors.primary },
           ]}
-          onPress={() => router.replace('/auth/login')}>
+          onPress={() => router.replace(ROUTES.authLogin)}>
           <ThemedText style={styles.buttonText} lightColor={Colors.light.background} darkColor={Colors.light.background}>
             Return to login
           </ThemedText>

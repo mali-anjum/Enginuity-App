@@ -13,6 +13,7 @@ import {
 } from '@/monetization/state/monetizationSlice';
 import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { createProjectThunk } from '@/project/state/projectSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: ProjectFormValues = {
@@ -55,7 +56,7 @@ export default function CreateProjectScreen() {
                   status: values.status,
                 }),
               ).unwrap();
-              router.replace(`/project/${created.id}`);
+              router.replace(routePaths.projectDetail(created.id));
             })();
           }}
         />
@@ -66,7 +67,7 @@ export default function CreateProjectScreen() {
         description="Upgrade to Pro for unlimited projects."
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
-        onViewPlans={() => router.push('/settings/upgrade')}
+        onViewPlans={() => router.push(ROUTES.settingsUpgrade)}
         onUpgrade={() => {
           void (async () => {
             await dispatch(openCheckoutThunk());

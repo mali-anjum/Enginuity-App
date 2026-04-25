@@ -7,6 +7,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
 import { SectionSpacer } from '../atoms/section-spacer';
@@ -21,10 +22,10 @@ export function HomeIntroStack() {
     <>
       <WelcomeTitleRow />
       <ThemedView style={styles.stepContainer}>
-        <Link href={'/onboarding' as Href}>
+        <Link href={ROUTES.onboarding as Href}>
           <ThemedText type="subtitle">Preview onboarding</ThemedText>
         </Link>
-        <Link href={'/auth/login' as Href}>
+        <Link href={ROUTES.authLogin as Href}>
           <ThemedText type="subtitle">Login with Google</ThemedText>
         </Link>
         {isAuthenticated ? (

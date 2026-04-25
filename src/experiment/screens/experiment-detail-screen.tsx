@@ -28,6 +28,7 @@ import {
 } from '@/monetization/state/monetizationSlice';
 import { selectNotesByExperiment } from '@/notes/state/notesSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 function statusChipColors(
@@ -203,7 +204,7 @@ export default function ExperimentDetailScreen() {
           <View style={styles.notesRow}>
             <View style={styles.topRow}>
               <ThemedText type="defaultSemiBold">Linked notes</ThemedText>
-              <Link href={`/notes/create?experimentId=${encodeURIComponent(experiment.id)}` as Href}>
+              <Link href={routePaths.notesCreateForExperiment(experiment.id)}>
                 <ThemedText style={{ color: themeColors.primary }}>Add note</ThemedText>
               </Link>
             </View>
@@ -213,7 +214,7 @@ export default function ExperimentDetailScreen() {
               </ThemedText>
             ) : (
               linkedNotes.map((note) => (
-                <Link key={note.id} href={`/notes/${note.id}` as Href} asChild>
+                <Link key={note.id} href={routePaths.noteDetail(note.id)} asChild>
                   <Pressable
                     style={[
                       styles.noteCard,
@@ -249,7 +250,7 @@ export default function ExperimentDetailScreen() {
           ) : (
             <View style={styles.chipWrap}>
               {linkedHardware.map((hardware) => (
-                <Link key={hardware.id} href={`/hardware/${hardware.id}` as Href} asChild>
+                <Link key={hardware.id} href={routePaths.hardwareDetail(hardware.id)} asChild>
                   <Pressable
                     style={[
                       styles.hardwareChip,
@@ -280,7 +281,11 @@ export default function ExperimentDetailScreen() {
               {imageAttachments.map((attachment) => (
                 <Link
                   key={attachment.url}
-                  href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? 'image/*')}` as Href}
+                  href={routePaths.experimentAttachmentViewer(
+                    attachment.url,
+                    attachment.fileName,
+                    attachment.fileType ?? 'image/*',
+                  )}
                   asChild>
                   <Pressable
                     style={[
@@ -306,7 +311,14 @@ export default function ExperimentDetailScreen() {
             fileAttachments.map((attachment) => (
               <Link
                 key={attachment.url}
-                href={`/experiment/attachment-viewer?url=${encodeURIComponent(attachment.url)}&name=${encodeURIComponent(attachment.fileName)}&type=${encodeURIComponent(attachment.fileType ?? (isCsvAttachment(attachment.fileType, attachment.fileName) ? 'text/csv' : 'application/pdf'))}` as Href}
+                href={routePaths.experimentAttachmentViewer(
+                  attachment.url,
+                  attachment.fileName,
+                  attachment.fileType ??
+                    (isCsvAttachment(attachment.fileType, attachment.fileName)
+                      ? 'text/csv'
+                      : 'application/pdf'),
+                )}
                 asChild>
                 <Pressable
                   style={[
@@ -360,7 +372,10 @@ export default function ExperimentDetailScreen() {
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">Quick Actions</ThemedText>
           <Link
-            href={`/notes/create?experimentId=${encodeURIComponent(experiment.id)}&title=${encodeURIComponent(`Notes on: ${experiment.title}`)}` as Href}
+            href={routePaths.notesCreateForExperimentWithTitle(
+              experiment.id,
+              `Notes on: ${experiment.title}`,
+            )}
             asChild>
             <Pressable style={[styles.quickActionButton, { backgroundColor: themeColors.primary }]}>
               <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
@@ -376,7 +391,7 @@ export default function ExperimentDetailScreen() {
         description={paywallDescription}
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
-        onViewPlans={() => router.push('/settings/upgrade')}
+        onViewPlans={() => router.push(ROUTES.settingsUpgrade)}
         onUpgrade={() => {
           void (async () => {
             await dispatch(openCheckoutThunk());

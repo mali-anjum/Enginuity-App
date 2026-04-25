@@ -10,6 +10,7 @@ const MAPPING = {
   'house.fill': 'home',
   magnifyingglass: 'search',
   'paperplane.fill': 'send',
+  'note.text': 'description',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   sparkles: 'auto-awesome',
@@ -34,5 +35,6 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  const iconName = MAPPING[name] ?? 'help-outline';
+  return <MaterialIcons color={color} size={size} name={iconName} style={style} />;
 }

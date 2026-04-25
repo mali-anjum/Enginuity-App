@@ -13,6 +13,7 @@ import {
   selectCanCreateHardware,
   selectIsCheckoutLoading,
 } from '@/monetization/state/monetizationSlice';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: HardwareFormValues = {
@@ -52,7 +53,7 @@ export default function AddHardwareScreen() {
                 datasheetUrl: values.datasheetUrl.trim(),
               }),
             );
-            router.replace('/hardware');
+            router.replace(ROUTES.hardwareList);
           }}
         />
       </ScrollView>
@@ -62,7 +63,7 @@ export default function AddHardwareScreen() {
         description="Upgrade to Pro for unlimited hardware."
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
-        onViewPlans={() => router.push('/settings/upgrade')}
+        onViewPlans={() => router.push(ROUTES.settingsUpgrade)}
         onUpgrade={() => {
           void (async () => {
             await dispatch(openCheckoutThunk());

@@ -16,6 +16,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { HARDWARE_CATEGORIES } from '@/hardware/constants';
 import type { HardwareCategory } from '@/hardware/constants';
 import type { HardwareItem } from '@/hardware/state/hardwareSlice';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 
 const LIST_MAX_HEIGHT = Math.round(Dimensions.get('window').height * 0.42);
 
@@ -123,7 +124,7 @@ export function HardwarePickerSheet({
                   ? 'Your hardware library is empty.'
                   : 'No matches for this filter or search.'}
               </ThemedText>
-              <Link href={'/hardware/add' as Href}>
+              <Link href={ROUTES.hardwareAdd as Href}>
                 <ThemedText style={{ color: themeColors.primary }}>Add hardware to library</ThemedText>
               </Link>
             </View>

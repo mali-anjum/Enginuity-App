@@ -9,6 +9,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { NoteRichText } from '@/notes/molecules/note-rich-text';
 import { deleteNoteThunk, selectNoteById } from '@/notes/state/notesSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function NoteDetailScreen() {
@@ -33,7 +34,7 @@ export default function NoteDetailScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <ThemedText type="title">{note.title}</ThemedText>
-          <Link href={`/notes/${note.id}/edit` as Href}>
+          <Link href={routePaths.noteEdit(note.id)}>
             <ThemedText style={{ color: themeColors.primary }}>Edit</ThemedText>
           </Link>
         </View>
@@ -50,7 +51,7 @@ export default function NoteDetailScreen() {
                 <TagChip
                   key={tag}
                   label={tag}
-                  onPress={() => router.push(`/notes/tags?tag=${encodeURIComponent(tag)}` as Href)}
+                  onPress={() => router.push(routePaths.notesTagsWithTag(tag))}
                 />
               ))}
             </View>
@@ -88,7 +89,7 @@ export default function NoteDetailScreen() {
                 onPress={() => setIsDeleteDialogOpen(false)}>
                 <ThemedText>Cancel</ThemedText>
               </Pressable>
-              <Link href={'/notes' as Href} asChild>
+              <Link href={ROUTES.notesList as Href} asChild>
                 <Pressable
                   style={[styles.dialogButton, { borderColor: themeColors.danger }]}
                   onPress={() => {

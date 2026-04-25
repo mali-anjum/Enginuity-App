@@ -8,6 +8,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ValuePropSlide } from '@/onboarding/molecules/value-prop-slide';
 import { OnboardingBrandBlock } from '@/onboarding/organisms/onboarding-brand-block';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 
 const SLIDES = [
   {
@@ -66,7 +67,7 @@ export default function OnboardingIntroScreen() {
                 setStepIndex((s) => s + 1);
                 return;
               }
-              router.push('/onboarding/focus' as never);
+              router.push(ROUTES.onboardingFocus as never);
             }}>
             <ThemedText
               type="defaultSemiBold"
@@ -77,7 +78,7 @@ export default function OnboardingIntroScreen() {
             </ThemedText>
           </Pressable>
         </View>
-        <Pressable onPress={() => router.replace('/auth/login' as never)} style={styles.skipWrap}>
+        <Pressable onPress={() => router.replace(ROUTES.authLogin as never)} style={styles.skipWrap}>
           <ThemedText type="link">Already have an account? Sign in</ThemedText>
         </Pressable>
       </ScrollView>

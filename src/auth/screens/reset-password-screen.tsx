@@ -8,6 +8,7 @@ import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function ResetPasswordScreen() {
@@ -28,7 +29,7 @@ export default function ResetPasswordScreen() {
     if (resetPasswordThunk.fulfilled.match(action)) {
       setSuccessMessage('Password has been reset. You can sign in now.');
       setTimeout(() => {
-        router.replace('/auth/login');
+        router.replace(ROUTES.authLogin);
       }, 700);
     }
   };

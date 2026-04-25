@@ -14,6 +14,7 @@ import {
 } from '@/onboarding/constants/onboardingLabels';
 import { markPreAuthProfileCompleted } from '@/onboarding/state/onboardingSlice';
 import type { OnboardingProfileDraft } from '@/onboarding/types/profileDraft';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 function labelFor<T extends string>(options: { value: T; label: string }[], v: T | null) {
@@ -63,7 +64,11 @@ export default function OnboardingReviewScreen() {
   }: {
     title: string;
     value: string;
-    editHref: '/onboarding/focus' | '/onboarding/education' | '/onboarding/usage' | '/onboarding/goals';
+    editHref:
+      | typeof ROUTES.onboardingFocus
+      | typeof ROUTES.onboardingEducation
+      | typeof ROUTES.onboardingUsage
+      | typeof ROUTES.onboardingGoals;
   }) => (
     <View style={[styles.card, { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated }]}>
       <View style={styles.cardHead}>
@@ -78,7 +83,7 @@ export default function OnboardingReviewScreen() {
 
   const continueSignup = () => {
     dispatch(markPreAuthProfileCompleted());
-    router.replace('/auth/signup');
+    router.replace(ROUTES.authSignup);
   };
 
   return (
@@ -90,15 +95,19 @@ export default function OnboardingReviewScreen() {
           account.
         </ThemedText>
 
-        <Row title="Focus areas" value={s.focus} editHref="/onboarding/focus" />
-        <Row title="Education & affiliation" value={`${s.institution}\n${s.field}`} editHref="/onboarding/education" />
-        <Row title="Usage context" value={s.usage} editHref="/onboarding/usage" />
-        <Row title="Goals & discovery" value={`${s.goal}\n${s.discovery}`} editHref="/onboarding/goals" />
+        <Row title="Focus areas" value={s.focus} editHref={ROUTES.onboardingFocus} />
+        <Row
+          title="Education & affiliation"
+          value={`${s.institution}\n${s.field}`}
+          editHref={ROUTES.onboardingEducation}
+        />
+        <Row title="Usage context" value={s.usage} editHref={ROUTES.onboardingUsage} />
+        <Row title="Goals & discovery" value={`${s.goal}\n${s.discovery}`} editHref={ROUTES.onboardingGoals} />
 
         <View style={styles.row}>
           <Pressable
             style={[styles.secondary, { borderColor: themeColors.border }]}
-            onPress={() => router.push('/onboarding/goals' as never)}>
+            onPress={() => router.push(ROUTES.onboardingGoals as never)}>
             <ThemedText>Back</ThemedText>
           </Pressable>
           <Pressable style={[styles.primary, { backgroundColor: themeColors.primary }]} onPress={continueSignup}>

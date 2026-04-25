@@ -4,6 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
+import {
+  AUTH_SIGNUP_ROUTE,
+  HOME_ROUTE,
+  ONBOARDING_ROUTE,
+  getRedirectRoute,
+} from '@/app/auth-redirect-policy';
 
 import {
   selectHasInitializedAuth,
@@ -55,39 +61,39 @@ function RootNavigator() {
   const isOnboardingRoute = primarySegment === 'onboarding';
 
   useEffect(() => {
-    if (!hasInitializedAuth) {
+    const allowedUnauthenticated =
+      isLoginRoute ||
+      isLoginEmailRoute ||
+      isSignupRoute ||
+      isSignupEmailRoute ||
+      isCallbackRoute ||
+      isForgotPasswordRoute ||
+      isResetPasswordRoute ||
+      isAuthSplashRoute ||
+      isOnboardingRoute;
+
+    const redirectRoute = getRedirectRoute({
+      hasInitializedAuth,
+      isAuthenticated,
+      hasCompletedOnboarding,
+      hasCompletedPreAuthProfile,
+      isAuthRoute,
+      isOnboardingRoute,
+      allowedUnauthenticated,
+    });
+
+    if (redirectRoute === AUTH_SIGNUP_ROUTE) {
+      router.replace(AUTH_SIGNUP_ROUTE);
       return;
     }
 
-    if (!isAuthenticated) {
-      const allowedUnauthenticated =
-        isLoginRoute ||
-        isLoginEmailRoute ||
-        isSignupRoute ||
-        isSignupEmailRoute ||
-        isCallbackRoute ||
-        isForgotPasswordRoute ||
-        isResetPasswordRoute ||
-        isAuthSplashRoute ||
-        isOnboardingRoute;
-
-      if (!allowedUnauthenticated) {
-        if (hasCompletedPreAuthProfile) {
-          router.replace('/auth/signup');
-        } else {
-          router.replace('/onboarding');
-        }
-      }
+    if (redirectRoute === ONBOARDING_ROUTE) {
+      router.replace(ONBOARDING_ROUTE);
       return;
     }
 
-    if (isAuthenticated && isOnboardingRoute) {
-      router.replace('/');
-      return;
-    }
-
-    if (hasCompletedOnboarding && isAuthRoute) {
-      router.replace('/');
+    if (redirectRoute === HOME_ROUTE) {
+      router.replace(HOME_ROUTE);
     }
   }, [
     hasCompletedOnboarding,

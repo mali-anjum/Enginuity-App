@@ -10,6 +10,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { INSTITUTION_TYPE_OPTIONS } from '@/onboarding/constants/onboardingLabels';
 import { setInstitutionFields } from '@/onboarding/state/onboardingSlice';
 import type { InstitutionType } from '@/onboarding/types/profileDraft';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function OnboardingEducationScreen() {
@@ -30,7 +31,7 @@ export default function OnboardingEducationScreen() {
         fieldOfStudy: field.trim(),
       }),
     );
-    router.push('/onboarding/usage' as never);
+    router.push(ROUTES.onboardingUsage as never);
   };
 
   return (

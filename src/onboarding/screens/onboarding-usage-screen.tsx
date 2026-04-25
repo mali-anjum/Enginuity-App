@@ -12,6 +12,7 @@ import {
 } from '@/onboarding/constants/onboardingLabels';
 import { setUsageFields } from '@/onboarding/state/onboardingSlice';
 import type { UsageLocation, UsageTimePreference, WeeklyHoursBand } from '@/onboarding/types/profileDraft';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function OnboardingUsageScreen() {
@@ -126,7 +127,7 @@ export default function OnboardingUsageScreen() {
           </Pressable>
           <Pressable
             style={[styles.primary, { backgroundColor: themeColors.primary }]}
-            onPress={() => router.push('/onboarding/goals' as never)}>
+            onPress={() => router.push(ROUTES.onboardingGoals as never)}>
             <ThemedText style={{ color: themeColors.buttonPrimaryText }} type="defaultSemiBold">
               Continue
             </ThemedText>

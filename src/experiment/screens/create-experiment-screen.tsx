@@ -23,6 +23,7 @@ import { EXPERIMENT_TEMPLATES } from '@/experiment/utils/experimentTemplates';
 import { optimizeImageForUpload } from '@/experiment/utils/imageUploadOptimizer';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectProjectById } from '@/project/state/projectSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const INITIAL_VALUES: ExperimentFormValues = {
@@ -229,7 +230,7 @@ export default function CreateExperimentScreen() {
                   }),
                 ).unwrap();
               }
-              router.replace(`/experiment/${created.id}`);
+              router.replace(routePaths.experimentDetail(created.id));
             })();
           }}
         />
@@ -253,7 +254,7 @@ export default function CreateExperimentScreen() {
         description={paywallDescription}
         isUpgradeLoading={isCheckoutLoading}
         onClose={() => setShowPaywall(false)}
-        onViewPlans={() => router.push('/settings/upgrade')}
+        onViewPlans={() => router.push(ROUTES.settingsUpgrade)}
         onUpgrade={() => {
           void (async () => {
             await dispatch(openCheckoutThunk());

@@ -15,6 +15,7 @@ import {
 } from '@/experiment/state/experimentSlice';
 import { optimizeImageForUpload } from '@/experiment/utils/imageUploadOptimizer';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
+import { routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function EditExperimentScreen() {
@@ -159,7 +160,7 @@ export default function EditExperimentScreen() {
                   }),
                 ).unwrap();
               }
-              router.replace(`/experiment/${experiment.id}`);
+              router.replace(routePaths.experimentDetail(experiment.id));
             })();
           }}
         />

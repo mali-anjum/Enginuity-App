@@ -9,6 +9,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
 import { selectAllNotes } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
 function disciplineBadgeLabel(discipline: string | null): string {
@@ -78,27 +79,27 @@ export default function ProfileHomeScreen() {
         <StatPill label="Notes" value={notesCount} />
 
         <View style={styles.actions}>
-          <Link href={'/settings' as Href} asChild>
+          <Link href={ROUTES.settingsHome as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Settings</ThemedText>
             </Pressable>
           </Link>
-          <Link href={'/profile/edit' as Href} asChild>
+          <Link href={ROUTES.profileEdit as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Edit Profile</ThemedText>
             </Pressable>
           </Link>
-          <Link href={'/profile/avatar' as Href} asChild>
+          <Link href={ROUTES.profileAvatar as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Avatar Picker</ThemedText>
             </Pressable>
           </Link>
-          <Link href={'/profile/statistics' as Href} asChild>
+          <Link href={ROUTES.profileStatistics as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Account Statistics</ThemedText>
             </Pressable>
           </Link>
-          <Link href={'/settings/upgrade' as Href} asChild>
+          <Link href={ROUTES.settingsUpgrade as Href} asChild>
             <Pressable style={[styles.actionBtn, { borderColor: themeColors.border }]}>
               <ThemedText>Upgrade to Pro</ThemedText>
             </Pressable>

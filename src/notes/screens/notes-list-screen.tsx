@@ -18,6 +18,7 @@ import {
   toggleNoteFavoriteThunk,
 } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 type NoteFilter = 'all' | 'project' | 'tag' | 'favourites';
@@ -71,7 +72,7 @@ export default function NotesListScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Notes</ThemedText>
-          <Link href={'/notes/create' as Href}>
+          <Link href={ROUTES.notesCreate as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Create Note</ThemedText>
           </Link>
         </View>
@@ -104,7 +105,7 @@ export default function NotesListScreen() {
               </Pressable>
             );
           })}
-          <Link href={'/notes/tags' as Href}>
+          <Link href={ROUTES.notesTags as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Browse Tags</ThemedText>
           </Link>
         </View>
@@ -176,11 +177,11 @@ export default function NotesListScreen() {
               headline="Capture your first engineering note"
               body="Document decisions, findings, and lessons so future experiments move faster."
               ctaLabel="Create Note"
-              onPressCta={() => router.push('/notes/create' as Href)}
+              onPressCta={() => router.push(ROUTES.notesCreate as Href)}
             />
           ) : (
             filteredNotes.map((note) => (
-              <Link key={note.id} href={`/notes/${note.id}` as Href} asChild>
+              <Link key={note.id} href={routePaths.noteDetail(note.id)} asChild>
                 <Pressable
                   style={[
                     styles.card,

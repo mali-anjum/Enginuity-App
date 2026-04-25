@@ -12,6 +12,7 @@ import {
   selectProjectFilter,
   setProjectFilter,
 } from '@/project/state/projectSlice';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const FILTERS = ['active', 'completed', 'archived', 'favourites'] as const;
@@ -30,7 +31,7 @@ export default function ProjectListScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Project List</ThemedText>
-          <Link href={'/project/create' as Href}>
+          <Link href={ROUTES.projectCreate as Href}>
             <ThemedText style={{ color: themeColors.primary }}>Create Project</ThemedText>
           </Link>
         </View>
@@ -73,11 +74,11 @@ export default function ProjectListScreen() {
               headline="Your first project is one tap away"
               body="Organise your engineering work and track experiments in one place."
               ctaLabel="Create Project"
-              onPressCta={() => router.push('/project/create' as Href)}
+              onPressCta={() => router.push(ROUTES.projectCreate as Href)}
             />
           ) : (
             projects.map((project) => (
-              <Link key={project.id} href={`/project/${project.id}` as Href} asChild>
+              <Link key={project.id} href={routePaths.projectDetail(project.id)} asChild>
                 <Pressable
                   style={[
                     styles.card,

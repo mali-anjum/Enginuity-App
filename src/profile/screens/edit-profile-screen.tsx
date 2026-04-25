@@ -7,6 +7,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 const DISCIPLINES: AuthDiscipline[] = [
@@ -109,7 +110,7 @@ export default function EditProfileScreen() {
                 institution: institution.trim(),
               }),
             );
-            router.replace('/profile' as Href);
+            router.replace(ROUTES.profileHome as Href);
           }}>
           <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
             Save Profile

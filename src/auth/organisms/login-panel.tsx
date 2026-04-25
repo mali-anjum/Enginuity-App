@@ -6,6 +6,7 @@ import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import { loginWithPasswordThunk, selectAuthError, selectAuthStatus } from '@/auth/state/authSlice';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 import { AuthSubtitle } from '../molecules/auth-subtitle';
@@ -27,13 +28,13 @@ export function LoginPanel() {
     if (isLoading) return;
     const action = await dispatch(loginWithPasswordThunk({ email, password }));
     if (loginWithPasswordThunk.fulfilled.match(action)) {
-      router.replace('/');
+      router.replace(ROUTES.home);
     }
   };
 
   return (
     <View style={styles.stack}>
-      <ThemedText type="link" onPress={() => router.replace('/auth/login')}>
+      <ThemedText type="link" onPress={() => router.replace(ROUTES.authLogin)}>
         ← More sign-in options
       </ThemedText>
       <ThemedText type="title">Sign in</ThemedText>
@@ -61,10 +62,10 @@ export function LoginPanel() {
       ) : null}
       {authError ? <ThemedText style={styles.errorText}>{authError}</ThemedText> : null}
       <View style={styles.linksRow}>
-        <ThemedText type="link" onPress={() => router.push('/auth/forgot-password' as never)}>
+        <ThemedText type="link" onPress={() => router.push(ROUTES.authForgotPassword as never)}>
           Forgot password?
         </ThemedText>
-        <ThemedText type="link" onPress={() => router.push('/auth/signup' as never)}>
+        <ThemedText type="link" onPress={() => router.push(ROUTES.authSignup as never)}>
           Create account
         </ThemedText>
       </View>

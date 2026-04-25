@@ -8,6 +8,7 @@ import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 
 export default function ForgotPasswordScreen() {
@@ -59,7 +60,7 @@ export default function ForgotPasswordScreen() {
       {successMessage ? (
         <ThemedText style={[styles.message, { color: themeColors.success }]}>{successMessage}</ThemedText>
       ) : null}
-      <Link href="/auth/login">
+      <Link href={ROUTES.authLogin}>
         <ThemedText type="link">Back to sign in</ThemedText>
       </Link>
     </View>

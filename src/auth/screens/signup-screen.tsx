@@ -6,6 +6,7 @@ import { AuthOauthSection } from '@/auth/organisms/auth-oauth-section';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { ROUTES } from '@/sharedModules/navigation/routes';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -16,9 +17,9 @@ export default function SignupScreen() {
         <ThemedText type="title">Create account</ThemedText>
         <AuthSubtitle>Join with Google, Apple, Facebook, GitHub, or email after your onboarding plan.</AuthSubtitle>
         <AuthOauthSection />
-        <AppButton label="Continue with email" onPress={() => router.push('/auth/signup-email' as never)} />
+        <AppButton label="Continue with email" onPress={() => router.push(ROUTES.authSignupEmail as never)} />
         <View style={styles.footer}>
-          <ThemedText type="link" onPress={() => router.replace('/auth/login')}>
+          <ThemedText type="link" onPress={() => router.replace(ROUTES.authLogin)}>
             Already have an account? Sign in
           </ThemedText>
         </View>

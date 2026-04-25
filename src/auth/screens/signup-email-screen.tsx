@@ -6,6 +6,7 @@ import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import { selectAuthError, selectAuthStatus, signupThunk } from '@/auth/state/authSlice';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
+import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
 import { mapFocusAreasToAuthDiscipline } from '@/onboarding/types/profileDraft';
 
@@ -46,7 +47,7 @@ export default function SignupEmailScreen() {
       }),
     );
     if (signupThunk.fulfilled.match(action)) {
-      router.replace('/auth/login?notice=check-email');
+      router.replace(routePaths.authLoginWithNotice('check-email'));
     }
   };
 
@@ -83,10 +84,10 @@ export default function SignupEmailScreen() {
       {localError ? <ThemedText style={styles.errorText}>{localError}</ThemedText> : null}
       {authError ? <ThemedText style={styles.errorText}>{authError}</ThemedText> : null}
       <View style={styles.footer}>
-        <ThemedText type="link" onPress={() => router.replace('/auth/signup')}>
+        <ThemedText type="link" onPress={() => router.replace(ROUTES.authSignup)}>
           Other sign-up options
         </ThemedText>
-        <ThemedText type="link" onPress={() => router.replace('/auth/login')}>
+        <ThemedText type="link" onPress={() => router.replace(ROUTES.authLogin)}>
           Already have an account? Sign in
         </ThemedText>
       </View>
