@@ -38,7 +38,7 @@ This document is a fast context reference for day-to-day implementation, debuggi
 ### A) Web white screen / Expo Router issues
 
 1. Check Metro output for route loading errors.
-2. Confirm no `*.test.*`, service files, or utilities exist in `src/app`.
+2. Confirm no `*.test.`*, service files, or utilities exist in `src/app`.
 3. Verify route files have valid default exports when required.
 4. Restart Metro after structural changes (`Ctrl+C` then `yarn start`).
 
@@ -70,9 +70,10 @@ This document is a fast context reference for day-to-day implementation, debuggi
 - Type-level impact checked.
 - User-facing explanation includes root cause + fix + verification status.
 
-## 7) Related Docs
+##  7) Related Docs
 
 - `README.md` - full project setup, scripts, and release process.
 - `docs/MODULE_STRUCTURE.md` - module/folder standards.
 - `docs/TESTING_STRATEGY.md` - where tests live and priority matrix.
 - `docs/APP_FLOW_NOTES.md` - routing/auth guard flow details.
+
