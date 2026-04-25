@@ -33,7 +33,7 @@ export default function OnboardingEducationScreen() {
         fieldOfStudy: field.trim(),
       }),
     );
-    router.push(ROUTES.onboardingUsage as never);
+    router.push(ROUTES.ONBOARDING_USAGE as never);
   };
 
   return (
