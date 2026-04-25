@@ -14,7 +14,7 @@ import {
   setExperimentStatusFilter,
 } from '@/experiment/state/experimentSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function ExperimentListScreen() {
   const router = useRouter();
