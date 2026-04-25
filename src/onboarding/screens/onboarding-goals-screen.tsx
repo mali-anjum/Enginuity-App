@@ -25,7 +25,7 @@ export default function OnboardingGoalsScreen() {
   const save = () => {
     const src = customDiscovery.trim() || discovery.trim();
     dispatch(setGoalsFields({ primaryGoal: goal.trim(), discoverySource: src }));
-    router.push(ROUTES.onboardingReview as never);
+    router.push(ROUTES.ONBOARDING_REVIEW as never);
   };
 
   return (
