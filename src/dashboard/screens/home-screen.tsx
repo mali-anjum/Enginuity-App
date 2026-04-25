@@ -15,7 +15,7 @@ import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { ROUTES, routePaths } from '@/sharedModules/navigation/routes';
+import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 import { useAppSelector } from '@/sharedModules/state/hooks';
 
@@ -58,10 +58,10 @@ function iconForActivity(eventType: string): Parameters<typeof IconSymbol>[0]['n
 
 function linkForActivity(entityType: string, entityId: string | null): Href | null {
   if (!entityId) return null;
-  if (entityType === 'experiment') return routePaths.experimentDetail(entityId);
-  if (entityType === 'note') return routePaths.noteDetail(entityId);
-  if (entityType === 'hardware') return routePaths.hardwareDetail(entityId);
-  if (entityType === 'project') return routePaths.projectDetail(entityId);
+  if (entityType === 'experiment') return ROUTE_PATHS.EXPERIMENT_DETAIL(entityId);
+  if (entityType === 'note') return ROUTE_PATHS.NOTE_DETAIL(entityId);
+  if (entityType === 'hardware') return ROUTE_PATHS.HARDWARE_DETAIL(entityId);
+  if (entityType === 'project') return ROUTE_PATHS.PROJECT_DETAIL(entityId);
   return null;
 }
 
@@ -123,7 +123,7 @@ export default function HomeScreen() {
 
   const openCreateProject = () => {
     setIsCreateSheetOpen(false);
-    router.push(ROUTES.projectCreate);
+    router.push(ROUTES.PROJECT_CREATE);
   };
 
   const openCreateExperimentForRecentProject = () => {
@@ -133,7 +133,7 @@ export default function HomeScreen() {
       return;
     }
     setIsCreateSheetOpen(false);
-    router.push(routePaths.experimentCreateForProject(target.id));
+    router.push(ROUTE_PATHS.EXPERIMENT_CREATE_FOR_PROJECT(target.id));
   };
 
   const fabTooltipMessage = useMemo(() => {
@@ -157,7 +157,7 @@ export default function HomeScreen() {
             {projectStats.total > 0 ? ` · ${projectStats.active} active` : ''}
           </ThemedText>
         </View>
-        <Link href={ROUTES.search as Href} asChild>
+        <Link href={ROUTES.SEARCH as Href} asChild>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Open global search"
@@ -185,7 +185,7 @@ export default function HomeScreen() {
         <View style={styles.sectionHeader}>
           <ThemedText type="subtitle">Projects</ThemedText>
           {myProjects.length + sharedProjects.length > 0 ? (
-            <Link href={ROUTES.projectList as Href}>
+            <Link href={ROUTES.PROJECT_LIST as Href}>
               <ThemedText style={{ color: themeColors.primary }}>See all</ThemedText>
             </Link>
           ) : null}
@@ -205,7 +205,7 @@ export default function HomeScreen() {
               {myProjects.map((project) => {
                 const chip = projectChipColors(themeColors, project.status);
                 return (
-                  <Link key={project.id} href={routePaths.projectDetail(project.id)} asChild>
+                  <Link key={project.id} href={ROUTE_PATHS.PROJECT_DETAIL(project.id)} asChild>
                     <Pressable
                       style={[
                         styles.projectCard,
@@ -254,7 +254,7 @@ export default function HomeScreen() {
               {sharedProjects.map((project) => {
                 const chip = projectChipColors(themeColors, project.status);
                 return (
-                  <Link key={project.id} href={routePaths.projectDetail(project.id)} asChild>
+                  <Link key={project.id} href={ROUTE_PATHS.PROJECT_DETAIL(project.id)} asChild>
                     <Pressable
                       style={[
                         styles.projectCard,
