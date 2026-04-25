@@ -8,8 +8,8 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { dispatchRetryOperation } from '@/sharedModules/state/retryRegistry';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { dispatchRetryOperation } from '@/store/retryRegistry';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { removeToast, selectToasts, type Toast } from '@/ui/state/uiSlice';
 
 const TOAST_DURATION_MS = 3000;
