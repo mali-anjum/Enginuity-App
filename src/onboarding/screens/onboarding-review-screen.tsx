@@ -15,7 +15,7 @@ import {
 import { markPreAuthProfileCompleted } from '@/onboarding/state/onboardingSlice';
 import type { OnboardingProfileDraft } from '@/onboarding/types/profileDraft';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 function labelFor<T extends string>(options: { value: T; label: string }[], v: T | null) {
   if (!v) return '—';
