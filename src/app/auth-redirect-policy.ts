@@ -1,8 +1,8 @@
 import { ROUTES } from '@/sharedModules/navigation/routes';
 
-export const HOME_ROUTE = ROUTES.home;
-export const ONBOARDING_ROUTE = ROUTES.onboarding;
-export const AUTH_SIGNUP_ROUTE = ROUTES.authSignup;
+export const HOME_ROUTE = ROUTES.HOME;
+export const ONBOARDING_ROUTE = ROUTES.ONBOARDING;
+export const AUTH_SIGNUP_ROUTE = ROUTES.AUTH_SIGNUP;
 
 export type AuthRedirectPolicyInput = {
   hasInitializedAuth: boolean;
