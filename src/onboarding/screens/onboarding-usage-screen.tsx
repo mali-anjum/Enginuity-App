@@ -127,7 +127,7 @@ export default function OnboardingUsageScreen() {
           </Pressable>
           <Pressable
             style={[styles.primary, { backgroundColor: themeColors.primary }]}
-            onPress={() => router.push(ROUTES.onboardingGoals as never)}>
+            onPress={() => router.push(ROUTES.ONBOARDING_GOALS as never)}>
             <ThemedText style={{ color: themeColors.buttonPrimaryText }} type="defaultSemiBold">
               Continue
             </ThemedText>
