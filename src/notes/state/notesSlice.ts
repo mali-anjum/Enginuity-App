@@ -10,7 +10,7 @@ import {
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
 import { upsertWorkspaceTags } from '@/sharedModules/services/supabase/tagSupabaseService';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 
 export type Note = {
   id: string;
