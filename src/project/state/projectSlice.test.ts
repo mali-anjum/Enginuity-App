@@ -1,4 +1,4 @@
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 
 import projectReducer, {
   fetchProjectsThunk,
