@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { fetchProfileThunk } from '@/auth/state/authSlice';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 import {
   fetchProfileStorageUsedMb,
   fetchUserNotificationSettings,
