@@ -9,7 +9,7 @@ import {
   HOME_ROUTE,
   ONBOARDING_ROUTE,
   getRedirectRoute,
-} from '@/app/auth-redirect-policy';
+} from '@/sharedModules/navigation/auth-redirect-policy';
 
 import {
   selectHasInitializedAuth,
