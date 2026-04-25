@@ -13,7 +13,7 @@ import {
 import { setUsageFields } from '@/onboarding/state/onboardingSlice';
 import type { UsageLocation, UsageTimePreference, WeeklyHoursBand } from '@/onboarding/types/profileDraft';
 import { ROUTES } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function OnboardingUsageScreen() {
   const router = useRouter();
