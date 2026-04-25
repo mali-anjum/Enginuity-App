@@ -12,7 +12,7 @@ import {
   updateProjectForUser,
 } from '@/project/services/projectSupabaseService';
 import { sendProjectInviteEmail, type ShareRole } from '@/project/services/projectSharingService';
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 import { getSupabaseClientOrNull, withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { createLocalUuidV4, isUuid } from '@/sharedModules/utils/uuid';
 
