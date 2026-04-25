@@ -1,4 +1,4 @@
-import { generatePDF } from 'react-native-html-to-pdf';
+import { Platform } from 'react-native';
 
 import type { Experiment } from '@/experiment/state/experimentSlice';
 import type { Project } from '@/project/state/projectSlice';
@@ -49,6 +49,10 @@ export async function exportExperimentAsPdf({
   projectName,
   hardwareNames,
 }: ExportPdfParams): Promise<string> {
+  if (Platform.OS === 'web') {
+    throw new Error('PDF export is not supported on web.');
+  }
+
   const imageUrls = experiment.attachments
     .filter((attachment) => attachment.fileType?.startsWith('image/') ?? false)
     .map((attachment) => attachment.url);
@@ -96,6 +100,7 @@ export async function exportExperimentAsPdf({
     base64: false,
   };
 
+  const { generatePDF } = await import('react-native-html-to-pdf');
   const pdf = await generatePDF(options);
   if (!pdf.filePath) {
     throw new Error('Failed to generate PDF file');
