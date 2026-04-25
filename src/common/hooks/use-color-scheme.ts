@@ -1,6 +1,6 @@
 import { useColorScheme as useRNColorScheme } from 'react-native';
 
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 import { selectTheme } from '@/ui/state/uiSlice';
 
 /**
