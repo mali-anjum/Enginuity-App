@@ -10,7 +10,7 @@ import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectExperimentsByTag } from '@/experiment/state/experimentSlice';
 import { selectNotesByTag, selectTagCounts } from '@/notes/state/notesSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 export default function TagBrowserScreen() {
   const colorScheme = useColorScheme() ?? 'light';
