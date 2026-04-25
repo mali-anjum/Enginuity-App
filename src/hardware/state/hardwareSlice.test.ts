@@ -5,7 +5,7 @@ import hardwareReducer, {
   type HardwareItem,
 } from '@/hardware/state/hardwareSlice';
 
-import type { RootState } from '@/sharedModules/state/store';
+import type { RootState } from '@/store/store';
 
 describe('hardwareSlice — library list', () => {
   it('merge fetchHardwareThunk.fulfilled sets hardware from server', () => {
