@@ -7,7 +7,7 @@ import { ThemedView } from '@/common/atoms/themed-view';
 import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hardware-form';
 import { selectHardwareById, updateHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function EditHardwareScreen() {
   const { hardwareId } = useLocalSearchParams<{ hardwareId: string }>();
