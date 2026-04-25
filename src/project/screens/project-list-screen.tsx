@@ -13,7 +13,7 @@ import {
   setProjectFilter,
 } from '@/project/state/projectSlice';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
-import { useAppDispatch, useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 const FILTERS = ['active', 'completed', 'archived', 'favourites'] as const;
 
