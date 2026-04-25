@@ -17,7 +17,7 @@ import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
-import { useAppSelector } from '@/sharedModules/state/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 import { HomeFabCreateSheet } from '../organisms/home-fab-create-sheet';
 import { HomeQuickSearchOverlay } from '../organisms/home-quick-search-overlay';
