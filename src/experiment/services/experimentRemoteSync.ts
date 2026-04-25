@@ -4,7 +4,7 @@
 
 import { patchExperimentStatusForUser } from '@/experiment/services/experimentSupabaseService';
 import { getSupabaseClientOrNull } from '@/sharedModules/services/supabase/supabaseClient';
-import { store } from '@/sharedModules/state/store';
+import { store } from '@/store/store';
 import { isUuid } from '@/sharedModules/utils/uuid';
 
 export function enqueueExperimentRemoteSync(experimentId: string): void {
