@@ -67,7 +67,7 @@ export default function OnboardingIntroScreen() {
                 setStepIndex((s) => s + 1);
                 return;
               }
-              router.push(ROUTES.onboardingFocus as never);
+              router.push(ROUTES.ONBOARDING_FOCUS as never);
             }}>
             <ThemedText
               type="defaultSemiBold"
@@ -78,7 +78,7 @@ export default function OnboardingIntroScreen() {
             </ThemedText>
           </Pressable>
         </View>
-        <Pressable onPress={() => router.replace(ROUTES.authLogin as never)} style={styles.skipWrap}>
+        <Pressable onPress={() => router.replace(ROUTES.AUTH_LOGIN as never)} style={styles.skipWrap}>
           <ThemedText type="link">Already have an account? Sign in</ThemedText>
         </Pressable>
       </ScrollView>
