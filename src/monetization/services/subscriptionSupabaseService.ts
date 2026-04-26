@@ -7,7 +7,6 @@ import type { SubscriptionPlan } from '@/monetization/constants';
 type SubscriptionRow = {
   plan?: string | null;
   status?: string | null;
-  is_active?: boolean | null;
 };
 
 export type SubscriptionStatusResult = {
@@ -36,7 +35,7 @@ export async function fetchSubscriptionStatusForUser(
   const sb = unwrapSupabaseClient(client);
   const { data, error } = await sb
     .from('subscriptions')
-    .select('plan, status, is_active')
+    .select('plan, status')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -49,7 +48,7 @@ export async function fetchSubscriptionStatusForUser(
   const row = (data ?? null) as SubscriptionRow | null;
   if (!row) return { plan: 'free', isPro: false };
   const plan = normalizePlan(row.plan);
-  const active = row.is_active === true || isActiveStatus(row.status);
+  const active = isActiveStatus(row.status);
   return { plan, isPro: active && plan !== 'free' };
 }
 
