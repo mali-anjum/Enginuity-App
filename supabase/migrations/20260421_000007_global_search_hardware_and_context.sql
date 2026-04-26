@@ -1,5 +1,16 @@
 -- v0.3 SPARK: expand global FTS to include hardware + project context + snippets
 
+drop function if exists public.global_search_entities(
+  text,
+  uuid,
+  text,
+  uuid,
+  text,
+  date,
+  date,
+  int
+);
+
 create index if not exists idx_hardware_search_fts
   on public.hardware_library using gin (
     to_tsvector('english', coalesce(name, '') || ' ' || coalesce(specifications, ''))
