@@ -24,7 +24,6 @@ import {
   withSupabaseClient,
 } from '@/sharedModules/services/supabase/supabaseClient';
 import { useAppDispatch } from '@/store/hooks';
-import { appTrace } from '@/sharedModules/utils/appTrace';
 
 const mapSessionToAuthState = (session: {
   access_token?: string;
@@ -66,7 +65,6 @@ export function SupabaseAuthSync() {
 
   useEffect(() => {
     let isMounted = true;
-    appTrace('SupabaseAuthSync', 'effect start');
     dispatch(authSyncStarted());
     const syncOnboardingStatus = async (userId: string) => {
       const { data, error } = await withSupabaseClient(async (client) => {
@@ -94,12 +92,10 @@ export function SupabaseAuthSync() {
     };
 
     if (!getSupabaseClientOrNull()) {
-      appTrace('SupabaseAuthSync', 'supabase client unavailable, fallback to signed-out state');
       dispatch(authStateChanged({ user: null, session: null }));
       clearWorkspaceDomain();
       return () => {
         isMounted = false;
-        appTrace('SupabaseAuthSync', 'cleanup after no-client path');
       };
     }
 
@@ -109,13 +105,9 @@ export function SupabaseAuthSync() {
       .then(({ data, error }) => {
         if (!isMounted) return;
         if (error) {
-          appTrace('SupabaseAuthSync', 'getSession error', error.message);
           dispatch(setAuthError(error.message));
           return;
         }
-        appTrace('SupabaseAuthSync', 'getSession resolved', {
-          hasSession: Boolean(data.session?.user?.id),
-        });
         dispatch(authStateChanged(mapSessionToAuthState(data.session)));
         if (data.session?.user?.id) {
           void dispatch(fetchProfileThunk());
@@ -137,7 +129,6 @@ export function SupabaseAuthSync() {
         if (!isMounted) return;
         const message =
           err instanceof Error ? err.message : 'Failed to initialize authentication session.';
-        appTrace('SupabaseAuthSync', 'getSession catch', message);
         dispatch(setAuthError(message));
       });
 
@@ -156,10 +147,7 @@ export function SupabaseAuthSync() {
         };
       }
       ({ data } = client.auth.onAuthStateChange((event, session) => {
-        appTrace('SupabaseAuthSync', 'onAuthStateChange', {
-          event,
-          hasSession: Boolean(session?.user?.id),
-        });
+        void event;
         dispatch(authStateChanged(mapSessionToAuthState(session)));
         if (session?.user?.id) {
           void dispatch(fetchProfileThunk());
@@ -189,7 +177,6 @@ export function SupabaseAuthSync() {
     return () => {
       isMounted = false;
       data?.subscription.unsubscribe();
-      appTrace('SupabaseAuthSync', 'cleanup with unsubscribe');
     };
   }, [dispatch, clearWorkspaceDomain]);
 

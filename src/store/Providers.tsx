@@ -11,41 +11,17 @@ import { SharedProjectsRealtimeSync } from '@/sharedModules/organisms/shared-pro
 import { initializeSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { persistor } from '@/store/persistor';
 import { store } from '@/store/store';
-import { appTrace } from '@/sharedModules/utils/appTrace';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    appTrace('Providers', 'mount');
     initializeSupabaseClient();
-    appTrace('Providers', 'supabase client initialized');
-
-    appTrace('Providers', 'persistor initial state', persistor.getState());
-    const unsubscribe = persistor.subscribe(() => {
-      const state = persistor.getState();
-      appTrace('Providers', 'persistor update', state);
-    });
-    const watchdog = setTimeout(() => {
-      const state = persistor.getState();
-      if (!state.bootstrapped) {
-        appTrace('Providers', 'persistor still not bootstrapped after 5s', state);
-      }
-    }, 5000);
-
-    return () => {
-      clearTimeout(watchdog);
-      unsubscribe();
-      appTrace('Providers', 'unmount');
-    };
   }, []);
 
   return (
     <Provider store={store}>
       <PersistGate
         loading={null}
-        persistor={persistor}
-        onBeforeLift={() => {
-          appTrace('Providers', 'persist gate lifted');
-        }}>
+        persistor={persistor}>
         <SupabaseAuthSync />
         <PostAuthOnboardingSync />
         <OfflineSyncReconciler />
