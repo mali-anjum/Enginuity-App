@@ -1,0 +1,18 @@
+---
+description: Project context and workflow defaults for Enginuity
+alwaysApply: true
+---
+
+# Enginuity Coding Context
+
+- Treat Supabase SQL migrations in `supabase/migrations/` as the database schema source of truth.
+- Regenerate `src/sharedModules/services/supabase/database.types.ts` after schema changes using `yarn db:types`.
+- Keep DB structure changes in migrations; keep seed/demo data in `supabase/seed.sql`.
+- Prefer typed `SupabaseClient<Database>` usage; avoid `any` and temporary casts unless blocked.
+- Before coding, align with existing modules/services conventions instead of introducing parallel patterns.
+
+# Delivery Defaults
+
+- Make focused, reviewable changes with clear rationale.
+- Add or update tests when behavior changes and tests provide regression value.
+- Keep naming and folder conventions consistent with existing repo structure.
