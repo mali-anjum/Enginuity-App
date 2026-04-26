@@ -26,7 +26,6 @@ import {
 import { ROOT_STACK_SCREENS } from '@/sharedModules/navigation/root-stack-options';
 import { useAppSelector } from '@/store/hooks';
 import { AppProviders } from '@/store/Providers';
-import { appTrace } from '@/sharedModules/utils/appTrace';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -83,16 +82,6 @@ function RootNavigator() {
       allowedUnauthenticated,
     });
 
-    appTrace('RootNavigator', 'guard evaluation', {
-      hasInitializedAuth,
-      isAuthenticated,
-      hasCompletedOnboarding,
-      hasCompletedPreAuthProfile,
-      isAuthRoute,
-      isOnboardingRoute,
-      redirectRoute,
-    });
-
     if (redirectRoute === AUTH_SIGNUP_ROUTE) {
       router.replace(AUTH_SIGNUP_ROUTE);
       return;
@@ -125,11 +114,8 @@ function RootNavigator() {
   ]);
 
   if (!hasInitializedAuth) {
-    appTrace('RootNavigator', 'render auth loading state');
     return <AuthLoadingState />;
   }
-
-  appTrace('RootNavigator', 'render stack navigator');
 
   return (
     <ThemeProvider value={NavigationThemes[colorScheme ?? 'light']}>
