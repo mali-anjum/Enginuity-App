@@ -143,6 +143,32 @@ src/
 
 SQL migrations live in `supabase/migrations/`. Apply them to your Supabase project (CLI or SQL editor) so the client matches the schema. `supabase/seed.sql` can seed reference data when needed.
 
+### Recommended Supabase workflow (growing project)
+
+- **Schema source of truth:** `supabase/migrations/` (not app-side TypeScript files).
+- **Type mirror for app code:** `src/sharedModules/services/supabase/database.types.ts`.
+- **Seed data:** `supabase/seed.sql` for development/demo data only.
+
+#### One-time setup
+
+1. `yarn db:login`
+2. `yarn db:init` (creates local Supabase CLI project config)
+3. `yarn db:link` (connect this repo to your Supabase project)
+
+#### When changing database schema
+
+1. Create migration: `yarn db:migration:new add_<what_changed>`
+2. Edit the new SQL file in `supabase/migrations/` (`alter table`, indexes, policies, functions, etc.).
+3. Apply changes: `yarn db:push`
+4. Regenerate app types: `yarn db:types`
+5. Commit both the migration and updated `database.types.ts`.
+
+#### Notes
+
+- Use migrations for **structure** (`create/alter table`, policies, functions, indexes, triggers).
+- Use `seed.sql` for **sample data only**.
+- Do not delete old migrations; they are the schema history for every environment.
+
 ---
 
 ## How we work: weekly engineering day and cadence
