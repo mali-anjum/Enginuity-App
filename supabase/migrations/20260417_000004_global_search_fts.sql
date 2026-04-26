@@ -79,7 +79,7 @@ as $$
             coalesce(e.title, '') || ' ' || coalesce(e.objective, '') || ' ' || coalesce(e.observations, '')
           ),
           websearch_to_tsquery('english', trim(search_query))
-        )::double precision
+        )::double precision as rank
       from public.experiments e
       where length(trim(coalesce(search_query, ''))) > 0
         and to_tsvector(
@@ -119,7 +119,7 @@ as $$
         ts_rank_cd(
           to_tsvector('english', coalesce(n.title, '') || ' ' || coalesce(n.body, '')),
           websearch_to_tsquery('english', trim(search_query))
-        )::double precision
+        )::double precision as rank
       from public.notes n
       where length(trim(coalesce(search_query, ''))) > 0
         and to_tsvector('english', coalesce(n.title, '') || ' ' || coalesce(n.body, ''))
