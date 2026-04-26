@@ -219,12 +219,48 @@ const retryToastMiddleware: Middleware = (
   };
 };
 
+const devActionLoggerMiddleware: Middleware<object, RootState> = (api) => (next) => (action) => {
+  if (!__DEV__) {
+    return next(action);
+  }
+
+  const prevState = api.getState();
+  const result = next(action);
+  const nextState = api.getState();
+
+  const type =
+    typeof action === 'object' && action !== null && 'type' in action
+      ? String((action as { type?: unknown }).type ?? 'unknown')
+      : 'unknown';
+  const payload =
+    typeof action === 'object' && action !== null && 'payload' in action
+      ? (action as { payload?: unknown }).payload
+      : undefined;
+  const meta =
+    typeof action === 'object' && action !== null && 'meta' in action
+      ? (action as { meta?: unknown }).meta
+      : undefined;
+
+  console.log(`[redux] ${type}`, {
+    payload,
+    meta,
+    prevState,
+    nextState,
+  });
+
+  return result;
+};
+
+const runtimeMiddlewares: Middleware[] = __DEV__
+  ? [retryToastMiddleware, devActionLoggerMiddleware]
+  : [retryToastMiddleware];
+
 export const store = configureStore({
   reducer: reducers,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(retryToastMiddleware),
+    }).concat(runtimeMiddlewares),
 });
 
 export type AppDispatch = typeof store.dispatch;

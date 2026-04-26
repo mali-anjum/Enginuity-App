@@ -1,0 +1,12 @@
+---
+description: Enforce test file placement and naming conventions
+alwaysApply: true
+---
+
+# Testing Conventions
+
+- Place all new tests inside a `__tests__` folder near the feature/service being tested.
+- Use `.spec.ts` / `.spec.tsx` extensions for new tests.
+- Prefer readable unit tests with explicit arrange/act/assert structure.
+- Mock only required dependencies; test behavior and mapping contracts, not implementation noise.
+- For service-level logic, cover success path, fallback path, and error path when relevant.

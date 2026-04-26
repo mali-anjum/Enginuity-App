@@ -22,10 +22,8 @@ type ActivityRow = {
   id?: string;
   entity_id?: string | null;
   entity_type?: string | null;
-  event_type?: string | null;
   action?: string | null;
-  description?: string | null;
-  message?: string | null;
+  metadata?: { description?: string | null; message?: string | null } | null;
   created_at?: string | null;
 };
 
@@ -76,7 +74,7 @@ export async function fetchActivityLogsForUser(
   const unsafeClient = unwrapSupabaseClient(client);
   const { data, error } = await unsafeClient
     .from('activity_logs')
-    .select('id, entity_id, entity_type, event_type, action, description, message, created_at')
+    .select('id, entity_id, entity_type, action, metadata, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -88,10 +86,10 @@ export async function fetchActivityLogsForUser(
   const rows = (data ?? []) as ActivityRow[];
   return rows.map((row) => {
     const inferredEntity = toEntityType(row.entity_type);
-    const inferredEvent = toEventType(row.event_type ?? row.action);
+    const inferredEvent = toEventType(row.action);
     const description =
-      row.description?.trim() ||
-      row.message?.trim() ||
+      row.metadata?.description?.trim() ||
+      row.metadata?.message?.trim() ||
       (inferredEvent === 'experiment_created'
         ? 'Experiment created'
         : inferredEvent === 'experiment_status_changed'
