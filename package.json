@@ -2,7 +2,7 @@
   "name": "enginuity",
   "main": "index.ts",
   "version": "1.0.0",
-  "scripts": {
+"scripts": {
     "start": "dotenv -e .env.local -- npx expo start",
     "start:dev": "dotenv -e .env.development -- npx expo start",
     "start:staging": "dotenv -e .env.staging -- npx expo start",
@@ -17,10 +17,10 @@
     "db:init": "npx supabase init",
     "db:login": "npx supabase login",
     "db:link": "npx supabase link",
-    "db:migration:new": "npx supabase migration new",
-    "db:push": "npx supabase db push",
-    "db:pull": "npx supabase db pull",
-    "db:types": "npx supabase gen types typescript --linked --schema public > .tmp.database.types.ts && mv .tmp.database.types.ts src/sharedModules/services/supabase/database.types.ts"
+    "db:migration:new": "npx supabase migration new --",
+    "db:push": "npx supabase db push --",
+    "db:pull": "npx supabase db pull --",
+    "db:types": "npx supabase gen types typescript --linked --schema public > src/sharedModules/services/supabase/database.types.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -32,7 +32,7 @@
     "@react-navigation/native-stack": "^7.3.16",
     "@reduxjs/toolkit": "^2.11.2",
     "@supabase/supabase-js": "^2.99.3",
-    "expo": "~54.0.33",
+    "expo": "~54.0.35",
     "expo-constants": "~18.0.13",
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.21",
