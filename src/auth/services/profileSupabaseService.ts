@@ -29,7 +29,7 @@ function mapProfileToUserProfile(profile: ProfileRow | null, fallbackName: strin
 }
 
 export async function fetchProfileByUserId(userId: string, fallbackName: string) {
-  const { data, error } = await withSupabaseClient((client) =>
+  const { data, error } = await withSupabaseClient(async (client) =>
     client
       .from('profiles')
       .select('full_name, discipline, avatar_url, bio, institution, storage_used_mb')
@@ -48,7 +48,7 @@ export async function saveProfileByUserId(
   userId: string,
   payload: { name: string; discipline: AuthDiscipline | null; bio: string; institution: string },
 ) {
-  const { error } = await withSupabaseClient((client) =>
+  const { error } = await withSupabaseClient(async (client) =>
     client
       .from('profiles')
       .upsert(
@@ -72,7 +72,7 @@ export async function uploadAvatarAndPersist(userId: string, fileUri: string) {
   const response = await fetch(fileUri);
   const fileBlob = await response.blob();
   const path = `${userId}/${Date.now()}-avatar.jpg`;
-  const { error: uploadError } = await withSupabaseClient((client) =>
+  const { error: uploadError } = await withSupabaseClient(async (client) =>
     client.storage.from(AVATAR_BUCKET).upload(path, fileBlob, {
       contentType: 'image/jpeg',
       upsert: true,
@@ -83,12 +83,12 @@ export async function uploadAvatarAndPersist(userId: string, fileUri: string) {
     throw new Error(uploadError.message);
   }
 
-  const { data: publicData } = await withSupabaseClient((client) =>
+  const { data: publicData } = await withSupabaseClient(async (client) =>
     client.storage.from(AVATAR_BUCKET).getPublicUrl(path),
   );
   const avatarUrl = publicData.publicUrl;
 
-  const { error: profileError } = await withSupabaseClient((client) =>
+  const { error: profileError } = await withSupabaseClient(async (client) =>
     client
       .from('profiles')
       .upsert(

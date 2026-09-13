@@ -10,7 +10,7 @@ import { fetchNotificationSettingsThunk, fetchStorageUsageThunk, manualSyncThunk
 import type { AppDispatch } from '@/store/store';
 import type { RetryDescriptor } from '@/ui/state/uiSlice';
 
-type RetryThunkCreator = (arg: unknown) => unknown;
+type RetryThunkCreator = (arg: never) => unknown;
 
 const RETRYABLE_THUNKS: Record<string, RetryThunkCreator> = {
   [loginThunk.typePrefix]: loginThunk,
@@ -88,6 +88,6 @@ export function isAutoRetryType(typePrefix: string): boolean {
 export function dispatchRetryOperation(dispatch: AppDispatch, retry: RetryDescriptor): boolean {
   const thunk = getRetryThunk(retry.typePrefix);
   if (!thunk) return false;
-  dispatch(thunk(retry.arg) as never);
+  dispatch(thunk(retry.arg as never) as never);
   return true;
 }

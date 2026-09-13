@@ -2,7 +2,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { HardwareItem } from '@/hardware/state/hardwareSlice';
 import type { Database } from '@/sharedModules/services/supabase/database.types';
-import { unwrapSupabaseClient } from '@/sharedModules/services/supabase/supabaseUntypedClient';
 
 function mapRowToHardware(row: Database['public']['Tables']['hardware_library']['Row']): HardwareItem {
   return {
@@ -19,8 +18,7 @@ export async function fetchHardwareForUser(
   client: SupabaseClient<Database>,
   userId: string,
 ): Promise<HardwareItem[]> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('hardware_library')
     .select('*')
     .eq('owner_id', userId)
@@ -38,7 +36,6 @@ export async function insertHardwareForUser(
   userId: string,
   input: CreateHardwareInput,
 ): Promise<HardwareItem> {
-  const sb = unwrapSupabaseClient(client);
   const insert: Database['public']['Tables']['hardware_library']['Insert'] = {
     owner_id: userId,
     name: input.name,
@@ -47,7 +44,7 @@ export async function insertHardwareForUser(
     datasheet_url: input.datasheetUrl?.trim() ? input.datasheetUrl : null,
   };
 
-  const { data, error } = await sb.from('hardware_library').insert(insert).select('*').single();
+  const { data, error } = await client.from('hardware_library').insert(insert).select('*').single();
   if (error) throw error;
   return mapRowToHardware(data);
 }
@@ -56,8 +53,7 @@ export async function updateHardwareForUser(
   client: SupabaseClient<Database>,
   hardware: HardwareItem,
 ): Promise<HardwareItem> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('hardware_library')
     .update({
       name: hardware.name,
@@ -78,7 +74,6 @@ export async function deleteHardwareForUser(
   client: SupabaseClient<Database>,
   hardwareId: string,
 ): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
-  const { error } = await sb.from('hardware_library').delete().eq('id', hardwareId);
+  const { error } = await client.from('hardware_library').delete().eq('id', hardwareId);
   if (error) throw error;
 }

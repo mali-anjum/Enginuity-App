@@ -12,6 +12,7 @@ function projectFixture(overrides: Partial<Project> = {}): Project {
     id: 'proj-1',
     workspaceId: 'ws-1',
     ownerId: 'user-1',
+    ownerAvatarUrl: null,
     accessRole: 'admin',
     sharedWithMe: false,
     title: 'Drone Nav',

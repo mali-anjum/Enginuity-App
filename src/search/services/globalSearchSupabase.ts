@@ -30,16 +30,14 @@ export async function fetchGlobalSearchEntities(params: {
     async (client) => {
       const rpcArgs: Database['public']['Functions']['global_search_entities']['Args'] = {
         search_query: q,
-        filter_project_id: params.filterProjectId ?? null,
-        filter_status: params.filterStatus ?? null,
-        filter_hardware_id: params.filterHardwareId ?? null,
-        filter_tags: params.filterTags?.length ? params.filterTags : null,
-        date_from: params.dateFrom ?? null,
-        date_to: params.dateTo ?? null,
-        result_limit: params.resultLimit ?? null,
+        filter_project_id: params.filterProjectId,
+        filter_status: params.filterStatus,
+        filter_hardware_id: params.filterHardwareId,
+        filter_tags: params.filterTags?.length ? params.filterTags : undefined,
+        date_from: params.dateFrom,
+        date_to: params.dateTo,
+        result_limit: params.resultLimit,
       };
-      // Hand-written Database tables omit Relationships[] required for full postgrest-js rpc inference.
-      // @ts-expect-error Supabase rpc resolves Args to never until types are regenerated from the CLI
       const { data, error } = await client.rpc('global_search_entities', rpcArgs);
       if (error) {
         return [];

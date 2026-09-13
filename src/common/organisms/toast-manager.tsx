@@ -96,7 +96,9 @@ function ToastCard({ toast }: { toast: Toast }) {
           <Pressable
             style={styles.retryButton}
             onPress={() => {
-              dispatchRetryOperation(dispatch, toast.retry);
+              if (toast.retry) {
+                dispatchRetryOperation(dispatch, toast.retry);
+              }
               dispatch(removeToast(toast.id));
             }}>
             <ThemedText lightColor="#FFFFFF" darkColor="#FFFFFF" style={styles.retryText}>

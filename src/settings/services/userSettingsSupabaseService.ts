@@ -1,3 +1,4 @@
+import type { Json } from '@/sharedModules/services/supabase/database.types';
 import { withSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 
 export type NotificationPrefs = {
@@ -15,7 +16,7 @@ function randomUuidV4(): string {
 }
 
 export async function fetchUserNotificationSettings(userId: string): Promise<NotificationPrefs> {
-  const { data, error } = await withSupabaseClient((client) =>
+  const { data, error } = await withSupabaseClient(async (client) =>
     client
       .from('user_settings')
       .select(
@@ -43,7 +44,7 @@ export async function fetchUserNotificationSettings(userId: string): Promise<Not
 }
 
 export async function saveUserNotificationSettings(userId: string, prefs: NotificationPrefs) {
-  const { error } = await withSupabaseClient((client) =>
+  const { error } = await withSupabaseClient(async (client) =>
     client.from('user_settings').upsert(
       {
         user_id: userId,
@@ -61,7 +62,7 @@ export async function saveUserNotificationSettings(userId: string, prefs: Notifi
 }
 
 export async function fetchProfileStorageUsedMb(userId: string): Promise<number> {
-  const { data, error } = await withSupabaseClient((client) =>
+  const { data, error } = await withSupabaseClient(async (client) =>
     client.from('profiles').select('storage_used_mb').eq('user_id', userId).maybeSingle(),
   );
 
@@ -78,21 +79,27 @@ export async function fetchProfileStorageUsedMb(userId: string): Promise<number>
   return Number.isFinite(n) ? n : 0;
 }
 
+// Local/offline queue vocabulary uses 'insert' (CRUD-style); the `sync_queue.operation`
+// database enum uses 'create' instead, so it must be translated at this boundary.
+function toSyncOperation(operation: 'insert' | 'update' | 'delete'): 'create' | 'update' | 'delete' {
+  return operation === 'insert' ? 'create' : operation;
+}
+
 export async function enqueueManualSyncJob(
   userId: string,
   input?: {
     entityType?: string;
     entityId?: string;
     operation?: 'insert' | 'update' | 'delete';
-    payload?: Record<string, unknown>;
+    payload?: Record<string, Json>;
   },
 ) {
-  const { error } = await withSupabaseClient((client) =>
+  const { error } = await withSupabaseClient(async (client) =>
     client.from('sync_queue').insert({
       user_id: userId,
       entity_type: input?.entityType ?? 'manual_sync',
       entity_id: input?.entityId ?? randomUuidV4(),
-      operation: input?.operation ?? 'update',
+      operation: toSyncOperation(input?.operation ?? 'update'),
       status: 'pending',
       payload: input?.payload ?? { source: 'settings_ui', created_at: new Date().toISOString() },
     }),
