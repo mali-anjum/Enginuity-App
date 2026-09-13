@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -12,11 +12,12 @@ import { initializeSupabaseClient } from '@/sharedModules/services/supabase/supa
 import { persistor } from '@/store/persistor';
 import { store } from '@/store/store';
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    initializeSupabaseClient();
-  }, []);
+// Must run before any child mounts (SupabaseAuthSync reads the client in its own
+// mount effect, and child effects fire before parent effects in React) — so this
+// runs at module load instead of inside a useEffect here.
+initializeSupabaseClient();
 
+export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <PersistGate

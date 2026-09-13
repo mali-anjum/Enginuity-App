@@ -2,7 +2,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Note } from '@/notes/state/notesSlice';
 import type { Database } from '@/sharedModules/services/supabase/database.types';
-import { unwrapSupabaseClient } from '@/sharedModules/services/supabase/supabaseUntypedClient';
 import { fetchAccessibleWorkspaceIds, getPersonalWorkspaceId } from '@/sharedModules/services/supabase/workspaceService';
 
 type TagRow = { id: string; name: string };
@@ -29,8 +28,7 @@ async function resolveWorkspaceIdForNote(
   if (!projectId) {
     return getPersonalWorkspaceId(client, userId);
   }
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb.from('projects').select('workspace_id').eq('id', projectId).single();
+  const { data, error } = await client.from('projects').select('workspace_id').eq('id', projectId).single();
   if (error || !data?.workspace_id) {
     return getPersonalWorkspaceId(client, userId);
   }
@@ -44,14 +42,13 @@ async function upsertTagRows(
 ): Promise<TagRow[]> {
   const normalized = Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)));
   if (normalized.length === 0) return [];
-  const sb = unwrapSupabaseClient(client);
-  const { error: upsertError } = await sb.from('tags').upsert(
+  const { error: upsertError } = await client.from('tags').upsert(
     normalized.map((name) => ({ workspace_id: workspaceId, name })),
     { onConflict: 'workspace_id,name' },
   );
   if (upsertError) throw upsertError;
 
-  const { data, error } = await sb.from('tags').select('id,name').eq('workspace_id', workspaceId).in('name', normalized);
+  const { data, error } = await client.from('tags').select('id,name').eq('workspace_id', workspaceId).in('name', normalized);
   if (error) throw error;
   return (data ?? []) as TagRow[];
 }
@@ -62,10 +59,9 @@ async function syncEntityTagsForNote(
   tags: string[],
   workspaceId: string,
 ): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
   const tagRows = await upsertTagRows(client, workspaceId, tags);
 
-  const { error: deleteError } = await sb
+  const { error: deleteError } = await client
     .from('entity_tags')
     .delete()
     .eq('entity_type', 'note')
@@ -73,10 +69,10 @@ async function syncEntityTagsForNote(
   if (deleteError) throw deleteError;
 
   if (tagRows.length === 0) return;
-  const { error: insertError } = await sb.from('entity_tags').insert(
+  const { error: insertError } = await client.from('entity_tags').insert(
     tagRows.map((tag) => ({
       tag_id: tag.id,
-      entity_type: 'note',
+      entity_type: 'note' as const,
       entity_id: noteId,
     })),
   );
@@ -89,9 +85,8 @@ async function fetchTagMapForNotes(
 ): Promise<Map<string, string[]>> {
   const map = new Map<string, string[]>();
   if (noteIds.length === 0) return map;
-  const sb = unwrapSupabaseClient(client);
 
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('entity_tags')
     .select('entity_id,tags(name)')
     .eq('entity_type', 'note')
@@ -109,17 +104,16 @@ async function fetchTagMapForNotes(
 }
 
 export async function getAllNotes(client: SupabaseClient<Database>, userId: string): Promise<Note[]> {
-  const sb = unwrapSupabaseClient(client);
   const workspaceIds = await fetchAccessibleWorkspaceIds(client, userId);
 
-  const projectQuery = sb.from('projects').select('id').in('workspace_id', workspaceIds);
+  const projectQuery = client.from('projects').select('id').in('workspace_id', workspaceIds);
   const { data: projects, error: projectError } = await projectQuery;
   if (projectError) throw projectError;
   const projectIds = (projects ?? []).map((project: { id: string }) => project.id);
 
-  let noteQuery = sb.from('notes').select('*').eq('owner_id', userId).order('updated_at', { ascending: false });
+  let noteQuery = client.from('notes').select('*').eq('owner_id', userId).order('updated_at', { ascending: false });
   if (projectIds.length > 0) {
-    noteQuery = sb
+    noteQuery = client
       .from('notes')
       .select('*')
       .or(`owner_id.eq.${userId},project_id.in.(${projectIds.join(',')})`)
@@ -137,8 +131,7 @@ export async function getNotesByProject(
   client: SupabaseClient<Database>,
   projectId: string,
 ): Promise<Note[]> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('notes')
     .select('*')
     .eq('project_id', projectId)
@@ -153,8 +146,7 @@ export async function getNotesByExperiment(
   client: SupabaseClient<Database>,
   experimentId: string,
 ): Promise<Note[]> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('notes')
     .select('*')
     .eq('experiment_id', experimentId)
@@ -174,9 +166,8 @@ export async function createNote(
   userId: string,
   input: SaveNoteInput,
 ): Promise<Note> {
-  const sb = unwrapSupabaseClient(client);
   const workspaceId = await resolveWorkspaceIdForNote(client, userId, input.projectId ?? null);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('notes')
     .insert({
       owner_id: userId,
@@ -200,9 +191,8 @@ export async function updateNote(
   noteId: string,
   input: SaveNoteInput,
 ): Promise<Note> {
-  const sb = unwrapSupabaseClient(client);
   const workspaceId = await resolveWorkspaceIdForNote(client, userId, input.projectId ?? null);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('notes')
     .update({
       project_id: input.projectId ?? null,
@@ -222,8 +212,7 @@ export async function updateNote(
 }
 
 export async function removeNote(client: SupabaseClient<Database>, noteId: string): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
-  const { error } = await sb.from('notes').delete().eq('id', noteId);
+  const { error } = await client.from('notes').delete().eq('id', noteId);
   if (error) throw error;
 }
 
@@ -231,8 +220,7 @@ export async function fetchTagUsageCounts(
   client: SupabaseClient<Database>,
   workspaceId: string,
 ): Promise<Array<{ tag: string; count: number }>> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('tags')
     .select('id,name')
     .eq('workspace_id', workspaceId)
@@ -242,7 +230,7 @@ export async function fetchTagUsageCounts(
   const tags = (data ?? []) as TagRow[];
   if (tags.length === 0) return [];
 
-  const { data: entityRows, error: entityError } = await sb
+  const { data: entityRows, error: entityError } = await client
     .from('entity_tags')
     .select('tag_id')
     .eq('entity_type', 'note')

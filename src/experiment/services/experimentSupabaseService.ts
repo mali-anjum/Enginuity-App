@@ -3,7 +3,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ExperimentStatus } from '@/experiment/constants';
 import type { Experiment } from '@/experiment/state/experimentSlice';
 import type { Database } from '@/sharedModules/services/supabase/database.types';
-import { unwrapSupabaseClient } from '@/sharedModules/services/supabase/supabaseUntypedClient';
 import { fetchAccessibleWorkspaceIds } from '@/sharedModules/services/supabase/workspaceService';
 
 const EXPERIMENT_ATTACHMENTS_BUCKET = 'experiment-attachments';
@@ -46,11 +45,10 @@ async function fetchHardwareLinksForExperiments(
   client: SupabaseClient<Database>,
   experimentIds: string[],
 ): Promise<Map<string, string[]>> {
-  const sb = unwrapSupabaseClient(client);
   const map = new Map<string, string[]>();
   if (experimentIds.length === 0) return map;
 
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('experiment_hardware')
     .select('experiment_id, hardware_id')
     .in('experiment_id', experimentIds);
@@ -69,18 +67,17 @@ async function fetchAttachmentLinksForExperiments(
   client: SupabaseClient<Database>,
   experimentIds: string[],
 ): Promise<Map<string, Experiment['attachments']>> {
-  const sb = unwrapSupabaseClient(client);
   const map = new Map<string, Experiment['attachments']>();
   if (experimentIds.length === 0) return map;
 
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('experiment_attachments')
     .select('experiment_id,storage_path,file_name,file_type,file_size,created_at')
     .in('experiment_id', experimentIds);
   if (error) throw error;
 
   for (const row of (data ?? []) as ExperimentAttachmentRow[]) {
-    const { data: publicData } = sb.storage
+    const { data: publicData } = client.storage
       .from(EXPERIMENT_ATTACHMENTS_BUCKET)
       .getPublicUrl(row.storage_path);
     const list = map.get(row.experiment_id) ?? [];
@@ -101,11 +98,10 @@ export async function fetchExperimentsForUser(
   client: SupabaseClient<Database>,
   userId: string,
 ): Promise<Experiment[]> {
-  const sb = unwrapSupabaseClient(client);
   const workspaceIds = await fetchAccessibleWorkspaceIds(client, userId);
   if (workspaceIds.length === 0) return [];
 
-  const { data: projects, error: pErr } = await sb
+  const { data: projects, error: pErr } = await client
     .from('projects')
     .select('id')
     .in('workspace_id', workspaceIds);
@@ -114,7 +110,7 @@ export async function fetchExperimentsForUser(
   const projectIds = projects?.map((p) => p.id) ?? [];
   if (projectIds.length === 0) return [];
 
-  const { data: experiments, error } = await sb
+  const { data: experiments, error } = await client
     .from('experiments')
     .select('*')
     .in('project_id', projectIds)
@@ -151,7 +147,6 @@ export async function insertExperimentForUser(
   userId: string,
   input: CreateExperimentInput,
 ): Promise<Experiment> {
-  const sb = unwrapSupabaseClient(client);
   const hardwareIds = input.hardwareIds ?? [];
 
   const insert: Database['public']['Tables']['experiments']['Insert'] = {
@@ -164,11 +159,11 @@ export async function insertExperimentForUser(
     status: input.status ?? 'pending',
   };
 
-  const { data, error } = await sb.from('experiments').insert(insert).select('*').single();
+  const { data, error } = await client.from('experiments').insert(insert).select('*').single();
   if (error) throw error;
 
   if (hardwareIds.length > 0) {
-    const { error: linkError } = await sb.from('experiment_hardware').insert(
+    const { error: linkError } = await client.from('experiment_hardware').insert(
       hardwareIds.map((hardware_id) => ({
         experiment_id: data.id,
         hardware_id,
@@ -186,13 +181,12 @@ async function syncExperimentHardware(
   experimentId: string,
   hardwareIds: string[],
 ): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
-  const { error: delErr } = await sb.from('experiment_hardware').delete().eq('experiment_id', experimentId);
+  const { error: delErr } = await client.from('experiment_hardware').delete().eq('experiment_id', experimentId);
   if (delErr) throw delErr;
 
   if (hardwareIds.length === 0) return;
 
-  const { error } = await sb.from('experiment_hardware').insert(
+  const { error } = await client.from('experiment_hardware').insert(
     hardwareIds.map((hardware_id) => ({
       experiment_id: experimentId,
       hardware_id,
@@ -206,8 +200,7 @@ export async function updateExperimentForUser(
   client: SupabaseClient<Database>,
   experiment: Experiment,
 ): Promise<Experiment> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('experiments')
     .update({
       title: experiment.title,
@@ -233,8 +226,7 @@ export async function patchExperimentStatusForUser(
   experimentId: string,
   status: ExperimentStatus,
 ): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
-  const { error } = await sb
+  const { error } = await client
     .from('experiments')
     .update({
       status,
@@ -249,8 +241,7 @@ export async function deleteExperimentForUser(
   client: SupabaseClient<Database>,
   experimentId: string,
 ): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
-  const { error } = await sb.from('experiments').delete().eq('id', experimentId);
+  const { error } = await client.from('experiments').delete().eq('id', experimentId);
   if (error) throw error;
 }
 
@@ -272,7 +263,6 @@ export async function uploadExperimentAttachmentForUser(
     fileSize?: number | null;
   },
 ): Promise<Experiment['attachments'][number]> {
-  const sb = unwrapSupabaseClient(client);
   const response = await fetch(input.localUri);
   const fileBlob = await response.blob();
   const ext = fileExtensionFromUri(input.localUri);
@@ -284,7 +274,7 @@ export async function uploadExperimentAttachmentForUser(
   const storagePath = `${experimentId}/${fileName}`;
   const contentType = input.fileType || fileBlob.type || `application/octet-stream`;
 
-  const { error: uploadError } = await sb.storage
+  const { error: uploadError } = await client.storage
     .from(EXPERIMENT_ATTACHMENTS_BUCKET)
     .upload(storagePath, fileBlob, {
       contentType,
@@ -293,7 +283,7 @@ export async function uploadExperimentAttachmentForUser(
   if (uploadError) throw uploadError;
 
   const uploadedAt = new Date().toISOString();
-  const { error: dbError } = await sb.from('experiment_attachments').insert({
+  const { error: dbError } = await client.from('experiment_attachments').insert({
     experiment_id: experimentId,
     uploaded_by: userId,
     file_name: fileName,
@@ -304,7 +294,7 @@ export async function uploadExperimentAttachmentForUser(
   });
   if (dbError) throw dbError;
 
-  const { data: publicData } = sb.storage
+  const { data: publicData } = client.storage
     .from(EXPERIMENT_ATTACHMENTS_BUCKET)
     .getPublicUrl(storagePath);
   return {

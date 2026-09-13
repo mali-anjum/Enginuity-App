@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import type { Json } from '@/sharedModules/services/supabase/database.types';
 import { enqueueManualSyncJob } from '@/settings/services/userSettingsSupabaseService';
 import { createLocalUuidV4 } from '@/sharedModules/utils/uuid';
 
@@ -11,7 +12,7 @@ export type LocalSyncQueueItem = {
   entityType: string;
   entityId: string;
   operation: 'insert' | 'update' | 'delete';
-  payload: Record<string, unknown>;
+  payload: Record<string, Json>;
   status: 'pending' | 'synced';
   createdAt: string;
   syncedAt: string | null;

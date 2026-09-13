@@ -160,7 +160,7 @@ const retryToastMiddleware: Middleware = (
     if (!thunk || attempt > 3) return;
     const delayMs = 500 * 2 ** (attempt - 1);
     setTimeout(() => {
-      dispatch(thunk(arg) as never);
+      dispatch(thunk(arg as never) as never);
     }, delayMs);
   };
 

@@ -6,7 +6,6 @@ import {
   fetchAccessibleWorkspaceIds,
   getPersonalWorkspaceId,
 } from '@/sharedModules/services/supabase/workspaceService';
-import { unwrapSupabaseClient } from '@/sharedModules/services/supabase/supabaseUntypedClient';
 
 function mapRowToProject(row: Database['public']['Tables']['projects']['Row']): Project {
   const status: ProjectStatus = row.archived ? 'archived' : row.status;
@@ -60,11 +59,10 @@ export async function fetchProjectsForUser(
   client: SupabaseClient<Database>,
   userId: string,
 ): Promise<Project[]> {
-  const sb = unwrapSupabaseClient(client);
   const workspaceIds = await fetchAccessibleWorkspaceIds(client, userId);
   if (workspaceIds.length === 0) return [];
 
-  const { data: membershipRows, error: membershipError } = await sb
+  const { data: membershipRows, error: membershipError } = await client
     .from('workspace_members')
     .select('workspace_id, role')
     .eq('user_id', userId)
@@ -77,7 +75,7 @@ export async function fetchProjectsForUser(
     ]),
   );
 
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('projects')
     .select('*')
     .in('workspace_id', workspaceIds)
@@ -85,7 +83,7 @@ export async function fetchProjectsForUser(
 
   if (error) throw error;
   const ownerIds = Array.from(new Set((data ?? []).map((row) => row.owner_id)));
-  const { data: profileRows, error: profileError } = await sb
+  const { data: profileRows, error: profileError } = await client
     .from('profiles')
     .select('user_id, avatar_url')
     .in('user_id', ownerIds);
@@ -117,7 +115,6 @@ export async function insertProjectForUser(
   userId: string,
   input: CreateProjectInput,
 ): Promise<Project> {
-  const sb = unwrapSupabaseClient(client);
   const workspaceId = await getPersonalWorkspaceId(client, userId);
   const status = input.status ?? 'active';
   const dbStatus: Database['public']['Enums']['project_status'] =
@@ -135,7 +132,7 @@ export async function insertProjectForUser(
     is_favorite: false,
   };
 
-  const { data, error } = await sb.from('projects').insert(insert).select('*').single();
+  const { data, error } = await client.from('projects').insert(insert).select('*').single();
   if (error) throw error;
   const project = mapRowToProject(data);
   return { ...project, accessRole: 'admin', sharedWithMe: false, ownerAvatarUrl: null };
@@ -145,8 +142,7 @@ export async function updateProjectForUser(
   client: SupabaseClient<Database>,
   project: Project,
 ): Promise<Project> {
-  const sb = unwrapSupabaseClient(client);
-  const { data, error } = await sb
+  const { data, error } = await client
     .from('projects')
     .update(projectToDbPatch(project))
     .eq('id', project.id)
@@ -161,7 +157,6 @@ export async function deleteProjectForUser(
   client: SupabaseClient<Database>,
   projectId: string,
 ): Promise<void> {
-  const sb = unwrapSupabaseClient(client);
-  const { error } = await sb.from('projects').delete().eq('id', projectId);
+  const { error } = await client.from('projects').delete().eq('id', projectId);
   if (error) throw error;
 }
