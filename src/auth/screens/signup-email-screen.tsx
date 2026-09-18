@@ -68,14 +68,14 @@ export default function SignupEmailScreen() {
       />
       <AuthTextInput
         placeholder="Password"
-        secureTextEntry
+        secureToggle
         autoCapitalize="none"
         value={password}
         onChangeText={setPassword}
       />
       <AuthTextInput
         placeholder="Confirm password"
-        secureTextEntry
+        secureToggle
         autoCapitalize="none"
         value={confirmPassword}
         onChangeText={setConfirmPassword}

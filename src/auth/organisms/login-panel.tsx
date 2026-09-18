@@ -49,7 +49,7 @@ export function LoginPanel() {
       />
       <AuthTextInput
         placeholder="Password"
-        secureTextEntry
+        secureToggle
         autoCapitalize="none"
         value={password}
         onChangeText={setPassword}

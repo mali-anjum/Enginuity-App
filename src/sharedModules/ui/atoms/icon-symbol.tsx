@@ -21,6 +21,8 @@ const MAPPING = {
   'checkmark.circle.fill': 'check-circle',
   'exclamationmark.triangle.fill': 'warning',
   'xmark.circle.fill': 'cancel',
+  eye: 'visibility',
+  'eye.slash': 'visibility-off',
 } as IconMapping;
 
 export function IconSymbol({

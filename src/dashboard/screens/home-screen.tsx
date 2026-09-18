@@ -13,7 +13,7 @@ import type { Project } from '@/project/state/projectSlice';
 import { selectProjectStats } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
@@ -183,7 +183,7 @@ export default function HomeScreen() {
         </Pressable>
 
         <View style={styles.sectionHeader}>
-          <ThemedText type="subtitle">Projects</ThemedText>
+          <ThemedText type="heading">Projects</ThemedText>
           {myProjects.length + sharedProjects.length > 0 ? (
             <Link href={ROUTES.PROJECT_LIST as Href}>
               <ThemedText style={{ color: themeColors.primary }}>See all</ThemedText>
@@ -196,7 +196,9 @@ export default function HomeScreen() {
             <HomeEmptyProjects onCreateProject={openCreateProject} />
           ) : (
             <>
-              <ThemedText type="defaultSemiBold">My Projects</ThemedText>
+              <ThemedText type="eyebrow" style={{ color: themeColors.mutedText }}>
+                My Projects
+              </ThemedText>
               {myProjects.length === 0 ? (
                 <ThemedText style={{ color: themeColors.mutedText }}>
                   No personal projects yet.
@@ -209,9 +211,11 @@ export default function HomeScreen() {
                     <Pressable
                       style={[
                         styles.projectCard,
+                        styles.projectCardElevated,
                         {
                           borderColor: themeColors.border,
                           backgroundColor: themeColors.surfaceElevated,
+                          shadowColor: themeColors.cardShadow,
                         },
                       ]}
                       accessibilityRole="button"
@@ -221,7 +225,7 @@ export default function HomeScreen() {
                           {project.title}
                         </ThemedText>
                         <View style={[styles.statusChip, { borderColor: chip.border, backgroundColor: chip.background }]}>
-                          <ThemedText style={{ fontSize: 12, fontWeight: '600' }}>
+                          <ThemedText type="caption" style={styles.chipLabel}>
                             {formatProjectStatusLabel(project.status)}
                           </ThemedText>
                         </View>
@@ -243,7 +247,9 @@ export default function HomeScreen() {
                 );
               })}
 
-              <ThemedText type="defaultSemiBold" style={styles.subsectionLabel}>
+              <ThemedText
+                type="eyebrow"
+                style={[styles.subsectionLabel, { color: themeColors.mutedText }]}>
                 Shared with Me
               </ThemedText>
               {sharedProjects.length === 0 ? (
@@ -258,9 +264,11 @@ export default function HomeScreen() {
                     <Pressable
                       style={[
                         styles.projectCard,
+                        styles.projectCardElevated,
                         {
                           borderColor: themeColors.border,
                           backgroundColor: themeColors.surfaceElevated,
+                          shadowColor: themeColors.cardShadow,
                         },
                       ]}
                       accessibilityRole="button"
@@ -283,7 +291,7 @@ export default function HomeScreen() {
                           </ThemedText>
                         </View>
                         <View style={[styles.statusChip, { borderColor: chip.border, backgroundColor: chip.background }]}>
-                          <ThemedText style={{ fontSize: 12, fontWeight: '600' }}>
+                          <ThemedText type="caption" style={styles.chipLabel}>
                             {formatProjectStatusLabel(project.status)}
                           </ThemedText>
                         </View>
@@ -294,7 +302,9 @@ export default function HomeScreen() {
                             styles.sharedBadge,
                             { borderColor: themeColors.accentBorder, backgroundColor: themeColors.accentSoft },
                           ]}>
-                          <ThemedText style={styles.sharedBadgeText}>Shared with me</ThemedText>
+                          <ThemedText type="caption" style={styles.sharedBadgeText}>
+                            Shared with me
+                          </ThemedText>
                         </View>
                         <ThemedText style={{ color: themeColors.mutedText }}>
                           {project.experimentCount} experiment{project.experimentCount === 1 ? '' : 's'}
@@ -309,7 +319,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={[styles.sectionHeader, styles.sectionSpacer]}>
-          <ThemedText type="subtitle">Activity feed</ThemedText>
+          <ThemedText type="heading">Activity feed</ThemedText>
         </View>
         <View style={styles.sectionBody}>
           {isActivityLoading ? (
@@ -345,12 +355,12 @@ export default function HomeScreen() {
                       <ThemedText type="defaultSemiBold" numberOfLines={2}>
                         {item.description}
                       </ThemedText>
-                      <ThemedText style={{ color: themeColors.subtleText, fontSize: 12 }}>
+                      <ThemedText type="caption" style={{ color: themeColors.subtleText }}>
                         {formatRelativeTime(item.createdAt)}
                       </ThemedText>
                     </View>
                     {href ? (
-                      <ThemedText style={{ color: themeColors.primary, fontSize: 12 }}>Open</ThemedText>
+                      <ThemedText type="caption" style={{ color: themeColors.primary }}>Open</ThemedText>
                     ) : null}
                   </View>
                 </Pressable>
@@ -429,75 +439,84 @@ const styles = StyleSheet.create({
   },
   header: {
     borderBottomWidth: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.xl,
     paddingTop: 56,
-    paddingBottom: 14,
+    paddingBottom: Spacing.md,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: Spacing.md,
   },
   headerMain: {
     flex: 1,
-    gap: 4,
+    gap: Spacing.xs,
   },
   searchIconButton: {
-    padding: 6,
+    padding: Spacing.sm - 2,
     marginTop: -2,
   },
   scrollContent: {
-    padding: 16,
-    gap: 12,
+    padding: Spacing.lg,
+    gap: Spacing.md,
     paddingBottom: 100,
   },
   searchBarButton: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.md + 2,
+    paddingVertical: Spacing.md,
   },
   sectionHeader: {
-    marginTop: 4,
+    marginTop: Spacing.xs,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   sectionSpacer: {
-    marginTop: 16,
+    marginTop: Spacing.xxl,
   },
   sectionBody: {
-    gap: 10,
+    gap: Spacing.sm + 2,
   },
   projectCard: {
     borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
+    borderRadius: Radii.lg,
+    paddingHorizontal: Spacing.md + 2,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm + 2,
+  },
+  projectCardElevated: {
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   projectCardTop: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: Spacing.sm + 2,
   },
   projectTitle: {
     flex: 1,
   },
   statusChip: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: Spacing.xs,
+  },
+  chipLabel: {
+    fontWeight: '600',
   },
   projectMeta: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: Spacing.sm,
   },
-  subsectionLabel: { marginTop: 8 },
-  sharedTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
+  subsectionLabel: { marginTop: Spacing.sm },
+  sharedTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, flex: 1 },
   ownerAvatar: { width: 24, height: 24, borderRadius: 12 },
   ownerAvatarFallback: {
     width: 24,
@@ -509,23 +528,23 @@ const styles = StyleSheet.create({
   },
   sharedBadge: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: Radii.md,
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
-  sharedBadgeText: { fontSize: 11, fontWeight: '600' },
+  sharedBadgeText: { fontWeight: '600' },
   card: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 11,
-    paddingHorizontal: 12,
-    gap: 4,
+    borderRadius: Radii.md,
+    paddingVertical: Spacing.sm + 3,
+    paddingHorizontal: Spacing.md,
+    gap: Spacing.xs,
   },
   activityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: Spacing.sm + 2,
   },
   activityIconWrap: {
     width: 28,
@@ -541,8 +560,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 24,
+    right: Spacing.xl,
+    bottom: Spacing.xxl,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -561,16 +580,16 @@ const styles = StyleSheet.create({
   searchInputRow: {
     position: 'absolute',
     top: 70,
-    left: 16,
-    right: 16,
+    left: Spacing.lg,
+    right: Spacing.lg,
     zIndex: 40,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   searchInput: {
     flex: 1,
