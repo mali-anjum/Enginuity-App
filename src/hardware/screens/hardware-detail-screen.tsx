@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
@@ -22,16 +23,16 @@ export default function HardwareDetailScreen() {
 
   if (!hardware) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Hardware item not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   const usedByExperiments = experiments.filter((exp) => exp.hardwareIds.includes(hardware.id));
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <ThemedText type="title">{hardware.name}</ThemedText>
@@ -97,7 +98,7 @@ export default function HardwareDetailScreen() {
           </ThemedView>
         </View>
       </Modal>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

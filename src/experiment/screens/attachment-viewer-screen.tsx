@@ -8,8 +8,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
 import { Colors } from '@/common/constants/theme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { parseCsvPreviewRows } from '@/experiment/utils/csvPreview';
 
@@ -88,7 +88,7 @@ export default function AttachmentViewerScreen() {
   };
 
   return (
-    <ThemedView style={[styles.screen, { backgroundColor: themeColors.surface }]}>
+    <ScreenContainer style={[styles.screen, { backgroundColor: themeColors.surface }]}>
       <View style={styles.headerRow}>
         <ThemedText type="title">Attachment Viewer</ThemedText>
         <Pressable
@@ -170,7 +170,7 @@ export default function AttachmentViewerScreen() {
           Use Download to save to gallery/files.
         </ThemedText>
       )}
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

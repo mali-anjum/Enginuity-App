@@ -40,9 +40,8 @@ export function GoogleSignInButton() {
         }}>
         <ThemedText
           type="defaultSemiBold"
-          style={styles.label}
-          lightColor={Colors.light.background}
-          darkColor={Colors.light.background}>
+          lightColor={themeColors.buttonPrimaryText}
+          darkColor={themeColors.buttonPrimaryText}>
           {loading ? config.loadingLabel : config.label}
         </ThemedText>
       </Pressable>
@@ -69,9 +68,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.6,
-  },
-  label: {
-    color: Colors.light.background,
   },
   error: {
     fontSize: 13,

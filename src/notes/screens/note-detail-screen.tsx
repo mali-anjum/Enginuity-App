@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
@@ -23,14 +24,14 @@ export default function NoteDetailScreen() {
 
   if (!note) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Note not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <ThemedText type="title">{note.title}</ThemedText>
@@ -103,7 +104,7 @@ export default function NoteDetailScreen() {
           </ThemedView>
         </View>
       </Modal>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

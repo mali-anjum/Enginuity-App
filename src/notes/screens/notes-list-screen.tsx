@@ -3,10 +3,10 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { SkeletonShimmer } from '@/common/atoms/skeleton-shimmer';
 import { TagChip } from '@/common/atoms/tag-chip';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ListEmptyState } from '@/common/organisms/list-empty-state';
 import { selectAllExperiments } from '@/experiment/state/experimentSlice';
@@ -68,7 +68,7 @@ export default function NotesListScreen() {
   );
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Notes</ThemedText>
@@ -185,7 +185,11 @@ export default function NotesListScreen() {
                 <Pressable
                   style={[
                     styles.card,
-                    { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+                    {
+                      borderColor: themeColors.border,
+                      backgroundColor: themeColors.surfaceElevated,
+                      shadowColor: themeColors.cardShadow,
+                    },
                   ]}>
                   <View style={styles.cardHeader}>
                     <ThemedText type="defaultSemiBold">{note.title}</ThemedText>
@@ -217,7 +221,7 @@ export default function NotesListScreen() {
           )}
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
@@ -225,11 +229,21 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  searchInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
+  searchInput: { borderWidth: 1, borderRadius: Radii.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, fontSize: 15 },
   sortRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' },
   sortChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   list: { gap: 10 },
-  card: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  card: {
+    borderWidth: 1,
+    borderRadius: Radii.lg,
+    paddingHorizontal: Spacing.md + 2,
+    paddingVertical: Spacing.md,
+    gap: Spacing.xs,
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
   noteTitleSkeleton: { height: 16, borderRadius: 6, width: '58%' },

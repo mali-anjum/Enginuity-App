@@ -2,9 +2,20 @@
 
 This is the design-system baseline for the `/imprint` skill. It reflects what is
 **actually in the code today** (established via an `/imprint audit` pass on
-2026-09-19), not an aspirational spec. New components should match these
-patterns; when `/imprint` runs after future component work, it updates the
-relevant entry below rather than creating a parallel standard.
+2026-09-19, then a full app-wide Notion-style repaint on 2026-09-19 that
+touched all 49 screens — see `.agents/memory.md` for the session log), not an
+aspirational spec. New components should match these patterns; when
+`/imprint` runs after future component work, it updates the relevant entry
+below rather than creating a parallel standard.
+
+**Design language (2026-09-19 repaint):** monochrome-first, Notion-inspired.
+Warm neutral grays/near-black text instead of cool slate, a single accent
+hue (blue) used for interactive/selected state instead of three competing
+hues (the old teal `primary` / blue `accent` / indigo `heroTint`), `danger`/
+`success` kept as separate functional colors (not part of the monochrome
+reduction). Token **key names are unchanged** from before the repaint —
+only values changed — so this was a low-risk, app-wide value swap rather
+than a per-screen rewrite.
 
 Stack note: this is React Native (Expo), not Tailwind/web. There are no
 `bg-`/`rounded-`/`text-` classes — instead every visual property comes from
@@ -61,8 +72,29 @@ File: `src/common/atoms/themed-view.tsx`
 | --- | --- |
 | Background | `background` token, overridable via `lightColor`/`darkColor` |
 
-**Pattern notes:** Thin wrapper — screens should default to this for the root
-container instead of a raw `View` with a manual background color.
+**Pattern notes:** Thin wrapper, still used for nested/secondary containers
+within a screen. For a screen's **root** container, use `ScreenContainer`
+(below) instead — it wraps this and additionally handles desktop-width
+layout.
+
+---
+
+### ScreenContainer
+
+File: `src/common/molecules/screen-container.tsx`
+Added: 2026-09-19
+
+| Property | Value |
+| --- | --- |
+| Native (`Platform.OS !== 'web'`) | No-op beyond `ThemedView` — full width, unchanged behavior |
+| Web | Content centered with a `maxWidth` (default `720`, override via prop), `alignSelf: 'center'`, `Spacing.xl` side padding |
+
+**Pattern notes:** This is the single choke point for the "content
+stretches full-bleed on desktop web" problem — fixed once here instead of
+per-screen. Every screen's root now uses `<ScreenContainer style={styles.screen}>`
+in place of `<ThemedView style={styles.screen}>` (same `style` prop, drop-in
+replacement). Nested `ThemedView`s inside a screen (cards, sections) are
+unaffected and stay as `ThemedView`.
 
 ---
 
@@ -142,7 +174,10 @@ Last updated: 2026-09-19
 screen (things the user came to that screen to look at/act on). Pairs with
 "Flat Card" below for secondary content on the same screen, so the two visual
 weights read as primary vs. secondary rather than everything looking equally
-important.
+important. As of 2026-09-19 this also covers the primary list-item cards on
+`project-list-screen.tsx`, `hardware-list-screen.tsx`, `notes-list-screen.tsx`,
+and `experiment-list-screen.tsx` (radius `Radii.lg`, `cardShadow` token) —
+previously these were flat/bordered only, inconsistent with Home.
 
 ---
 
@@ -181,27 +216,38 @@ Example: `statusChip`, `sharedBadge` in `src/dashboard/screens/home-screen.tsx`
 
 ## Known Deviations (not yet reconciled)
 
-These predate the `Spacing`/`Radii`/expanded-typography tokens (added
-2026-09-19) and haven't been migrated. Listed here so `/imprint audit` doesn't
-need to rediscover them, and so new code doesn't copy them by accident:
+None currently logged. The three deviations tracked before the 2026-09-19
+app-wide repaint were resolved in that pass:
 
-- **`AppButton` border radius is `14`** — doesn't match `Radii.md` (12) or
-  `Radii.lg` (16). Decide whether buttons get their own radius step or should
-  snap to `Radii.lg` before reconciling.
-- **`reset-password-screen.tsx` and `account-settings-screen.tsx`** use raw
-  `secureTextEntry` on password fields instead of `AuthTextInput`'s
-  `secureToggle` — inconsistent with login/signup.
-- **`ListEmptyState` card radius is `16`** while other "Flat Card" instances
-  use `12` — both are pre-token values that happened to land on different
-  `Radii` steps.
+- `AppButton` border radius snapped to `Radii.lg` (was a hand-written `14`).
+- `reset-password-screen.tsx` and `account-settings-screen.tsx` migrated to
+  `AuthTextInput`'s `secureToggle` (were raw `secureTextEntry`).
+- `ListEmptyState` card radius snapped to `Radii.md` (was `16`, inconsistent
+  with other Flat Card instances at `12`).
 
-Resolved 2026-09-19: the Home screen's remaining hand-written
-gaps/padding (`projectCardTop`, `activityRow`, `sharedBadge`), the
-badge/status-chip label styles (now `type="caption"`), and `AuthTextInput`'s
-base radius/padding + `secureToggle` hit-area are all token-derived now — no
-longer listed here.
+Also fixed in the same pass (not deviations, but worth noting so they aren't
+rediscovered as "weird"):
 
-Do not silently "fix" the remaining ones while doing unrelated work — they're either an
-intentional design choice not yet confirmed, or a small migration that
-deserves its own pass. Flag them if you're touching the file anyway; otherwise
-leave them and mention it.
+- `IconSymbol`'s icon-name mapping was missing `cpu.fill`, `doc.text.fill`,
+  `flask.fill`, and `folder.badge.plus` — the empty-state icons on
+  Hardware/Notes/Experiment/Project list screens were silently falling back
+  to a generic "help" glyph. `ListEmptyState`'s `icon` prop is now typed as
+  `IconSymbolName` (was a loose `string`) so a future typo fails at compile
+  time instead of silently rendering the wrong icon.
+- `GoogleSignInButton` hardcoded `Colors.light.background` for its label
+  color regardless of scheme; switched to the `buttonPrimaryText` token.
+- Two fully unrouted scaffold screens were deleted as dead code (not
+  reachable from any `src/app` route, so not a "keep and re-theme" case):
+  `dashboard/screens/workspace-home-screen.tsx` (+ its
+  `workspace-overview.tsx`/`feature-list.tsx`) and
+  `notes/screens/knowledge-home-screen.tsx` (+ its
+  `knowledge-overview.tsx`/`tag-row.tsx`). The **`Explore` tab**
+  (`common/screens/explore-screen.tsx`), by contrast, *was* live in the
+  bottom tab bar but still had Expo's starter-template placeholder content —
+  it was rebuilt as a real cross-entity discovery hub (project stats,
+  hardware-by-category, browse-notes-by-tag) rather than deleted.
+
+If a future pass finds a new inconsistency, log it here the same way rather
+than silently fixing it inline, unless it's a small, unambiguous drift from
+an already-documented pattern (e.g. a raw pixel value that obviously maps to
+an existing `Spacing`/`Radii` step).

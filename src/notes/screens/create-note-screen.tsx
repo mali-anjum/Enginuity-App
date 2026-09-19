@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { selectExperimentById } from '@/experiment/state/experimentSlice';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { createCustomTagThunk, createNoteThunk } from '@/notes/state/notesSlice';
@@ -39,7 +39,7 @@ export default function CreateNoteScreen() {
   const values = watch();
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Create Note</ThemedText>
         <NoteForm
@@ -66,7 +66,7 @@ export default function CreateNoteScreen() {
           })}
         />
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

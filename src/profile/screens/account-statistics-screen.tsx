@@ -5,7 +5,7 @@ import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectAllNotes } from '@/notes/state/notesSlice';
 import { selectAllProjects } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { useAppSelector } from '@/store/hooks';
@@ -21,7 +21,7 @@ export default function AccountStatisticsScreen() {
   const user = useAppSelector(selectUser);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Account Statistics</ThemedText>
 
@@ -42,7 +42,7 @@ export default function AccountStatisticsScreen() {
           </ThemedText>
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

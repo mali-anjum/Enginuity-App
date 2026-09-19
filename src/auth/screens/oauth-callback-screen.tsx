@@ -1,12 +1,14 @@
 import * as WebBrowser from 'expo-web-browser';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { exchangeOAuthCodeForSession } from '@/auth/services/authCallback';
+import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ROUTES } from '@/sharedModules/navigation/routes';
 
 export default function OAuthCallbackScreen() {
@@ -69,49 +71,27 @@ export default function OAuthCallbackScreen() {
   }, [params, router]);
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer contentStyle={styles.container}>
       <ThemedText type="title">
         {isExchanging ? 'Signing you in...' : error ? 'Sign-in issue' : 'Email confirmation complete'}
       </ThemedText>
-      {error ? <ThemedText style={[styles.errorText, { color: themeColors.danger }]}>{error}</ThemedText> : null}
-      {!error && infoMessage ? <ThemedText style={styles.infoText}>{infoMessage}</ThemedText> : null}
-      {!isExchanging ? (
-        <Pressable
-          style={[
-            styles.button,
-            { backgroundColor: themeColors.primary },
-          ]}
-          onPress={() => router.replace(ROUTES.AUTH_LOGIN)}>
-          <ThemedText style={styles.buttonText} lightColor={Colors.light.background} darkColor={Colors.light.background}>
-            Return to login
-          </ThemedText>
-        </Pressable>
+      {error ? (
+        <ThemedText style={{ color: themeColors.danger, lineHeight: 22 }}>{error}</ThemedText>
       ) : null}
-    </View>
+      {!error && infoMessage ? (
+        <ThemedText style={{ color: themeColors.mutedText, lineHeight: 22 }}>{infoMessage}</ThemedText>
+      ) : null}
+      {!isExchanging ? (
+        <AppButton label="Return to login" onPress={() => router.replace(ROUTES.AUTH_LOGIN)} />
+      ) : null}
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 32,
-    gap: 12,
-  },
-  errorText: {
-    lineHeight: 22,
-  },
-  infoText: {
-    lineHeight: 22,
-  },
-  button: {
-    marginTop: 8,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    alignSelf: 'flex-start',
-  },
-  buttonText: {
-    color: Colors.light.background,
+    paddingHorizontal: Spacing.lg + 2,
+    paddingTop: Spacing.xxl + 8,
+    gap: Spacing.md,
   },
 });

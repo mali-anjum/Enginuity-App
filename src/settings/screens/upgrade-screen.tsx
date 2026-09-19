@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import {
@@ -71,7 +71,7 @@ export default function UpgradeScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Upgrade to Pro</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
@@ -176,12 +176,12 @@ export default function UpgradeScreen() {
               <ThemedText style={{ color: themeColors.mutedText }}>{quote}</ThemedText>
             </View>
           ))}
-          <ThemedText style={{ color: themeColors.subtleText, fontSize: 12 }}>
+          <ThemedText type="caption" style={{ color: themeColors.subtleText }}>
             Placeholder testimonials for v0.7. Replace with real user feedback later.
           </ThemedText>
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

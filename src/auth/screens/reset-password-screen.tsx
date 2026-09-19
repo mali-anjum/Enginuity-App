@@ -1,13 +1,14 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import { resetPasswordThunk, selectAuthError, selectAuthStatus } from '@/auth/state/authSlice';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
@@ -35,19 +36,21 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer contentStyle={styles.container}>
       <ThemedText type="title">Reset password</ThemedText>
-      <ThemedText style={styles.subtitle}>Set a new password for your account.</ThemedText>
+      <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
+        Set a new password for your account.
+      </ThemedText>
       <AuthTextInput
         placeholder="New password"
-        secureTextEntry
+        secureToggle
         autoCapitalize="none"
         value={password}
         onChangeText={setPassword}
       />
       <AuthTextInput
         placeholder="Confirm new password"
-        secureTextEntry
+        secureToggle
         autoCapitalize="none"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
@@ -57,25 +60,24 @@ export default function ResetPasswordScreen() {
         onPress={handleReset}
         disabled={isLoading}
       />
-      {authError ? <ThemedText style={[styles.message, { color: themeColors.danger }]}>{authError}</ThemedText> : null}
-      {successMessage ? (
-        <ThemedText style={[styles.message, { color: themeColors.success }]}>{successMessage}</ThemedText>
+      {authError ? (
+        <ThemedText type="caption" style={{ color: themeColors.danger }}>
+          {authError}
+        </ThemedText>
       ) : null}
-    </View>
+      {successMessage ? (
+        <ThemedText type="caption" style={{ color: themeColors.success }}>
+          {successMessage}
+        </ThemedText>
+      ) : null}
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 28,
-    gap: 12,
-  },
-  subtitle: {
-    fontSize: 14,
-  },
-  message: {
-    fontSize: 13,
+    paddingHorizontal: Spacing.lg + 2,
+    paddingTop: Spacing.xxl + 4,
+    gap: Spacing.md,
   },
 });

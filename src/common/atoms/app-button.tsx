@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
 
@@ -80,16 +80,16 @@ export function AppButton({
 const styles = StyleSheet.create({
   base: {
     borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 14,
+    borderRadius: Radii.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   label: {
     fontSize: 15,

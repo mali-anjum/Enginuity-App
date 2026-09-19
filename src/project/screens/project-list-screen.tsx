@@ -2,9 +2,9 @@ import { Link, useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { SkeletonShimmer } from '@/common/atoms/skeleton-shimmer';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ListEmptyState } from '@/common/organisms/list-empty-state';
 import {
@@ -27,7 +27,7 @@ export default function ProjectListScreen() {
   const isLoading = useAppSelector((state) => state.project.isLoading);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Project List</ThemedText>
@@ -85,6 +85,7 @@ export default function ProjectListScreen() {
                     {
                       borderColor: themeColors.border,
                       backgroundColor: themeColors.surfaceElevated,
+                      shadowColor: themeColors.cardShadow,
                     },
                   ]}>
                   <ThemedText type="defaultSemiBold">{project.title}</ThemedText>
@@ -94,7 +95,7 @@ export default function ProjectListScreen() {
                         styles.sharedBadge,
                         { borderColor: themeColors.accentBorder, backgroundColor: themeColors.accentSoft },
                       ]}>
-                      <ThemedText style={styles.sharedBadgeText}>Shared with me</ThemedText>
+                      <ThemedText type="caption" style={{ fontWeight: '600' }}>Shared with me</ThemedText>
                     </View>
                   ) : null}
                   <ThemedText style={{ color: themeColors.mutedText }} numberOfLines={2}>
@@ -106,26 +107,35 @@ export default function ProjectListScreen() {
           )}
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: 16, gap: 14, paddingBottom: 40 },
+  content: { padding: Spacing.lg, gap: Spacing.md + 2, paddingBottom: Spacing.xxxl + Spacing.sm },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  filterRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  filterChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
-  list: { gap: 10 },
-  card: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, gap: 4 },
+  filterRow: { flexDirection: 'row', gap: Spacing.sm, flexWrap: 'wrap' },
+  filterChip: { borderWidth: 1, borderRadius: Radii.full, paddingHorizontal: Spacing.sm + 2, paddingVertical: Spacing.xs + 2 },
+  list: { gap: Spacing.sm + 2 },
+  card: {
+    borderWidth: 1,
+    borderRadius: Radii.lg,
+    paddingHorizontal: Spacing.md + 2,
+    paddingVertical: Spacing.md,
+    gap: Spacing.xs,
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
   sharedBadge: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: Radii.md,
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs - 1,
   },
-  sharedBadgeText: { fontSize: 11, fontWeight: '600' },
   projectTitleSkeleton: { height: 16, borderRadius: 6, width: '62%', marginBottom: 4 },
   projectLineSkeleton: { height: 12, borderRadius: 6, width: '95%' },
   projectLineShortSkeleton: { height: 12, borderRadius: 6, width: '74%', marginTop: 4 },

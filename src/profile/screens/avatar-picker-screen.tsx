@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { selectUser, uploadAvatarThunk } from '@/auth/state/authSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES } from '@/sharedModules/navigation/routes';
@@ -49,7 +49,7 @@ export default function AvatarPickerScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Avatar Picker</ThemedText>
         <View style={[styles.previewCard, { borderColor: themeColors.border }]}>
@@ -74,7 +74,7 @@ export default function AvatarPickerScreen() {
           <ThemedText>Choose from Gallery</ThemedText>
         </Pressable>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

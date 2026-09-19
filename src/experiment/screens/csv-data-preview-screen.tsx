@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { parseCsvPreviewRows } from '@/experiment/utils/csvPreview';
@@ -46,7 +46,7 @@ export default function CsvDataPreviewScreen() {
   const bodyRows = useMemo(() => (rows.length > 1 ? rows.slice(1) : []), [rows]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ThemedText type="title">CSV Data Preview</ThemedText>
       <ThemedText>{decodedName}</ThemedText>
       <ThemedText style={{ color: themeColors.mutedText }}>Showing up to 20 rows.</ThemedText>
@@ -90,7 +90,7 @@ export default function CsvDataPreviewScreen() {
           </View>
         </ScrollView>
       ) : null}
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

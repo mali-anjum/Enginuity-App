@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hardware-form';
 import { addHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
@@ -32,7 +32,7 @@ export default function AddHardwareScreen() {
   const router = useRouter();
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Add Hardware</ThemedText>
         <HardwareForm
@@ -71,7 +71,7 @@ export default function AddHardwareScreen() {
           })();
         }}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

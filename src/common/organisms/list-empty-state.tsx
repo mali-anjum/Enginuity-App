@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
+import { IconSymbol, type IconSymbolName } from '@/sharedModules/ui/atoms/icon-symbol';
 
 type ListEmptyStateProps = {
-  icon: string;
+  icon: IconSymbolName;
   headline: string;
   body: string;
   ctaLabel: string;
@@ -34,7 +34,7 @@ export function ListEmptyState({
         },
       ]}>
       <View style={[styles.illustrationCircle, { backgroundColor: themeColors.heroTint }]}>
-        <IconSymbol name={icon as never} size={34} color={themeColors.primary} />
+        <IconSymbol name={icon} size={34} color={themeColors.primary} />
       </View>
       <ThemedText type="subtitle" style={styles.headline}>
         {headline}
@@ -58,10 +58,10 @@ export function ListEmptyState({
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: Radii.md,
+    padding: Spacing.xl,
     alignItems: 'center',
-    gap: 10,
+    gap: Spacing.sm,
   },
   illustrationCircle: {
     width: 70,
@@ -79,9 +79,9 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   cta: {
-    marginTop: 6,
-    borderRadius: 12,
-    paddingVertical: 11,
-    paddingHorizontal: 20,
+    marginTop: Spacing.xs,
+    borderRadius: Radii.md,
+    paddingVertical: Spacing.md - 1,
+    paddingHorizontal: Spacing.xxl - 4,
   },
 });

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
@@ -81,7 +81,7 @@ export default function CreateExperimentScreen() {
   }, [hardwareItems, selectedHardwareIds]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Create Experiment</ThemedText>
         <View style={styles.templateSection}>
@@ -125,7 +125,7 @@ export default function CreateExperimentScreen() {
               );
             })}
           </View>
-          <ThemedText style={{ color: themeColors.mutedText, fontSize: 12 }}>
+          <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
             Templates are pre-built locally for faster engineering logs.
           </ThemedText>
         </View>
@@ -262,7 +262,7 @@ export default function CreateExperimentScreen() {
           })();
         }}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

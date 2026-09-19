@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { HardwareForm, type HardwareFormValues } from '@/hardware/organisms/hardware-form';
 import { selectHardwareById, updateHardwareThunk } from '@/hardware/state/hardwareSlice';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
@@ -28,14 +28,14 @@ export default function EditHardwareScreen() {
 
   if (!hardware) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Hardware item not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Edit Hardware</ThemedText>
         <HardwareForm
@@ -57,7 +57,7 @@ export default function EditHardwareScreen() {
           }}
         />
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

@@ -1,7 +1,8 @@
 import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
+import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import {
   deleteAccountThunk,
   logoutThunk,
@@ -9,10 +10,11 @@ import {
   selectAuthError,
   selectAuthStatus,
 } from '@/auth/state/authSlice';
+import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import {
   cancelSubscriptionThunk,
   fetchSubscriptionStatusThunk,
@@ -24,9 +26,8 @@ import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function AccountSettingsScreen() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
-  const subtleLine = colorScheme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.12)';
   const dispatch = useAppDispatch();
   const router = useRouter();
   const authStatus = useAppSelector(selectAuthStatus);
@@ -94,91 +95,75 @@ export default function AccountSettingsScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Account</ThemedText>
-        <ThemedText style={{ color: themeColors.mutedText }}>
+        <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
           Change password uses your current session (same as reset-password flow when logged in).
         </ThemedText>
 
-        <ThemedText type="subtitle">Change password</ThemedText>
-        <TextInput
+        <ThemedText type="heading">Change password</ThemedText>
+        <AuthTextInput
           placeholder="New password"
-          placeholderTextColor={themeColors.mutedText}
-          secureTextEntry
+          secureToggle
+          autoCapitalize="none"
           value={password}
           onChangeText={setPassword}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
-        <TextInput
+        <AuthTextInput
           placeholder="Confirm new password"
-          placeholderTextColor={themeColors.mutedText}
-          secureTextEntry
+          secureToggle
+          autoCapitalize="none"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          style={[styles.input, { borderColor: themeColors.border, color: themeColors.text }]}
         />
-        <Pressable
-          style={[styles.primaryBtn, { backgroundColor: themeColors.primary }]}
+        <AppButton
+          label={isLoading ? 'Updating…' : 'Update password'}
+          onPress={() => void handleChangePassword()}
           disabled={isLoading}
-          onPress={() => void handleChangePassword()}>
-          <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
-            {isLoading ? 'Updating…' : 'Update password'}
-          </ThemedText>
-        </Pressable>
+        />
         {authError ? (
-          <ThemedText style={{ color: themeColors.danger }}>{authError}</ThemedText>
+          <ThemedText type="caption" style={{ color: themeColors.danger }}>
+            {authError}
+          </ThemedText>
         ) : null}
         {passwordMessage ? (
-          <ThemedText style={{ color: themeColors.primary }}>{passwordMessage}</ThemedText>
+          <ThemedText type="caption" style={{ color: themeColors.primary }}>
+            {passwordMessage}
+          </ThemedText>
         ) : null}
 
-        <View style={[styles.divider, { backgroundColor: subtleLine }]} />
+        <View style={[styles.divider, { backgroundColor: themeColors.border }]} />
 
-        <ThemedText type="subtitle">Subscription</ThemedText>
+        <ThemedText type="heading">Subscription</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
           Current plan: {isProPlan ? subscriptionPlan.replace('_', ' ') : 'free'}
         </ThemedText>
-        <Pressable
-          style={[styles.secondaryBtn, { borderColor: themeColors.border }]}
-          onPress={() => router.push(ROUTES.SETTINGS_UPGRADE)}>
-          <ThemedText>Manage or upgrade plan</ThemedText>
-        </Pressable>
+        <AppButton
+          label="Manage or upgrade plan"
+          variant="secondary"
+          onPress={() => router.push(ROUTES.SETTINGS_UPGRADE)}
+        />
         {isProPlan ? (
-          <Pressable
-            style={[styles.dangerBtn, { borderColor: themeColors.danger }]}
+          <AppButton
+            label={isCancelLoading ? 'Cancelling...' : 'Cancel subscription'}
+            variant="danger"
             disabled={isCancelLoading}
-            onPress={handleCancelSubscription}>
-            <ThemedText style={{ color: themeColors.danger }}>
-              {isCancelLoading ? 'Cancelling...' : 'Cancel subscription'}
-            </ThemedText>
-          </Pressable>
+            onPress={handleCancelSubscription}
+          />
         ) : null}
 
-        <View style={[styles.divider, { backgroundColor: subtleLine }]} />
+        <View style={[styles.divider, { backgroundColor: themeColors.border }]} />
 
-        <Pressable
-          style={[styles.secondaryBtn, { borderColor: themeColors.border }]}
-          onPress={() => void handleSignOut()}>
-          <ThemedText>Sign out</ThemedText>
-        </Pressable>
+        <AppButton label="Sign out" variant="secondary" onPress={() => void handleSignOut()} />
 
-        <Pressable
-          style={[styles.dangerBtn, { borderColor: themeColors.danger }]}
-          onPress={handleDeleteAccount}>
-          <ThemedText style={{ color: themeColors.danger }}>Delete account…</ThemedText>
-        </Pressable>
+        <AppButton label="Delete account…" variant="danger" onPress={handleDeleteAccount} />
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
-  primaryBtn: { borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
-  secondaryBtn: { borderWidth: 1, borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
-  dangerBtn: { borderWidth: 1, borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
-  divider: { height: 1, marginVertical: 8 },
+  content: { padding: Spacing.lg, gap: Spacing.md, paddingBottom: Spacing.xxxl + Spacing.sm },
+  divider: { height: 1, marginVertical: Spacing.sm },
 });

@@ -4,8 +4,8 @@ import type { StyleProp, TextStyle } from 'react-native';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors } from '@/common/constants/theme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectAllHardware } from '@/hardware/state/hardwareSlice';
 import { selectAllTags } from '@/notes/state/notesSlice';
@@ -157,7 +157,7 @@ export default function GlobalSearchScreen() {
   ]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Global Search</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
@@ -242,14 +242,14 @@ export default function GlobalSearchScreen() {
         onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
         onClose={() => setIsFilterSheetOpen(false)}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 12, paddingBottom: 40 },
-  searchInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
+  searchInput: { borderWidth: 1, borderRadius: Radii.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, fontSize: 15 },
   filterButton: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, alignSelf: 'flex-start' },
   tabRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tabChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },

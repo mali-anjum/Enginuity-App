@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { ExternalLink } from '@/common/molecules/external-link';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 
@@ -16,7 +16,7 @@ export default function AboutScreen() {
   const appVersion = Constants.expoConfig?.version ?? Constants.nativeAppVersion ?? '1.0.0';
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">About</ThemedText>
 
@@ -39,7 +39,7 @@ export default function AboutScreen() {
           <ThemedText style={{ color: themeColors.primary }}>Send feedback (email)</ThemedText>
         </Pressable>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

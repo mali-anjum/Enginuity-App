@@ -20,6 +20,8 @@ export type OnboardingState = {
   selectedDiscipline: Discipline | null;
   selectedDisciplines: Discipline[];
   profileDraft: OnboardingProfileDraft;
+  /** Which of the intro screen's value-prop slides was last viewed, so a reload resumes there instead of restarting. */
+  introSlideIndex: number;
 };
 
 const initialState: OnboardingState = {
@@ -28,6 +30,7 @@ const initialState: OnboardingState = {
   selectedDiscipline: null,
   selectedDisciplines: [],
   profileDraft: INITIAL_ONBOARDING_PROFILE_DRAFT,
+  introSlideIndex: 0,
 };
 
 const onboardingSlice = createSlice({
@@ -120,6 +123,10 @@ const onboardingSlice = createSlice({
       state.selectedDiscipline = null;
       state.selectedDisciplines = [];
       state.profileDraft = INITIAL_ONBOARDING_PROFILE_DRAFT;
+      state.introSlideIndex = 0;
+    },
+    setIntroSlideIndex(state, action: PayloadAction<number>) {
+      state.introSlideIndex = action.payload;
     },
   },
 });
@@ -138,6 +145,7 @@ export const {
   setUsageFields,
   setGoalsFields,
   resetOnboarding,
+  setIntroSlideIndex,
 } = onboardingSlice.actions;
 
 export type { OnboardingProfileDraft };

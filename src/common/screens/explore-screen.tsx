@@ -1,117 +1,173 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Link, useRouter, type Href } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors, Fonts } from '@/common/constants/theme';
+import { TagChip } from '@/common/atoms/tag-chip';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { Collapsible } from '@/common/molecules/collapsible';
-import { ExternalLink } from '@/common/molecules/external-link';
-import ParallaxScrollView from '@/common/organisms/parallax-scroll-view';
+import { ListEmptyState } from '@/common/organisms/list-empty-state';
+import { ScreenContainer } from '@/common/molecules/screen-container';
+import { HARDWARE_CATEGORIES } from '@/hardware/constants';
+import { selectAllHardware } from '@/hardware/state/hardwareSlice';
+import { selectTagCounts } from '@/notes/state/notesSlice';
+import { selectProjectStats } from '@/project/state/projectSlice';
+import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { IconSymbol } from '@/sharedModules/ui/atoms/icon-symbol';
+import { useAppSelector } from '@/store/hooks';
 
 export default function ExploreScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
 
+  const hardwareItems = useAppSelector(selectAllHardware);
+  const projectStats = useAppSelector(selectProjectStats);
+  const tagCounts = useAppSelector(selectTagCounts).slice(0, 12);
+
+  const categoryCounts = HARDWARE_CATEGORIES.map((category) => ({
+    category,
+    count: hardwareItems.filter((item) => item.category === category).length,
+  }));
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{
-        light: Colors.light.headerBackground,
-        dark: Colors.dark.headerBackground,
-      }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color={themeColors.iconMuted}
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">src/dashboard/screens/home-screen.tsx</ThemedText>{' '}
-          and <ThemedText type="defaultSemiBold">src/common/screens/explore-screen.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">src/app/(tabs)/_layout.tsx</ThemedText> sets
-          up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">hello-wave.tsx</ThemedText> component uses the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">parallax-scroll-view.tsx</ThemedText> component
-              provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScreenContainer style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View>
+          <ThemedText type="title">Explore</ThemedText>
+          <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
+            Browse your hardware library, projects, and notes by tag.
+          </ThemedText>
+        </View>
+
+        <Link href={ROUTES.SEARCH as Href} asChild>
+          <Pressable
+            style={[
+              styles.searchRow,
+              { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+            ]}>
+            <IconSymbol name="magnifyingglass" size={18} color={themeColors.mutedText} />
+            <ThemedText style={{ color: themeColors.mutedText }}>Search projects, hardware, notes…</ThemedText>
+          </Pressable>
+        </Link>
+
+        <View style={styles.section}>
+          <ThemedText type="eyebrow" style={{ color: themeColors.mutedText }}>
+            Projects
+          </ThemedText>
+          <View style={styles.statRow}>
+            <StatTile label="Active" value={projectStats.active} />
+            <StatTile label="Completed" value={projectStats.completed} />
+            <StatTile label="Favourites" value={projectStats.favourites} />
+          </View>
+          <Link href={ROUTES.PROJECT_LIST as Href}>
+            <ThemedText type="link">View all projects</ThemedText>
+          </Link>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="eyebrow" style={{ color: themeColors.mutedText }}>
+            Hardware Library
+          </ThemedText>
+          {hardwareItems.length === 0 ? (
+            <ListEmptyState
+              icon="cpu.fill"
+              headline="Build your hardware library"
+              body="Save boards, sensors, and modules so every project can reuse proven components."
+              ctaLabel="Add Hardware"
+              onPressCta={() => router.push(ROUTES.HARDWARE_ADD as Href)}
+            />
+          ) : (
+            <>
+              <View style={styles.chipRow}>
+                {categoryCounts.map(({ category, count }) => (
+                  <View
+                    key={category}
+                    style={[
+                      styles.categoryChip,
+                      { borderColor: themeColors.border, backgroundColor: themeColors.background },
+                    ]}>
+                    <ThemedText type="defaultSemiBold">{category}</ThemedText>
+                    <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
+                      {count}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+              <Link href={ROUTES.HARDWARE_LIST as Href}>
+                <ThemedText type="link">View all hardware</ThemedText>
+              </Link>
+            </>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="eyebrow" style={{ color: themeColors.mutedText }}>
+            Browse by tag
+          </ThemedText>
+          <View style={styles.chipRow}>
+            {tagCounts.map(({ tag, count }) => (
+              <TagChip
+                key={tag}
+                label={`${tag} (${count})`}
+                onPress={() => router.push(ROUTE_PATHS.NOTES_TAGS_WITH_TAG(tag))}
+              />
+            ))}
+          </View>
+          <Link href={ROUTES.NOTES_TAGS as Href}>
+            <ThemedText type="link">View all tags</ThemedText>
+          </Link>
+        </View>
+      </ScrollView>
+    </ScreenContainer>
+  );
+}
+
+function StatTile({ label, value }: { label: string; value: number }) {
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+  return (
+    <View
+      style={[
+        styles.statTile,
+        { borderColor: themeColors.border, backgroundColor: themeColors.surfaceElevated },
+      ]}>
+      <ThemedText type="heading">{value}</ThemedText>
+      <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
+        {label}
+      </ThemedText>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
+  screen: { flex: 1 },
+  content: { padding: Spacing.lg, gap: Spacing.xxl, paddingBottom: Spacing.xxxl + Spacing.sm },
+  searchRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.md + 2,
+    paddingVertical: Spacing.md,
+  },
+  section: { gap: Spacing.sm },
+  statRow: { flexDirection: 'row', gap: Spacing.sm },
+  statTile: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: Radii.md,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  chipRow: { flexDirection: 'row', gap: Spacing.sm, flexWrap: 'wrap' },
+  categoryChip: {
+    borderWidth: 1,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: Spacing.xs + 2,
+    alignItems: 'center',
+    minWidth: 76,
   },
 });

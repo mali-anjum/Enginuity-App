@@ -5,14 +5,14 @@ import { AuthSubtitle } from '@/auth/molecules/auth-subtitle';
 import { AuthOauthSection } from '@/auth/organisms/auth-oauth-section';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ROUTES } from '@/sharedModules/navigation/routes';
 
 export default function SignupScreen() {
   const router = useRouter();
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Create account</ThemedText>
         <AuthSubtitle>Join with Google, Apple, Facebook, GitHub, or email after your onboarding plan.</AuthSubtitle>
@@ -24,7 +24,7 @@ export default function SignupScreen() {
           </ThemedText>
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

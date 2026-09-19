@@ -53,6 +53,7 @@ const onboardingPersistConfig = {
     'selectedDiscipline',
     'selectedDisciplines',
     'profileDraft',
+    'introSlideIndex',
   ],
 };
 

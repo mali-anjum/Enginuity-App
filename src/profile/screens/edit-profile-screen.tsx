@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 
 import { selectUser, type AuthDiscipline, updateProfileThunk } from '@/auth/state/authSlice';
+import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
 import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Radii, Spacing } from '@/common/constants/theme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -50,7 +52,7 @@ export default function EditProfileScreen() {
   }, [user]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Edit Profile</ThemedText>
 
@@ -98,8 +100,8 @@ export default function EditProfileScreen() {
           })}
         </ThemedView>
 
-        <Pressable
-          style={[styles.saveBtn, { backgroundColor: themeColors.primary }]}
+        <AppButton
+          label="Save Profile"
           onPress={() => {
             if (!name.trim()) return;
             void dispatch(
@@ -111,30 +113,32 @@ export default function EditProfileScreen() {
               }),
             );
             router.replace(ROUTES.PROFILE_HOME as Href);
-          }}>
-          <ThemedText lightColor={themeColors.buttonPrimaryText} darkColor={themeColors.buttonPrimaryText}>
-            Save Profile
-          </ThemedText>
-        </Pressable>
+          }}
+        />
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
+  content: { padding: Spacing.lg, gap: Spacing.md, paddingBottom: Spacing.xxxl + Spacing.sm },
+  input: {
+    borderWidth: 1,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    fontSize: 15,
+  },
   textarea: {
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
     minHeight: 120,
     fontSize: 15,
     textAlignVertical: 'top',
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
-  saveBtn: { borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  chip: { borderWidth: 1, borderRadius: Radii.full, paddingHorizontal: Spacing.sm + 2, paddingVertical: Spacing.xs + 2 },
 });

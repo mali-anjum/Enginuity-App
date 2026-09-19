@@ -9,7 +9,7 @@ import {
   selectSettingsError,
 } from '@/settings/state/settingsSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -38,7 +38,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Notifications</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
@@ -64,7 +64,7 @@ export default function NotificationsScreen() {
           <ThemedText>Reload from server</ThemedText>
         </Pressable>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

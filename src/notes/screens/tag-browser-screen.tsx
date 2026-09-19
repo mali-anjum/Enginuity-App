@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { TagChip } from '@/common/atoms/tag-chip';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { selectExperimentsByTag } from '@/experiment/state/experimentSlice';
@@ -30,7 +30,7 @@ export default function TagBrowserScreen() {
   }, [tags]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Tag Browser</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
@@ -90,7 +90,7 @@ export default function TagBrowserScreen() {
           </View>
         ) : null}
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
@@ -119,10 +119,8 @@ function TagGroup({
           <View key={item.tag} style={styles.tagItem}>
             <TagChip label={item.tag} onPress={() => onPress(item.tag)} />
             <ThemedText
-              style={[
-                styles.countLabel,
-                { color: activeTag === item.tag ? themeColors.primary : themeColors.mutedText },
-              ]}>
+              type="caption"
+              style={{ color: activeTag === item.tag ? themeColors.primary : themeColors.mutedText }}>
               {item.count} note{item.count === 1 ? '' : 's'}
             </ThemedText>
           </View>
@@ -138,6 +136,5 @@ const styles = StyleSheet.create({
   tagSection: { borderWidth: 1, borderRadius: 10, padding: 12, gap: 6 },
   tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tagItem: { gap: 4, alignItems: 'flex-start' },
-  countLabel: { fontSize: 12 },
   activeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });

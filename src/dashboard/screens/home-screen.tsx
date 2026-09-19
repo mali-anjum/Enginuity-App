@@ -12,7 +12,7 @@ import { HomeEmptyProjects } from '@/dashboard/organisms/home-empty-projects';
 import type { Project } from '@/project/state/projectSlice';
 import { selectProjectStats } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors, Radii, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
@@ -144,7 +144,7 @@ export default function HomeScreen() {
   }, [hasCompletedOnboarding, projectStats.total, recentRows.length]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View
         style={[
           styles.header,
@@ -382,7 +382,7 @@ export default function HomeScreen() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Create project or experiment"
-        style={[styles.fab, { backgroundColor: themeColors.primary }]}
+        style={[styles.fab, { backgroundColor: themeColors.primary, shadowColor: themeColors.cardShadow }]}
         onPress={() => setIsCreateSheetOpen(true)}>
         <ThemedText
           style={styles.fabLabel}
@@ -429,7 +429,7 @@ export default function HomeScreen() {
         onCreateExperiment={openCreateExperimentForRecentProject}
         onClose={() => setIsCreateSheetOpen(false)}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
@@ -568,8 +568,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 6,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.22,
+    shadowOpacity: 1,
     shadowRadius: 9,
     shadowOffset: { width: 0, height: 6 },
   },

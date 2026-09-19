@@ -11,7 +11,7 @@ import {
   selectSyncProgress,
 } from '@/settings/state/settingsSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -36,7 +36,7 @@ export default function StorageSyncScreen() {
   }, [dispatch, settingsError]);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Storage & sync</ThemedText>
         <ThemedText style={{ color: themeColors.mutedText }}>
@@ -72,7 +72,7 @@ export default function StorageSyncScreen() {
           {syncProgress.remaining > 0 ? ` · ${syncProgress.remaining} pending` : ' · all synced'}
         </ThemedText>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { NoteForm, type NoteFormValues } from '@/notes/organisms/note-form';
 import { createCustomTagThunk, selectNoteById, updateNoteThunk } from '@/notes/state/notesSlice';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
@@ -33,14 +33,14 @@ export default function EditNoteScreen() {
 
   if (!note) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Note not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Edit Note</ThemedText>
         <NoteForm
@@ -68,7 +68,7 @@ export default function EditNoteScreen() {
           })}
         />
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

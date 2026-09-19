@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useState } from 'react';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ProPaywallModal } from '@/monetization/organisms/pro-paywall-modal';
 import {
   fetchSubscriptionStatusThunk,
@@ -33,7 +33,7 @@ export default function CreateProjectScreen() {
   const router = useRouter();
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Create Project</ThemedText>
         <ProjectForm
@@ -75,7 +75,7 @@ export default function CreateProjectScreen() {
           })();
         }}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

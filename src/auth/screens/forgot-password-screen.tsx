@@ -1,13 +1,14 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import { forgotPasswordThunk, selectAuthError, selectAuthStatus } from '@/auth/state/authSlice';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { Colors } from '@/common/constants/theme';
+import { Colors, Spacing } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ROUTES } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
@@ -37,9 +38,9 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer contentStyle={styles.container}>
       <ThemedText type="title">Forgot password</ThemedText>
-      <ThemedText style={styles.subtitle}>
+      <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
         Enter your account email and we will send a reset link.
       </ThemedText>
       <AuthTextInput
@@ -55,29 +56,32 @@ export default function ForgotPasswordScreen() {
         onPress={handleSendReset}
         disabled={isLoading}
       />
-      {localError ? <ThemedText style={[styles.message, { color: themeColors.danger }]}>{localError}</ThemedText> : null}
-      {authError ? <ThemedText style={[styles.message, { color: themeColors.danger }]}>{authError}</ThemedText> : null}
+      {localError ? (
+        <ThemedText type="caption" style={{ color: themeColors.danger }}>
+          {localError}
+        </ThemedText>
+      ) : null}
+      {authError ? (
+        <ThemedText type="caption" style={{ color: themeColors.danger }}>
+          {authError}
+        </ThemedText>
+      ) : null}
       {successMessage ? (
-        <ThemedText style={[styles.message, { color: themeColors.success }]}>{successMessage}</ThemedText>
+        <ThemedText type="caption" style={{ color: themeColors.success }}>
+          {successMessage}
+        </ThemedText>
       ) : null}
       <Link href={ROUTES.AUTH_LOGIN}>
         <ThemedText type="link">Back to sign in</ThemedText>
       </Link>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 28,
-    gap: 12,
-  },
-  subtitle: {
-    fontSize: 14,
-  },
-  message: {
-    fontSize: 13,
+    paddingHorizontal: Spacing.lg + 2,
+    paddingTop: Spacing.xxl + 4,
+    gap: Spacing.md,
   },
 });

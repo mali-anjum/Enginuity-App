@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { TagChip } from '@/common/atoms/tag-chip';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
@@ -88,9 +88,9 @@ export default function ExperimentDetailScreen() {
 
   if (!experiment) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Experiment not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
@@ -136,7 +136,7 @@ export default function ExperimentDetailScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topRow}>
           <ThemedText type="title">{experiment.title}</ThemedText>
@@ -168,12 +168,12 @@ export default function ExperimentDetailScreen() {
             { borderColor: chipColors.border, backgroundColor: chipColors.background },
           ]}>
           <ThemedText type="defaultSemiBold">{experimentStatusLabel(experiment.status)}</ThemedText>
-          <ThemedText style={[styles.statusHint, { color: themeColors.mutedText }]}>
+          <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
             Tap to update status
           </ThemedText>
         </Pressable>
 
-        <ThemedText style={{ color: themeColors.mutedText, fontSize: 13 }}>
+        <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
           Logged {new Date(experiment.createdAt).toLocaleString()}
           {experiment.updatedAt !== experiment.createdAt
             ? ` · Updated ${new Date(experiment.updatedAt).toLocaleString()}`
@@ -226,7 +226,7 @@ export default function ExperimentDetailScreen() {
                     <ThemedText type="defaultSemiBold" numberOfLines={1}>
                       {note.title}
                     </ThemedText>
-                    <ThemedText style={[styles.chipMeta, { color: themeColors.mutedText }]} numberOfLines={2}>
+                    <ThemedText type="caption" style={{ color: themeColors.mutedText }} numberOfLines={2}>
                       {note.body || 'No note body.'}
                     </ThemedText>
                   </Pressable>
@@ -262,7 +262,7 @@ export default function ExperimentDetailScreen() {
                     <ThemedText type="defaultSemiBold" numberOfLines={1}>
                       {hardware.name}
                     </ThemedText>
-                    <ThemedText style={[styles.chipMeta, { color: themeColors.mutedText }]}>
+                    <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
                       {hardware.category}
                     </ThemedText>
                   </Pressable>
@@ -399,7 +399,7 @@ export default function ExperimentDetailScreen() {
           })();
         }}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
@@ -416,7 +416,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 2,
   },
-  statusHint: { fontSize: 11 },
   section: { gap: 8 },
   notesRow: { gap: 8, marginTop: 6 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -431,7 +430,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     maxWidth: '100%',
   },
-  chipMeta: { fontSize: 12 },
   noteCard: {
     borderWidth: 1,
     borderRadius: 12,

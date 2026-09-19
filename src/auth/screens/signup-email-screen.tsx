@@ -6,13 +6,18 @@ import { AuthTextInput } from '@/auth/molecules/auth-text-input';
 import { selectAuthError, selectAuthStatus, signupThunk } from '@/auth/state/authSlice';
 import { AppButton } from '@/common/atoms/app-button';
 import { ThemedText } from '@/common/atoms/themed-text';
+import { Colors, Spacing } from '@/common/constants/theme';
+import { useColorScheme } from '@/common/hooks/use-color-scheme';
+import { ScreenContainer } from '@/common/molecules/screen-container';
+import { mapFocusAreasToAuthDiscipline } from '@/onboarding/types/profileDraft';
 import { ROUTES, ROUTE_PATHS } from '@/sharedModules/navigation/routes';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { mapFocusAreasToAuthDiscipline } from '@/onboarding/types/profileDraft';
 
 export default function SignupEmailScreen() {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
   const authStatus = useAppSelector(selectAuthStatus);
   const authError = useAppSelector(selectAuthError);
   const focusAreas = useAppSelector((s) => s.onboarding.profileDraft.focusAreas);
@@ -52,9 +57,10 @@ export default function SignupEmailScreen() {
   };
 
   return (
+    <ScreenContainer>
     <ScrollView contentContainerStyle={styles.content}>
       <ThemedText type="title">Sign up with email</ThemedText>
-      <ThemedText style={styles.subtitle}>
+      <ThemedText type="caption" style={[styles.subtitle, { color: themeColors.mutedText }]}>
         We will send a confirmation link to your inbox. Verify your email, then sign in to continue.
       </ThemedText>
       <AuthTextInput placeholder="Full name" value={name} onChangeText={setName} />
@@ -81,8 +87,16 @@ export default function SignupEmailScreen() {
         onChangeText={setConfirmPassword}
       />
       <AppButton label={isLoading ? 'Creating account...' : 'Create account'} onPress={handleSignup} disabled={isLoading} />
-      {localError ? <ThemedText style={styles.errorText}>{localError}</ThemedText> : null}
-      {authError ? <ThemedText style={styles.errorText}>{authError}</ThemedText> : null}
+      {localError ? (
+        <ThemedText type="caption" style={{ color: themeColors.danger }}>
+          {localError}
+        </ThemedText>
+      ) : null}
+      {authError ? (
+        <ThemedText type="caption" style={{ color: themeColors.danger }}>
+          {authError}
+        </ThemedText>
+      ) : null}
       <View style={styles.footer}>
         <ThemedText type="link" onPress={() => router.replace(ROUTES.AUTH_SIGNUP)}>
           Other sign-up options
@@ -92,25 +106,22 @@ export default function SignupEmailScreen() {
         </ThemedText>
       </View>
     </ScrollView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 18,
-    paddingTop: 28,
-    paddingBottom: 40,
-    gap: 12,
+    paddingHorizontal: Spacing.lg + 2,
+    paddingTop: Spacing.xxl + 4,
+    paddingBottom: Spacing.xxxl + Spacing.sm,
+    gap: Spacing.md,
   },
   subtitle: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  errorText: {
-    fontSize: 13,
+    marginBottom: Spacing.xs,
   },
   footer: {
-    gap: 8,
-    marginTop: 8,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
 });

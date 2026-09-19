@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ExperimentForm, type ExperimentFormValues } from '@/experiment/organisms/experiment-form';
 import { HardwarePickerSheet } from '@/experiment/organisms/hardware-picker-sheet';
 import {
@@ -55,14 +55,14 @@ export default function EditExperimentScreen() {
 
   if (!experiment) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Experiment not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Edit Experiment</ThemedText>
         <ExperimentForm
@@ -178,7 +178,7 @@ export default function EditExperimentScreen() {
         }}
         onClose={() => setIsHardwarePickerOpen(false)}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

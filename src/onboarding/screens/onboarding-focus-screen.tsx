@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/common/atoms/themed-text";
-import { ThemedView } from "@/common/atoms/themed-view";
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from "@/common/constants/theme";
 import { useColorScheme } from "@/common/hooks/use-color-scheme";
 import { FOCUS_AREA_OPTIONS } from "@/onboarding/constants/onboardingLabels";
@@ -26,7 +26,7 @@ export default function OnboardingFocusScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText type="title">Focus areas</ThemedText>
         <ThemedText style={{ color: themeColors.subtleText }}>
@@ -77,7 +77,7 @@ export default function OnboardingFocusScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

@@ -8,6 +8,7 @@ import { SupabaseAuthSync } from '@/auth/hooks/useSupabaseAuthSync';
 import { NetworkStatusBanner } from '@/sharedModules/organisms/network-status-banner';
 import { OfflineSyncReconciler } from '@/sharedModules/organisms/offline-sync-reconciler';
 import { SharedProjectsRealtimeSync } from '@/sharedModules/organisms/shared-projects-realtime-sync';
+import { WebSafeAreaProvider } from '@/sharedModules/organisms/web-safe-area-provider';
 import { initializeSupabaseClient } from '@/sharedModules/services/supabase/supabaseClient';
 import { persistor } from '@/store/persistor';
 import { store } from '@/store/store';
@@ -27,10 +28,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <PostAuthOnboardingSync />
         <OfflineSyncReconciler />
         <SharedProjectsRealtimeSync />
-        <View style={styles.root}>
-          {children}
-          <NetworkStatusBanner />
-        </View>
+        <WebSafeAreaProvider>
+          <View style={styles.root}>
+            {children}
+            <NetworkStatusBanner />
+          </View>
+        </WebSafeAreaProvider>
       </PersistGate>
     </Provider>
   );

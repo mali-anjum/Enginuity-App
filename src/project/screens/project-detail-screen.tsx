@@ -1,4 +1,4 @@
-import { Link, useLocalSearchParams, type Href } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -13,7 +13,7 @@ import {
   selectProjectCanEdit,
 } from '@/project/state/projectSlice';
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from '@/common/constants/theme';
 import { useColorScheme } from '@/common/hooks/use-color-scheme';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
@@ -46,16 +46,16 @@ export default function ProjectDetailScreen() {
 
   if (!project) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Project not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   const experimentCreateHref = ROUTE_PATHS.EXPERIMENT_CREATE_FOR_PROJECT(project.id);
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topRow}>
           <ThemedText type="title">{project.title}</ThemedText>
@@ -190,7 +190,7 @@ export default function ProjectDetailScreen() {
                       <ThemedText type="defaultSemiBold" numberOfLines={2}>
                         {experiment.title}
                       </ThemedText>
-                      <ThemedText style={[styles.metaHint, { color: themeColors.mutedText }]}>
+                      <ThemedText type="caption" style={{ color: themeColors.mutedText }}>
                         Updated {new Date(experiment.updatedAt).toLocaleDateString()}
                       </ThemedText>
                     </Pressable>
@@ -252,7 +252,7 @@ export default function ProjectDetailScreen() {
                     <ThemedText type="defaultSemiBold" numberOfLines={1}>
                       {note.title}
                     </ThemedText>
-                    <ThemedText style={[styles.metaHint, { color: themeColors.mutedText }]} numberOfLines={2}>
+                    <ThemedText type="caption" style={{ color: themeColors.mutedText }} numberOfLines={2}>
                       {note.body || 'No note body.'}
                     </ThemedText>
                   </Pressable>
@@ -285,7 +285,7 @@ export default function ProjectDetailScreen() {
           })();
         }}
       />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
@@ -363,9 +363,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
     gap: 4,
     paddingVertical: 2,
-  },
-  metaHint: {
-    fontSize: 12,
   },
   emptyIcon: {
     fontSize: 40,

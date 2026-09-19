@@ -1,46 +1,65 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
-import { Colors } from '@/common/constants/theme';
-import { useColorScheme } from '@/common/hooks/use-color-scheme';
-import { ValuePropSlide } from '@/onboarding/molecules/value-prop-slide';
-import { OnboardingBrandBlock } from '@/onboarding/organisms/onboarding-brand-block';
-import { ROUTES } from '@/sharedModules/navigation/routes';
+import { AppButton } from "@/common/atoms/app-button";
+import { ThemedText } from "@/common/atoms/themed-text";
+import { Colors, Radii, Spacing } from "@/common/constants/theme";
+import { useColorScheme } from "@/common/hooks/use-color-scheme";
+import { ScreenContainer } from "@/common/molecules/screen-container";
+import { setIntroSlideIndex } from "@/onboarding/state/onboardingSlice";
+import { ValuePropSlide } from "@/onboarding/molecules/value-prop-slide";
+import { OnboardingBrandBlock } from "@/onboarding/organisms/onboarding-brand-block";
+import { ROUTES } from "@/sharedModules/navigation/routes";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const SLIDES = [
   {
-    emoji: '📁',
-    title: 'Organise engineering projects',
-    description: 'Keep experiments, hardware, and notes aligned so nothing gets lost between iterations.',
+    emoji: "📁",
+    title: "Organise engineering projects",
+    description:
+      "Keep experiments, hardware, and notes aligned so nothing gets lost between iterations.",
   },
   {
-    emoji: '🧪',
-    title: 'Log experiments with context',
-    description: 'Attach hardware, CSVs, and outcomes so comparisons stay meaningful.',
+    emoji: "🧪",
+    title: "Log experiments with context",
+    description:
+      "Attach hardware, CSVs, and outcomes so comparisons stay meaningful.",
   },
   {
-    emoji: '🎯',
-    title: 'Built for how you actually work',
-    description: 'Next, tell us about your study context and habits—we use it only to tune your experience.',
+    emoji: "🎯",
+    title: "Built for how you actually work",
+    description:
+      "Next, tell us about your study context and habits—we use it only to tune your experience.",
   },
 ] as const;
 
 export default function OnboardingIntroScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
+  const dispatch = useAppDispatch();
+  const colorScheme = useColorScheme() ?? "light";
   const themeColors = Colors[colorScheme];
-  const [stepIndex, setStepIndex] = useState(0);
+  const stepIndex = useAppSelector((state) => state.onboarding.introSlideIndex);
   const isLast = stepIndex === SLIDES.length - 1;
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <OnboardingBrandBlock stepIndex={stepIndex} totalSteps={SLIDES.length + 5} />
-        <View style={[styles.heroCard, { backgroundColor: themeColors.heroTint, borderColor: themeColors.accentBorder }]}>
-          <ThemedText style={styles.heroEyebrow}>Enginuity</ThemedText>
+        <OnboardingBrandBlock
+          stepIndex={stepIndex}
+          totalSteps={SLIDES.length + 5}
+        />
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: themeColors.heroTint,
+              borderColor: themeColors.accentBorder,
+            },
+          ]}
+        >
+          <ThemedText type="eyebrow" style={{ color: themeColors.mutedText }}>
+            Enginuity
+          </ThemedText>
           <ThemedText type="subtitle" style={styles.heroTitle}>
             Your workspace for labs, builds, and study notes.
           </ThemedText>
@@ -54,67 +73,49 @@ export default function OnboardingIntroScreen() {
         </View>
         <View style={styles.actions}>
           {stepIndex > 0 ? (
-            <Pressable
-              style={[styles.secondaryButton, { borderColor: themeColors.border }]}
-              onPress={() => setStepIndex((s) => Math.max(0, s - 1))}>
-              <ThemedText style={{ color: themeColors.mutedText }}>Back</ThemedText>
-            </Pressable>
+            <AppButton
+              label="Back"
+              variant="secondary"
+              onPress={() => dispatch(setIntroSlideIndex(Math.max(0, stepIndex - 1)))}
+            />
           ) : null}
-          <Pressable
-            style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
+          <AppButton
+            label={isLast ? "Continue" : "Next"}
             onPress={() => {
               if (!isLast) {
-                setStepIndex((s) => s + 1);
+                dispatch(setIntroSlideIndex(stepIndex + 1));
                 return;
               }
               router.push(ROUTES.ONBOARDING_FOCUS as never);
-            }}>
-            <ThemedText
-              type="defaultSemiBold"
-              style={styles.primaryLabel}
-              lightColor={themeColors.buttonPrimaryText}
-              darkColor={themeColors.buttonPrimaryText}>
-              {isLast ? 'Continue' : 'Next'}
-            </ThemedText>
-          </Pressable>
+            }}
+          />
         </View>
-        <Pressable onPress={() => router.replace(ROUTES.AUTH_LOGIN as never)} style={styles.skipWrap}>
+        <Pressable
+          onPress={() => router.replace(ROUTES.AUTH_LOGIN as never)}
+          style={styles.skipWrap}
+        >
           <ThemedText type="link">Already have an account? Sign in</ThemedText>
         </Pressable>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  scroll: { padding: 24, gap: 18, paddingBottom: 48 },
-  heroCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 18,
-    gap: 6,
+  scroll: {
+    padding: Spacing.xxl,
+    gap: Spacing.lg + 2,
+    paddingBottom: Spacing.xxxl + Spacing.lg,
   },
-  heroEyebrow: {
-    textTransform: 'uppercase',
-    fontSize: 12,
-    letterSpacing: 0.8,
-    opacity: 0.85,
+  heroCard: {
+    borderRadius: Radii.xl,
+    borderWidth: 1,
+    padding: Spacing.lg + 2,
+    gap: Spacing.xs + 2,
   },
   heroTitle: { lineHeight: 28 },
-  slideWrap: { width: '100%' },
-  actions: { gap: 10 },
-  secondaryButton: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  primaryButton: {
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-  },
-  primaryLabel: { fontSize: 16 },
-  skipWrap: { alignItems: 'center', marginTop: 8 },
+  slideWrap: { width: "100%" },
+  actions: { gap: Spacing.sm + 2 },
+  skipWrap: { alignItems: "center", marginTop: Spacing.sm },
 });

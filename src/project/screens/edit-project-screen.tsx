@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/common/atoms/themed-text';
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { ProjectForm, type ProjectFormValues } from '@/project/organisms/project-form';
 import { selectProjectById, updateProjectThunk } from '@/project/state/projectSlice';
 import { ROUTE_PATHS } from '@/sharedModules/navigation/routes';
@@ -29,14 +29,14 @@ export default function EditProjectScreen() {
 
   if (!project) {
     return (
-      <ThemedView style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <ThemedText>Project not found.</ThemedText>
-      </ThemedView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Edit Project</ThemedText>
         <ProjectForm
@@ -60,7 +60,7 @@ export default function EditProjectScreen() {
           }}
         />
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { AuthTextInput } from "@/auth/molecules/auth-text-input";
 import { ThemedText } from "@/common/atoms/themed-text";
-import { ThemedView } from "@/common/atoms/themed-view";
+import { ScreenContainer } from '@/common/molecules/screen-container';
 import { Colors } from "@/common/constants/theme";
 import { useColorScheme } from "@/common/hooks/use-color-scheme";
 import { INSTITUTION_TYPE_OPTIONS } from "@/onboarding/constants/onboardingLabels";
@@ -37,7 +37,7 @@ export default function OnboardingEducationScreen() {
   };
 
   return (
-    <ThemedView style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText type="title">Education & affiliation</ThemedText>
         <ThemedText style={{ color: themeColors.subtleText }}>
@@ -98,7 +98,7 @@ export default function OnboardingEducationScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 

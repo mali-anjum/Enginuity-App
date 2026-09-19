@@ -1,14 +1,14 @@
 import { StyleSheet } from 'react-native';
 
-import { ThemedView } from '@/common/atoms/themed-view';
+import { ScreenContainer } from '@/common/molecules/screen-container';
 
 import { LoginPanel } from '../organisms/login-panel';
 
 export default function LoginEmailScreen() {
   return (
-    <ThemedView style={styles.container}>
+    <ScreenContainer style={styles.container}>
       <LoginPanel />
-    </ThemedView>
+    </ScreenContainer>
   );
 }
 
